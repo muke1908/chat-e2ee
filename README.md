@@ -22,3 +22,8 @@ Whisper (Backed by Enhereum - blockchain).
 
 ### Why it's not tracable?
 Your data goes through ether and we don't store any information on server. Know more: https://github.com/ethereum/wiki/wiki/Whisper
+
+---
+
+### Proposed flow:
+![flow](https://i.imgur.com/kNAce4s.png)
