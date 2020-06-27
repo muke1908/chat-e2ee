@@ -52,3 +52,10 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 - All the backend controllers goes to `./backend` folder
 - Express instance is on `./app.js`
 - Entry point is `./index.js`
+
+---
+Please follow the convention for commit message.  
+https://github.com/conventional-changelog/commitlint/#what-is-commitlint
+
+Example:  
+`git commit -m"feat: some relevant message"`
