@@ -1,0 +1,49 @@
+{
+    "env": {
+        "es6": true,
+        "node": true,
+        "jest": true,
+        "browser": true
+    },
+    "plugins": [
+        "jest",
+        "promise",
+        "react"
+    ],
+    "settings": {
+        "react": {
+            "version": "999.999.999"
+        }
+    },
+    "extends": [
+        "airbnb",
+        "plugin:react/recommended",
+        "plugin:jest/recommended",
+        "plugin:promise/recommended",
+        "prettier"
+    ],
+    "parser": "babel-eslint",
+    "rules": {
+        "react/prop-types": 0,
+        "no-nested-ternary": "off",
+        "func-names": ["error", "always"],
+        "no-plusplus": ["error", {
+            "allowForLoopAfterthoughts": true
+        }],
+        "no-unused-expressions": ["error", {
+            "allowShortCircuit": true
+        }],
+        "comma-dangle": ["error", "never"],
+        "no-unused-vars": ["error", {
+            "args": "none"
+        }],
+        "no-param-reassign": ["error", {
+            "props": false
+        }],
+        "react/jsx-filename-extension": [1, {
+            "extensions": [".js", ".jsx"]
+        }],
+        "react/destructuring-assignment": 0,
+        "react/no-array-index-key": 0
+    }
+}
