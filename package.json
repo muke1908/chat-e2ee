@@ -16,10 +16,41 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^8.2.0",
+    "@commitlint/config-conventional": "^8.2.0",
+    "babel-eslint": "^10.0.1",
+    "concurrently": "^5.2.0",
+    "eslint": "^6.7.1",
+    "eslint-config-airbnb": "17.1.0",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "22.5.1",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-promise": "4.1.1",
+    "eslint-plugin-react": "7.13.0",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.11",
     "nodemon": "^2.0.4",
-    "concurrently": "^5.2.0"
+    "prettier": "^2.0.5"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{js,css,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
