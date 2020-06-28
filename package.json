@@ -8,7 +8,7 @@
     "build": "cd client && npm run build",
     "production": "npm run build && NODE_ENV=production node index",
     "client": "cd client && npm start",
-    "server": "nodemon index",
+    "server": "NODE_ENV=development nodemon index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "mongodb": "^3.5.9",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {

@@ -9,10 +9,12 @@ router.get('/', async (req, res) => {
 
 router.post('/getLink', async (req, res) => {
   const { token } = req.body;
-  const captcha = await verifyCaptcha(token);
 
-  if (!captcha.success) {
-    return res.sendStatus(400);
+  if (process.env.NODE_ENV === 'production') {
+    const captcha = await verifyCaptcha(token);
+    if (!captcha.success) {
+      return res.sendStatus(400);
+    }
   }
 
   // implement link generation
