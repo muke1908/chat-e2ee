@@ -36,22 +36,24 @@ In this way, no one else can decrypt the message because your private key is nev
 ---
 
 ### For Developer  
-FE: This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.
+FE: This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
 BE: The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.
 
 ### Installation
 1. Clone / Fork the repo.
-2. Run `npm install` in root dir.
-3. Navigate to `./client` and run `npm install` - this will install react app dependencies.
-4. Run `npm start` to spin up your client-server. This will run your react app in dev mode and server in watch mode by nodemon.
+2. Run `npm install` in root dir.  
+~3. Navigate to `./client` and run `npm install` - this will install react app dependencies.~
+4. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
+
+Check `.env.sample` to configure your `.env` file.
 
 ### Folder structure:
 - The FE client is located in `./client` which is coupled with the backend
 - All the backend controllers goes to `./backend` folder
 - Express instance is on `./app.js`
-- Entry point is `./index.js`
+- Entry point is `./index.js`  
 
 ---
 Please follow the convention for commit message.  
