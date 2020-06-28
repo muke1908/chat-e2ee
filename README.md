@@ -1,6 +1,6 @@
 ## Idea
 
-Note: This is not a replacement of your usual chat application. This will allow two mututally agreed users to have a conversation with most privacy and annonimity. The app itself doesn't track you or ask any infromation from you.
+Note: This is not a replacement of your usual chat application. This will allow two mutually agreed users to have a conversation with most privacy and annonimity. The app itself doesn't track you or ask any infromation from you.
 
 Your data is owned by **only you** and **only while chatting**.
 
