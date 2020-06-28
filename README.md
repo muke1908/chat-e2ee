@@ -41,9 +41,9 @@ BE: The backend runs on express/nodejs. In production mode, express server expos
 
 ### Installation
 1. Clone / Fork the repo.
-2. Run `npm install` in root dir.
-3. Navigate to `./client` and run `npm install` - this will install react app dependencies.
-4. Run `npm start` to spin up your client-server. This will run your react app in dev mode and server in watch mode by nodemon.
+2. Run `npm install` in root dir.  
+~3. Navigate to `./client` and run `npm install` - this will install react app dependencies.~
+4. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
 
