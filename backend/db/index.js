@@ -9,12 +9,11 @@ let db = null;
 const connectDb = async () => {
   try {
     await client.connect();
+    db = client.db(dbName);
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('MONGO DB ERROR!');
   }
-
-  db = client.db(dbName);
 };
 
 const insertInDb = async (data, collectionName) => {
