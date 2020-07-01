@@ -4,7 +4,7 @@ Note: This is not a replacement of your usual chat application. This will allow 
 
 Your data is owned by **only you** and **only while chatting**.
 
-### Contribute [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)  
+### Contribute ![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)
  - [Contribution guide](https://github.com/muke1908/chat-e2ee/blob/master/CONTRIBUTING.md)  
 **Issues**:  
  - [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)  
