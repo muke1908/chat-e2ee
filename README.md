@@ -4,17 +4,19 @@ Note: This is not a replacement of your usual chat application. This will allow 
 
 Your data is owned by **only you** and **only while chatting**.
 
+### Contribute [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)  
+ - [Contribution guide](https://github.com/muke1908/chat-e2ee/blob/master/CONTRIBUTING.md)  
+**Issues**:  
+ - [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)  
+ - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)  
+
+---
+
 ### Key Features:
 1. The end users are not tracable.
 2. Data is not stored on any remote server.
 3. No saved history i.e. once chat is closed the data is not recoverable.
 4. It doesn't ask any information from you -- no login/signup.
-
-### Contribute:    
- - [Contribution guide](https://github.com/muke1908/chat-e2ee/blob/master/CONTRIBUTING.md)  
-**Issues**:  
- - [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)  
- - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)  
 
 ### How to initiate chat:  
 1. Generate unique link and passkey.
@@ -71,10 +73,10 @@ Check `.env.sample` to configure your `.env` file.
 1st July, 2020  
 Currently it's using [pubnub](https://pubnub.com) for real time communication. Utils are in `/backend/external/pubnub.js`.  
 
-**Flow**:
+**Messaging flow**:
  - Client send encrypted message via REST
- - Client receives message in realtime via PUBNUB subscription and decrypt locally to read.
-
+ - Client receives message in realtime via PUBNUB subscription and decrypt locally to read.  
+<a href="https://www.pubnub.com/"><img src="https://d2c805weuec6z7.cloudfront.net/Powered_By_PubNub.png" alt="Powered By PubNub" width="100"></a>
 ---
 Please follow the convention for commit message.  
 https://github.com/conventional-changelog/commitlint/#what-is-commitlint
