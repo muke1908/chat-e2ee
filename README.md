@@ -55,6 +55,21 @@ Check `.env.sample` to configure your `.env` file.
 - Express instance is on `./app.js`
 - Entry point is `./index.js`  
 
+### APIs  
+
+|  url | method  | paylod  | filename  | description  |
+|---|---|---|---|---|
+|`/api/getLink`| `POST`  | `{token}`  | `/api/index.js`  | to generate unique link to start chat session  |
+|`/api/chat/send`| `POST`  | `{ channel, sender, message }`  | `/api/messaging/index.js`  | to send a message to a specific channel |
+
+---
+1st July, 2020  
+Currently it's using [pubnub](https://pubnub.com) for real time communication. Utils are in `/backend/external/pubnub.js`.  
+
+**Flow**:
+ - Client send encrypted message via REST
+ - Client receives message in realtime via PUBNUB subscription and decrypt locally to read.
+
 ---
 Please follow the convention for commit message.  
 https://github.com/conventional-changelog/commitlint/#what-is-commitlint
