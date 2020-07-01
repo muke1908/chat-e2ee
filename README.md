@@ -10,6 +10,11 @@ Your data is owned by **only you** and **only while chatting**.
 3. No saved history i.e. once chat is closed the data is not recoverable.
 4. It doesn't ask any information from you -- no login/signup.
 
+### Contribute:    
+ - [Contribution guide](https://github.com/muke1908/chat-e2ee/blob/master/CONTRIBUTING.md)  
+**Issues**:  
+ - [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)  
+ - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)  
 
 ### How to initiate chat:  
 1. Generate unique link and passkey.
