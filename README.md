@@ -11,6 +11,8 @@ Your data is owned by **only you** and **only while chatting**.
 - [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
 - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)
 
+Master branch is deployed to https://chat-e2ee.herokuapp.com/
+
 ---
 
 ### Key Features:
