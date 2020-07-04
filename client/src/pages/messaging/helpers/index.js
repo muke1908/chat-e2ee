@@ -1,6 +1,4 @@
-import { storage } from '../../utils';
-import { makeRequest } from '../../service';
-
+import storage from '../../../utils/storage';
 export { fetchMessages, getUsersInChannel, pubnubInit } from './pubnub';
 
 export const getUserSessionID = (uuid) => {
@@ -17,16 +15,5 @@ export const storeUserSessionID = (uuid, userId) => {
   storage.set('session-user-uuid', {
     uuid,
     userId
-  });
-};
-
-export const sendMessage = async ({ uuid, userId, text }) => {
-  await makeRequest('chat/send', {
-    method: 'POST',
-    body: {
-      channel: uuid,
-      sender: userId,
-      message: text
-    }
   });
 };

@@ -7,9 +7,10 @@ import {
   fetchMessages,
   getUserSessionID,
   createUserSessionID,
-  storeUserSessionID,
-  sendMessage
+  storeUserSessionID
 } from './helpers';
+
+import { sendMessage } from '../../service';
 
 // create your key at https://www.pubnub.com/
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
