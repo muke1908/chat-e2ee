@@ -21,7 +21,8 @@
     "express": "^4.17.1",
     "mongodb": "^3.5.9",
     "node-fetch": "^2.6.0",
-    "pubnub": "^4.28.2"
+    "pubnub": "^4.28.2",
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.2.0",
