@@ -98,5 +98,5 @@ Example:
 
 External:  
 
-**<img src="https://d2c805weuec6z7.cloudfront.net/Powered\_By\_PubNub.png" alt="Powered By PubNub" width="100">**|**<img src="https://d2c805weuec6z7.cloudfront.net/Powered\_By\_PubNub.png" alt="Powered By PubNub" width="100">**
+**<a><img src="https://d2c805weuec6z7.cloudfront.net/Powered_By_PubNub.png" alt="Powered By PubNub" width="100"></a>**|**<a><img src="https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png" alt="Powered By Mongodb" width="100"></a>**
 :-----:|:-----:
