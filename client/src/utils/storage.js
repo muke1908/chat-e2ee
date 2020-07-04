@@ -1,4 +1,4 @@
-export const storage = {
+const storage = {
   get: (key) => {
     const inLS = localStorage.getItem(key);
 
@@ -15,3 +15,5 @@ export const storage = {
     localStorage.removeItem(key);
   }
 };
+
+export default storage;

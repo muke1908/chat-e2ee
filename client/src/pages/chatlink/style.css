@@ -1,0 +1,34 @@
+.link-generation--page .header {
+  padding: 20px;
+  padding-left: 0px;
+  font-size: 24px;
+}
+.link-generation--page .section--default {
+  background: #fff;
+  padding: 20px;
+}
+
+.link-generation--page .generate-link-btn {
+  background: #4caf50;
+  color: #fff;
+  padding: 10px;
+  width: 180px;
+  text-align: center;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.link-generation--page .generate-link-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.link-generation--page .captcha-height-setter {
+  height: 75px;
+  display: flex;
+  align-items: center;
+}
+
+.link-generation--page .title {
+  font-size: 18px;
+}

@@ -6,7 +6,8 @@ const generateLink = () => {
   const hash = uuidv4();
   return {
     hash,
-    link: `${chatLinkDomain}/${hash}`
+    link: `/chat/${hash}`,
+    absoluteLink: `${chatLinkDomain}/chat/${hash}`
   };
 };
 
