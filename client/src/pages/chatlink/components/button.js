@@ -2,17 +2,21 @@ import React from 'react';
 
 const Button = (props) => {
   
-  const { label, type, state, onClick, width } = props
+  const { 
+    label, 
+    type = 'primary', 
+    state = false, 
+    onClick, 
+    width 
+  } = props
   
   const styles = {
-    background: type == 'secondary' ? '#4caf50' : '#3944bc',
+    background: type === 'secondary' ? '#4caf50' : '#3944bc',
     color: '#fff',
     padding: '10px',
-    width: width,
+    width: width || 'auto',
     cursor: 'pointer',
     diplay: 'flex',
-    alignItem: 'center',
-    justifyContent: 'center',
     borderRadius: '2px'
   }
 
