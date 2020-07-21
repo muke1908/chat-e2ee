@@ -2,10 +2,10 @@ import React from 'react';
 
 const Button = (props) => {
   
-  const { type, state, onClick, width } = props
+  const { label, type, state, onClick, width } = props
   
   const styles = {
-    background: '#4caf50',
+    background: type == 'secondary' ? '#4caf50' : '#3944bc',
     color: '#fff',
     padding: '10px',
     width: width,
@@ -23,7 +23,7 @@ const Button = (props) => {
       disabled={state}
       onClick={onClick}
     >
-      {props.label}
+      {label}
     </button>
   );
 };
