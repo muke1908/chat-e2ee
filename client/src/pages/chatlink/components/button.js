@@ -5,7 +5,7 @@ const Button = (props) => {
   const { 
     label, 
     type = 'primary', 
-    state = false, 
+    disabled = false, 
     onClick, 
     width 
   } = props
@@ -24,7 +24,7 @@ const Button = (props) => {
     <button
       style={styles}
       type={type}
-      disabled={state}
+      disabled={disabled}
       onClick={onClick}
     >
       {label}
