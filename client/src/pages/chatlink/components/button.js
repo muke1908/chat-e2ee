@@ -16,7 +16,7 @@ const Button = (props) => {
     padding: '10px',
     width: width || 'auto',
     cursor: 'pointer',
-    diplay: 'flex',
+    diplay: 'inline-block',
     borderRadius: '2px'
   }
 
