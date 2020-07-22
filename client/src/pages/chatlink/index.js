@@ -3,6 +3,7 @@ import './style.css';
 import { Link } from 'react-router-dom';
 import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
+import Button from '../../components/Button.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
@@ -51,12 +52,19 @@ const App = () => {
           <>
             <div id="captcha" className="captcha-height-setter"></div>
             <br />
-            <div
+            {/* <div
               className={(formBusy ? 'disabled' : '') + ' generate-link-btn'}
               onClick={generateLink}
             >
               Generate link
-            </div>
+            </div> */}
+            <Button
+              label="Generate link"
+              type="secondary"
+              disabled={formBusy ? true : false}
+              onClick={generateLink}
+              width="200px"
+            />
           </>
         )}
         {chatLink && (
