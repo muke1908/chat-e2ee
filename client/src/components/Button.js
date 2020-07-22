@@ -13,7 +13,7 @@ const Button = (props) => {
     borderRadius: '2px',
     fontSize: '16px',
     opacity: disabled === true ? '0.5' : '1.0',
-    fontFamily: 'Montserrat'
+    fontFamily: 'inherit'
   };
 
   return (
