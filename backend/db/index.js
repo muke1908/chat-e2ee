@@ -21,8 +21,13 @@ const insertInDb = async (data, collectionName) => {
   return data;
 };
 
+const findOneFromDB = (findCondition, collectionName) => {
+  return db.collection(collectionName).findOne(findCondition);
+};
+
 module.exports = {
   db,
   connectDb,
-  insertInDb
+  insertInDb,
+  findOneFromDB
 };
