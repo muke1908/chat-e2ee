@@ -11,6 +11,7 @@ const Button = (props) => {
     cursor: disabled === true ? '' : 'pointer',
     diplay: 'inline-block',
     borderRadius: '2px',
+    borderColor: 'transparent',
     fontSize: '16px',
     opacity: disabled === true ? '0.5' : '1.0',
     fontFamily: 'inherit'
