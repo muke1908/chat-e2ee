@@ -63,16 +63,9 @@ const App = () => {
           </>
         )}
         {chatLink && (
-          <>
-            <Button
-              label="Generate link"
-              type="secondary"
-              disabled={true}
-              onClick={generateLink}
-              width="200px"
-            />
+          <div className="chat-link captcha-height-setter">
             <LinkDisplay content={chatLink.absoluteLink} />
-          </>
+          </div>
         )}
       </div>
     </div>
