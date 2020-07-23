@@ -3,37 +3,36 @@ import { FiLink, FiCopy } from 'react-icons/fi';
 import './style.css';
 
 const LinkDisplay = ({ content }) => {
-  const textA = useRef(null);
+  const textAreaRef = useRef(null);
   const [buttonText, setButtonText] = useState('Copy');
 
   const copyCodeToClipboard = () => {
-    const el = textA;
-    el.current.select();
+    textAreaRef.current.select();
     document.execCommand('copy');
     setButtonText('Copied');
   };
 
   const selectText = () => {
-    const el = textA;
+    const el = textAreaRef;
     el.current.select();
   };
 
   return (
-    <div className="container">
-      <FiLink style={{ fontSize: '20px', color: '#000' }} />
-      <div style={{ width: '100%', float: 'left' }}>
+    <div id="copyToClipboardContainer">
+      <FiLink id="linkIcon" />
+      <div id="textAreaContainer">
         {/*  */}
         <textarea
-          ref={textA}
+          ref={textAreaRef}
           value={content}
-          onClick={() => selectText()}
-          className="linkArea"
+          onClick={selectText}
+          id="linkTextArea"
           contentEditable="false"
         />
       </div>
       <div>
-        <button className="copyButton" onClick={copyCodeToClipboard}>
-          <FiCopy style={{ fontSize: '15px' }} /> {buttonText}
+        <button id="copyButton" onClick={copyCodeToClipboard}>
+          <FiCopy id="copyIcon" /> {buttonText}
         </button>
       </div>
     </div>
