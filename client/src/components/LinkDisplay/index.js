@@ -20,7 +20,7 @@ const LinkDisplay = ({ content }) => {
     <div className={styles.copyToClipboardContainer}>
       <FiLink className={styles.linkIcon} />
       <div className={styles.textAreaContainer}>
-        <textarea
+        <input
           ref={textAreaRef}
           value={content}
           onClick={selectText}

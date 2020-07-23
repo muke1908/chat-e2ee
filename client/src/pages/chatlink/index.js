@@ -53,12 +53,6 @@ const App = () => {
           <>
             <div id="captcha" className="captcha-height-setter"></div>
             <br />
-            {/* <div
-              className={(formBusy ? 'disabled' : '') + ' generate-link-btn'}
-              onClick={generateLink}
-            >
-              Generate link
-            </div> */}
             <Button
               label="Generate link"
               type="secondary"
@@ -66,13 +60,19 @@ const App = () => {
               onClick={generateLink}
               width="200px"
             />
-            <LinkDisplay content="this is supposed to be a url" />
           </>
         )}
         {chatLink && (
-          <div className="chat-link captcha-height-setter">
-            <Link to={chatLink.link}>{chatLink.absoluteLink}</Link>
-          </div>
+          <>
+            <Button
+              label="Generate link"
+              type="secondary"
+              disabled={true}
+              onClick={generateLink}
+              width="200px"
+            />
+            <LinkDisplay content={chatLink.absoluteLink} />
+          </>
         )}
       </div>
     </div>
