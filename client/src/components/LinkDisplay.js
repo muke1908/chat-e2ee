@@ -12,6 +12,11 @@ const LinkDisplay = (props) => {
     setCopiedText('Copied');
   };
 
+  const selectText = () => {
+    const el = textA;
+    el.select();
+  };
+
   const card_styles = {
     background: '#fff',
     boxShadow: '0 5px 5px rgba(0,0,0,0.05), 0 6px 6px rgba(0,0,0,0.05)',
@@ -60,7 +65,7 @@ const LinkDisplay = (props) => {
             setTextA(textArea);
           }}
           value={props.content}
-          onClick={() => copyCodeToClipboard()}
+          onClick={() => selectText()}
           style={box_styles}
           contentEditable="false"
         />
