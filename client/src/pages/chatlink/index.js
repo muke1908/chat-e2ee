@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
 import Button from '../../components/Button.js';
-import LinkDisplay from '../../components/LinkDisplay.js';
+import LinkDisplay from '../../components/LinkDisplay/index.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
