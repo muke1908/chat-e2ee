@@ -1,4 +1,4 @@
-#copyToClipboardContainer {
+.copyToClipboardContainer {
   background: #fff;
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.05), 0 6px 6px rgba(0, 0, 0, 0.05);
   color: #fff;
@@ -13,7 +13,7 @@
   padding-left: 10px;
 }
 
-#linkTextArea {
+.linkTextArea {
   width: 95%;
   border-width: 0px;
   font-family: inherit;
@@ -23,7 +23,7 @@
   height: 25px;
 }
 
-#copyButton {
+.copyButton {
   border-width: 0.5px;
   border-color: #f0f0f0;
   font-family: inherit;
@@ -35,16 +35,16 @@
   outline: none;
 }
 
-#linkIcon {
+.linkIcon {
   font-size: 20px;
   color: #000;
 }
 
-#copyIcon {
+.copyIcon {
   font-size: '15px';
 }
 
-#textAreaContainer {
+.textAreaContainer {
   width: 100%;
   float: left;
 }

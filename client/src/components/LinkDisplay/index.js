@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { FiLink, FiCopy } from 'react-icons/fi';
-import './style.css';
+import styles from './Style.module.css';
 
 const LinkDisplay = ({ content }) => {
   const textAreaRef = useRef(null);
@@ -13,26 +13,24 @@ const LinkDisplay = ({ content }) => {
   };
 
   const selectText = () => {
-    const el = textAreaRef;
-    el.current.select();
+    textAreaRef.current.select();
   };
 
   return (
-    <div id="copyToClipboardContainer">
-      <FiLink id="linkIcon" />
-      <div id="textAreaContainer">
-        {/*  */}
+    <div className={styles.copyToClipboardContainer}>
+      <FiLink className={styles.linkIcon} />
+      <div className={styles.textAreaContainer}>
         <textarea
           ref={textAreaRef}
           value={content}
           onClick={selectText}
-          id="linkTextArea"
+          className={styles.linkTextArea}
           contentEditable="false"
         />
       </div>
       <div>
-        <button id="copyButton" onClick={copyCodeToClipboard}>
-          <FiCopy id="copyIcon" /> {buttonText}
+        <button className={styles.copyButton} onClick={copyCodeToClipboard}>
+          <FiCopy className={styles.copyIcon} /> {buttonText}
         </button>
       </div>
     </div>
