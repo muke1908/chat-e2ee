@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
 import Button from '../../components/Button.js';
+import LinkDisplay from '../../components/LinkDisplay/index.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
@@ -65,6 +66,7 @@ const App = () => {
               onClick={generateLink}
               width="200px"
             />
+            <LinkDisplay content="this is supposed to be a url" />
           </>
         )}
         {chatLink && (
