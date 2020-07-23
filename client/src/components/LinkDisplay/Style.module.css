@@ -1,6 +1,6 @@
 .copyToClipboardContainer {
+  border: 1px solid #ddd;
   background: #fff;
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.05), 0 6px 6px rgba(0, 0, 0, 0.05);
   color: #fff;
   display: flex;
   padding: 2px;
@@ -14,23 +14,24 @@
 }
 
 .linkTextArea {
-  width: 95%;
+  width: 100%;
   border-width: 0px;
   font-family: inherit;
   font-size: 18px;
-  outline: None;
-  padding-top: 10px;
-  height: 25px;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  padding-left: 10px;
 }
 
 .copyButton {
-  border-width: 0.5px;
-  border-color: #f0f0f0;
+  border-width: 1px;
+  border-color: #f2f2f2;
   font-family: inherit;
   font-size: 18px;
   width: 100px;
   height: 40px;
-  border-radius: 3px;
+  border-radius: 5px;
   cursor: pointer;
   outline: none;
 }
@@ -45,6 +46,5 @@
 }
 
 .textAreaContainer {
-  width: 100%;
-  float: left;
+  flex: 1;
 }
