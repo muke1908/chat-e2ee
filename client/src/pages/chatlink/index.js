@@ -35,40 +35,48 @@ const App = () => {
   }, []);
 
   return (
-    <div className="app link-generation--page">
-      <div className="header">Generate temporary link and start chatting without worrying.</div>
-      <div className="section--default">
-        <div className="title">Because privacy matters</div>
-        <div className="description">
-          <ul>
-            <li>No login/signup required.</li>
-            <li>We don't track you.</li>
-            <li>
-              Your messages are <b>end-to-end</b> encrypted - technically impossible to read your
-              messages by someone else.
-            </li>
-          </ul>
-        </div>
-        {!chatLink && (
-          <>
-            <div id="captcha" className="captcha-height-setter"></div>
-            <br />
-            <Button
-              label="Generate link"
-              type="secondary"
-              disabled={formBusy ? true : false}
-              onClick={generateLink}
-              width="200px"
-            />
-          </>
-        )}
-        {chatLink && (
-          <div className="chat-link captcha-height-setter">
-            <LinkDisplay content={chatLink.absoluteLink} />
+    <>
+      <div className="app link-generation--page">
+        <div className="header">Generate temporary link and start chatting without worrying.</div>
+        <div className="section--default">
+          <div className="title">Because privacy matters</div>
+          <div className="description">
+            <ul>
+              <li>No login/signup required.</li>
+              <li>We don't track you.</li>
+              <li>
+                Your messages are <b>end-to-end</b> encrypted - technically impossible to read your
+                messages by someone else.
+              </li>
+            </ul>
           </div>
-        )}
+          {!chatLink && (
+            <>
+              <div id="captcha" className="captcha-height-setter"></div>
+              <br />
+              <Button
+                label="Generate link"
+                type="secondary"
+                disabled={formBusy ? true : false}
+                onClick={generateLink}
+                width="200px"
+              />
+            </>
+          )}
+          {chatLink && (
+            <div className="chat-link captcha-height-setter">
+              <LinkDisplay content={chatLink.absoluteLink} />
+            </div>
+          )}
+        </div>
+        <div className="section--contribute">
+          <div className="title">
+            Our source-code is public on Github. Feel free to contribute or build your own chat
+            client. Out APIs are open.
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
