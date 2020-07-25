@@ -1,3 +1,3 @@
 export { default as getLink } from './getLink';
 export { default as sendMessage } from './sendMessage';
-export { updatePublicKey, getPublicKey } from './publicKey';
+export { sharePublicKey, getPublicKey } from './publicKey';

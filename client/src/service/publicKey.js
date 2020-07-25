@@ -1,6 +1,6 @@
 import makeRequest from '../utils/request';
 
-export const updatePublicKey = ({ publicKey, sender, channel }) => {
+export const sharePublicKey = ({ publicKey, sender, channel }) => {
   return makeRequest('chat/updatePublicKey', {
     method: 'POST',
     body: {

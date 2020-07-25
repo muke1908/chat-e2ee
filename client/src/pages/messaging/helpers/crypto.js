@@ -1,7 +1,7 @@
 import storage from '../../../utils/storage';
-export const getKeyPair = (uuid) => {
+export const getKeyPair = (channelID) => {
   const keyPair_storage = storage.get('session-keyPair') || {};
-  const keyPair = keyPair_storage.uuid === uuid ? keyPair_storage.keyPair : null;
+  const keyPair = keyPair_storage.channelID === channelID ? keyPair_storage.keyPair : null;
 
   if (keyPair) {
     return {
@@ -17,13 +17,13 @@ export const createKeyPair = () => {
   return window.nacl.box.keyPair();
 };
 
-export const storeKeyPair = (uuid, { publicKey, secretKey }) => {
+export const storeKeyPair = (channelID, { publicKey, secretKey }) => {
   const _keyPair = {
     publicKey: typedArrayToStr(publicKey),
     secretKey: typedArrayToStr(secretKey)
   };
   storage.set('session-keyPair', {
-    uuid,
+    channelID,
     keyPair: _keyPair
   });
 };
