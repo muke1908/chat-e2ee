@@ -1,10 +1,10 @@
 import PubNub from 'pubnub';
 
-export const fetchMessages = (pubnub, uuid) => {
+export const fetchMessages = (pubnub, channelID) => {
   return new Promise((resolve, reject) => {
     pubnub.fetchMessages(
       {
-        channels: [uuid],
+        channels: [channelID],
         count: 100
       },
       (status, response) => {
@@ -12,8 +12,8 @@ export const fetchMessages = (pubnub, uuid) => {
           reject(status);
         }
 
-        const messages = response.channels[uuid]
-          ? response.channels[uuid].map(({ message }) => message)
+        const messages = response.channels[channelID]
+          ? response.channels[channelID].map(({ message }) => message)
           : [];
         resolve(messages);
       }
@@ -21,11 +21,11 @@ export const fetchMessages = (pubnub, uuid) => {
   });
 };
 
-export const getUsersInChannel = (pubnub, uuid) => {
+export const getUsersInChannel = (pubnub, channelID) => {
   return new Promise((resolve, reject) => {
     pubnub.hereNow(
       {
-        channels: [uuid],
+        channels: [channelID],
         includeUUIDs: true,
         includeState: true
       },
@@ -34,14 +34,14 @@ export const getUsersInChannel = (pubnub, uuid) => {
           reject(status);
         }
 
-        const users = response.channels[uuid] ? response.channels[uuid].occupants : [];
+        const users = response.channels[channelID] ? response.channels[channelID].occupants : [];
         resolve(users);
       }
     );
   });
 };
 
-export const pubnubInit = ({ subscribeKey, userId, uuid }) => {
+export const pubnubInit = ({ subscribeKey, userId, channelID }) => {
   const pubnub = new PubNub({
     subscribeKey: subscribeKey,
     uuid: userId,
@@ -50,7 +50,7 @@ export const pubnubInit = ({ subscribeKey, userId, uuid }) => {
   });
 
   pubnub.subscribe({
-    channels: [uuid],
+    channels: [channelID],
     withPresence: true
   });
 

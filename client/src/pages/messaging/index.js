@@ -7,10 +7,16 @@ import {
   fetchMessages,
   getUserSessionID,
   createUserSessionID,
-  storeUserSessionID
+  storeUserSessionID,
+  getKeyPair,
+  createKeyPair,
+  storeKeyPair,
+  typedArrayToStr,
+  strToTypedArr
 } from './helpers';
 
-import { sendMessage } from '../../service';
+import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
+import styles from './Style.module.css';
 
 // create your key at https://www.pubnub.com/
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
@@ -19,41 +25,83 @@ const Chat = () => {
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
   const [usersInChannel, setUsers] = useState([]);
+  const [keyPair, setKeyPair] = useState(null);
+  const [receiverPublicKey, setReceiverPublicKey] = useState(null);
 
-  const { uuid } = useParams();
-
-  let userId = getUserSessionID(uuid);
+  const { channelID } = useParams();
+  let userId = getUserSessionID(channelID);
 
   // if not in session, lets create one and store.
   if (!userId) {
-    userId = createUserSessionID(uuid);
-    storeUserSessionID(uuid, userId);
+    userId = createUserSessionID(channelID);
+    storeUserSessionID(channelID, userId);
   }
+
+  const pubnub = pubnubInit({ subscribeKey, userId, channelID });
+
+  const exchangePublicKey = (channelID) => {
+    console.log('%cExchanging public key.', 'color:red; font-size:16px');
+
+    let _keyPair = getKeyPair(channelID);
+    if (!_keyPair) {
+      _keyPair = createKeyPair();
+
+      storeKeyPair(channelID, _keyPair);
+
+      sharePublicKey({
+        channel: channelID,
+        publicKey: typedArrayToStr(_keyPair.publicKey),
+        sender: userId
+      });
+    }
+
+    setKeyPair(_keyPair);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    sendMessage({ uuid, userId, text });
+    sendMessage({ channelID, userId, text });
+  };
+
+  const getSetUsers = async (channelID) => {
+    const usersInChannel = await getUsersInChannel(pubnub, channelID);
+    setUsers(usersInChannel);
+    const alice = usersInChannel.find((user) => user.uuid !== userId);
+
+    // if alice is already connected,
+    // get alice's publicKey
+    if (alice) {
+      const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
+      setReceiverPublicKey(strToTypedArr(key.publicKey));
+    }
   };
 
   const initChat = async () => {
-    const pubnub = pubnubInit({ subscribeKey, userId, uuid });
-
     // TODO: handle error
-    const messages = await fetchMessages(pubnub, uuid);
+    const messages = await fetchMessages(pubnub, channelID);
     setMessages(messages);
-
-    const usersInChannel = await getUsersInChannel(pubnub, uuid);
-    setUsers(usersInChannel);
 
     pubnub.addListener({
       status: (statusEvent) => {
         // console.log('statusEvent', statusEvent);
       },
       message: (msg) => {
-        setMessages((prevMsg) => prevMsg.concat(msg.message));
+        // new message
+        if (msg.channel === channelID) {
+          setMessages((prevMsg) => prevMsg.concat(msg.message));
+        }
       },
-      presence: (presenceEvent) => {
-        // console.log('presenceEvent', presenceEvent);
+      presence: async ({ action, uuid: _userId }) => {
+        // some user might have joined or left
+        // let's update the userlist
+
+        const usersInChannel = await getUsersInChannel(pubnub, channelID);
+        setUsers(usersInChannel);
+
+        if (action === 'join' && _userId !== userId) {
+          const key = await getPublicKey({ userId: _userId, channel: channelID });
+          setReceiverPublicKey(strToTypedArr(key.publicKey));
+        }
       }
     });
   };
@@ -62,8 +110,12 @@ const Chat = () => {
     if (!subscribeKey) {
       throw new Error('Configure subscribeKey (PUBNUB)');
     }
+    getSetUsers(channelID);
+
+    //this will send the public key
+    exchangePublicKey(channelID);
     initChat();
-  }, []);
+  }, [channelID]);
 
   return (
     <>
@@ -72,16 +124,33 @@ const Chat = () => {
       </div>
       <br />
       <div>
-        Users in this channel :{' '}
-        {usersInChannel.map((u) => (
-          <div key={u.uuid}>{u.uuid}</div>
-        ))}
+        <b>Encryption</b>
+        <div>Your public key:</div>
+        <div className={styles.keyContainer}>{keyPair ? btoa(keyPair.publicKey) : '--'}</div>
+        <br />
+        <div>---</div>
+        <br />
+        Alice's public key:
+        <div className={styles.keyContainer}>
+          {receiverPublicKey ? btoa(receiverPublicKey) : 'Awiting public key'}
+        </div>
+      </div>
+      <br />
+      <div>
+        <b>Users in this channel</b> :
+        <div>
+          {usersInChannel.map((u) => (
+            <div key={u.uuid}>
+              <b>{u.uuid === userId ? 'You' : 'Alice'}</b> - {u.uuid}
+            </div>
+          ))}
+        </div>
       </div>
       <br />
       <div>
         {messages.map(({ body, sender }, i) => (
           <div key={i}>
-            <b>{sender === userId ? 'You: ' : 'They: '}</b>
+            <b>{sender === userId ? 'You: ' : 'Alice: '}</b>
             {body}
           </div>
         ))}

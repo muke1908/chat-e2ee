@@ -1,0 +1,8 @@
+.keyContainer {
+  padding: 10px;
+  background: #fff;
+  border-radius: 3px;
+  font-family: monospace;
+  word-break: break-all;
+  border: 1px solid #ddd;
+}

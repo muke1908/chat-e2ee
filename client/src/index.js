@@ -12,7 +12,7 @@ ReactDOM.render(
     <div className="body-content">
       <Switch>
         <Route exact path="/" component={ChatLink} />
-        <Route exact path="/chat/:uuid" component={Messaging} />
+        <Route exact path="/chat/:channelID" component={Messaging} />
       </Switch>
     </div>
   </Router>,
