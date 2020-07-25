@@ -1,6 +1,6 @@
 import storage from '../../../utils/storage';
 export { fetchMessages, getUsersInChannel, pubnubInit } from './pubnub';
-export { getKeyPair, createKeyPair, storeKeyPair } from './crypto';
+export { getKeyPair, createKeyPair, storeKeyPair, typedArrayToStr, strToTypedArr } from './crypto';
 
 export const getUserSessionID = (uuid) => {
   const userID_storage = storage.get('session-user-uuid') || {};

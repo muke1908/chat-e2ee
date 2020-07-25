@@ -1,0 +1,50 @@
+.copyToClipboardContainer {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #fff;
+  display: flex;
+  padding: 2px;
+  flex: 1;
+  border-radius: 5px;
+  margin-top: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 10px;
+}
+
+.linkTextArea {
+  width: 100%;
+  border-width: 0px;
+  font-family: inherit;
+  font-size: 18px;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  padding-left: 10px;
+}
+
+.copyButton {
+  border-width: 1px;
+  border-color: #f2f2f2;
+  font-family: inherit;
+  font-size: 18px;
+  width: 100px;
+  height: 40px;
+  border-radius: 5px;
+  cursor: pointer;
+  outline: none;
+}
+
+.linkIcon {
+  font-size: 20px;
+  color: #000;
+}
+
+.copyIcon {
+  font-size: '15px';
+}
+
+.textAreaContainer {
+  flex: 1;
+}

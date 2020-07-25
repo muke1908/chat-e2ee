@@ -10,7 +10,9 @@ import {
   storeUserSessionID,
   getKeyPair,
   createKeyPair,
-  storeKeyPair
+  storeKeyPair,
+  typedArrayToStr,
+  strToTypedArr
 } from './helpers';
 
 import { sendMessage, updatePublicKey, getPublicKey } from '../../service';
@@ -20,36 +22,13 @@ import './style.css';
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
 
 const Chat = () => {
-  const [pubnubIns, setPubnubIns] = useState(null);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
   const [usersInChannel, setUsers] = useState([]);
   const [keyPair, setKeyPair] = useState(null);
   const [receiverPublicKey, setReceiverPublicKey] = useState(null);
 
-  // const keyPairRef = useRef(keyPair);
-  const pubnubInsRef = useRef(pubnubIns);
-
   const { uuid } = useParams();
-
-  const encryptChannel = (uuid) => {
-    console.log('Encrypting channel');
-
-    let _keyPair = getKeyPair(uuid);
-    if (!_keyPair) {
-      _keyPair = createKeyPair();
-      storeKeyPair(uuid, _keyPair);
-
-      updatePublicKey({
-        channel: uuid,
-        publicKey: _keyPair.publicKey,
-        sender: userId
-      });
-    }
-    console.log(_keyPair);
-    setKeyPair(_keyPair);
-  };
-
   let userId = getUserSessionID(uuid);
 
   // if not in session, lets create one and store.
@@ -58,19 +37,46 @@ const Chat = () => {
     storeUserSessionID(uuid, userId);
   }
 
+  const pubnub = pubnubInit({ subscribeKey, userId, uuid });
+
+  const encryptChannel = (uuid) => {
+    console.log('%cExchanging public key.', 'color:red; font-size:16px');
+
+    let _keyPair = getKeyPair(uuid);
+    if (!_keyPair) {
+      _keyPair = createKeyPair();
+
+      storeKeyPair(uuid, _keyPair);
+
+      updatePublicKey({
+        channel: uuid,
+        publicKey: typedArrayToStr(_keyPair.publicKey),
+        sender: userId
+      });
+    }
+
+    setKeyPair(_keyPair);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     sendMessage({ uuid, userId, text });
   };
 
+  const getSetUsers = async (uuid) => {
+    const usersInChannel = await getUsersInChannel(pubnub, uuid);
+    setUsers(usersInChannel);
+    const alice = usersInChannel.find((user) => user.uuid !== userId);
+
+    // if alice is already connected,
+    // get alice's publicKey
+    if (alice) {
+      const key = await getPublicKey({ userId: alice.uuid, channel: uuid });
+      setReceiverPublicKey(strToTypedArr(key.publicKey));
+    }
+  };
+
   const initChat = async () => {
-    const pubnub = pubnubInit({ subscribeKey, userId, uuid });
-
-    setPubnubIns(() => {
-      pubnubInsRef.current = pubnub;
-      return pubnub;
-    });
-
     // TODO: handle error
     const messages = await fetchMessages(pubnub, uuid);
     setMessages(messages);
@@ -96,8 +102,7 @@ const Chat = () => {
         if (presenceEvent.action === 'join') {
           if (presenceEvent.uuid !== userId) {
             const key = await getPublicKey({ userId: presenceEvent.uuid, channel: uuid });
-            setReceiverPublicKey(key.publicKey);
-            console.log(key);
+            setReceiverPublicKey(strToTypedArr(key.publicKey));
           }
         }
       }
@@ -108,6 +113,9 @@ const Chat = () => {
     if (!subscribeKey) {
       throw new Error('Configure subscribeKey (PUBNUB)');
     }
+    getSetUsers(uuid);
+
+    //this will send the public key
     encryptChannel(uuid);
     initChat();
   }, [uuid]);
@@ -120,13 +128,12 @@ const Chat = () => {
       <br />
       <div>
         <b>Encryption</b>
-        <div>Your private key: {keyPair ? '*************' : '--'}</div>
         <div>Your public key:</div>
         <div className="key-container">{keyPair ? btoa(keyPair.publicKey) : '--'}</div>
         <br />
         <div>---</div>
         <br />
-        Her public key:
+        Alice's public key:
         <div className="key-container">
           {receiverPublicKey ? btoa(receiverPublicKey) : 'Awiting public key'}
         </div>
@@ -137,7 +144,7 @@ const Chat = () => {
         <div>
           {usersInChannel.map((u) => (
             <div key={u.uuid}>
-              <b>{u.uuid === userId ? 'You' : 'Her'}</b> - {u.uuid}
+              <b>{u.uuid === userId ? 'You' : 'Alice'}</b> - {u.uuid}
             </div>
           ))}
         </div>
@@ -146,7 +153,7 @@ const Chat = () => {
       <div>
         {messages.map(({ body, sender }, i) => (
           <div key={i}>
-            <b>{sender === userId ? 'You: ' : 'Her: '}</b>
+            <b>{sender === userId ? 'You: ' : 'Alice: '}</b>
             {body}
           </div>
         ))}

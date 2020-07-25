@@ -32,3 +32,10 @@
 .link-generation--page .title {
   font-size: 18px;
 }
+
+.section--contribute {
+  margin: 40px 0px 0px 0px;
+  padding: 50px 50px 50px 50px;
+  background-color: #fff;
+  text-align: center;
+}
