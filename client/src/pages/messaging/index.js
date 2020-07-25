@@ -132,7 +132,7 @@ const Chat = () => {
         <br />
         Alice's public key:
         <div className={styles.keyContainer}>
-          {receiverPublicKey ? btoa(receiverPublicKey) : 'Awiting public key'}
+          {receiverPublicKey ? btoa(receiverPublicKey) : 'Awaiting public key'}
         </div>
       </div>
       <br />
