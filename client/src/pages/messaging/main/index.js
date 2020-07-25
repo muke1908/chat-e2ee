@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -8,9 +8,10 @@ import {
   getUserSessionID,
   createUserSessionID,
   storeUserSessionID
-} from './helpers';
+} from './../helpers';
 
-import { sendMessage } from '../../service';
+import { sendMessage } from '../../../service';
+import styles from './Style.module.css';
 
 // create your key at https://www.pubnub.com/
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
@@ -33,6 +34,7 @@ const Chat = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     sendMessage({ uuid, userId, text });
+    setText('');
   };
 
   const initChat = async () => {
@@ -78,22 +80,72 @@ const Chat = () => {
         ))}
       </div>
       <br />
-      <div>
-        {messages.map(({ body, sender }, i) => (
-          <div key={i}>
-            <b>{sender === userId ? 'You: ' : 'They: '}</b>
-            {body}
+      <div
+        style={{
+          background: '#999',
+          height: '65vh',
+          paddingBottom: '60px',
+          paddingTop: '30px',
+          paddingLeft: '30px',
+          paddingRight: '30px',
+          marginBottom: '30px'
+        }}
+      >
+        <div
+          style={{
+            background: '#fff',
+            height: '65vh',
+            paddingTop: '30px',
+            paddingLeft: '30px'
+          }}
+        >
+          <div>
+            {messages.map(({ body, sender }, i) => (
+              <div key={i}>
+                <b>{sender === userId ? 'You: ' : 'They: '}</b>
+                {body}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
       <div>
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: 'flex',
+            background: '#fff',
+            alignItems: 'flex-start',
+            height: '52px',
+            width: '800px'
+          }}
+        >
           <input
             type="text"
             placeholder="write message"
             onChange={(e) => setText(e.target.value)}
             value={text}
+            style={{
+              height: '100%',
+              width: '700px',
+              borderWidth: '0.3px',
+              borderColor: '#ddd',
+              outline: 'None',
+              fontFamily: 'inherit',
+              fontSize: '18px'
+            }}
           />
+          <button
+            type="submit"
+            style={{
+              height: '100%',
+              width: '100px',
+              fontFamily: 'inherit',
+              fontSize: '18px'
+            }}
+          >
+            Send
+          </button>
         </form>
       </div>
     </>
