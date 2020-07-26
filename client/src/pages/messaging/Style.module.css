@@ -1,7 +1,10 @@
 .marginBlock {
   background: #999;
   height: 65vh;
-  padding: 30px, 60px, 30px, 30px;
+  padding-bottom: 60px;
+  padding-top: 30px;
+  padding-left: 30px;
+  padding-right: 30px;
   margin-bottom: 30px;
 }
 
@@ -19,12 +22,19 @@
   width: 800px;
 }
 
-.sendMessage-textArea {
+.sendMessageInput {
   height: 100%;
   width: 700px;
   border-width: 0.3px;
   border-color: #ddd;
   outline: None;
+  font-family: inherit;
+  font-size: 18px;
+}
+
+.sendButton {
+  height: 100%;
+  width: 100px;
   font-family: inherit;
   font-size: 18px;
 }

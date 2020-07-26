@@ -149,25 +149,8 @@ const Chat = () => {
         </div>
       </div>
       <br />
-      <div
-        style={{
-          background: '#999',
-          height: '65vh',
-          paddingBottom: '60px',
-          paddingTop: '30px',
-          paddingLeft: '30px',
-          paddingRight: '30px',
-          marginBottom: '30px'
-        }}
-      >
-        <div
-          style={{
-            background: '#fff',
-            height: '65vh',
-            paddingTop: '30px',
-            paddingLeft: '30px'
-          }}
-        >
+      <div className={styles.marginBlock}>
+        <div className={styles.messageBlock}>
           <div>
             {messages.map(({ body, sender }, i) => (
               <div key={i}>
@@ -179,40 +162,15 @@ const Chat = () => {
         </div>
       </div>
       <div>
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            display: 'flex',
-            background: '#fff',
-            alignItems: 'flex-start',
-            height: '52px',
-            width: '800px'
-          }}
-        >
+        <form onSubmit={handleSubmit} className={styles.sendMessage}>
           <input
+            className={styles.sendMessageInput}
             type="text"
             placeholder="write message"
             onChange={(e) => setText(e.target.value)}
             value={text}
-            style={{
-              height: '100%',
-              width: '700px',
-              borderWidth: '0.3px',
-              borderColor: '#ddd',
-              outline: 'None',
-              fontFamily: 'inherit',
-              fontSize: '18px'
-            }}
           />
-          <button
-            type="submit"
-            style={{
-              height: '100%',
-              width: '100px',
-              fontFamily: 'inherit',
-              fontSize: '18px'
-            }}
-          >
+          <button className={styles.sendButton} type="submit">
             Send
           </button>
         </form>
