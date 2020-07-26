@@ -1,13 +1,13 @@
 ## chat-e2ee
 
-Note: This is not a replacement of your usual chat application. 
+Note: This is not a replacement of your usual chat application.
 
 This app will allow two mutually agreed users to have a conversation in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device.
 
 ---
 
 ![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee)
-  <img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
+<img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
 
 ### Contribute [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat-square)](https://github.com/muke1908/chat-e2ee/issues)
 
@@ -29,7 +29,7 @@ Master branch is deployed to https://chat-e2ee.herokuapp.com/
 
 ### How to initiate chat:
 
-1. Generate unique link and passkey.
+1. Generate unique link.
 2. Share the link with the person you want to chat with.
 3. Both users identify themselves.
 4. The messages are end-to-end encrypted hence, no one can decrypt your message other than you.
@@ -45,7 +45,6 @@ In this way, no one else can decrypt the message because your private key is nev
 More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
 > We are using NaCL & [TweetNaCL.js](https://github.com/dchest/tweetnacl-js/) library for asymmetric encryption. The NaCL project is being lead by [Daniel J.Bernstein](http://cr.yp.to/djb.html), one of the most prominent Computer Scientists of our era.
-
 
 ---
 
@@ -63,7 +62,7 @@ BE: The backend runs on express/nodejs. In production mode, express server expos
 ### Installation
 
 1. Clone / Fork the repo.
-2. Run `npm install` in root dir.  
+2. Run `npm install` in root dir.
 3. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
@@ -104,7 +103,8 @@ Example:
 
 ---
 
-External:  
+External:
 
-**<a><img src="https://d2c805weuec6z7.cloudfront.net/Powered_By_PubNub.png" alt="Powered By PubNub" width="100"></a>**|**<a><img src="https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png" alt="Powered By Mongodb" width="100"></a>**
-:-----:|:-----:
+| **<a><img src="https://d2c805weuec6z7.cloudfront.net/Powered_By_PubNub.png" alt="Powered By PubNub" width="100"></a>** | **<a><img src="https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png" alt="Powered By Mongodb" width="100"></a>** |
+| :--------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------: |
+
