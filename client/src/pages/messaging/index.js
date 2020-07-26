@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -60,7 +60,9 @@ const Chat = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     sendMessage({ channelID, userId, text });
+    setText('');
   };
 
   const getSetUsers = async (channelID) => {
@@ -123,7 +125,7 @@ const Chat = () => {
         <h3>Edit ./client/chat/index.js and make me beautiful</h3>
       </div>
       <br />
-      <div>
+      {/* <div>
         <b>Encryption</b>
         <div>Your public key:</div>
         <div className={styles.keyContainer}>{keyPair ? btoa(keyPair.publicKey) : '--'}</div>
@@ -134,7 +136,7 @@ const Chat = () => {
         <div className={styles.keyContainer}>
           {receiverPublicKey ? btoa(receiverPublicKey) : 'Awaiting public key'}
         </div>
-      </div>
+      </div> */}
       <br />
       <div>
         <b>Users in this channel</b> :
@@ -147,22 +149,30 @@ const Chat = () => {
         </div>
       </div>
       <br />
-      <div>
-        {messages.map(({ body, sender }, i) => (
-          <div key={i}>
-            <b>{sender === userId ? 'You: ' : 'Alice: '}</b>
-            {body}
+      <div className={styles.marginBlock}>
+        <div className={styles.messageBlock}>
+          <div>
+            {messages.map(({ body, sender }, i) => (
+              <div key={i}>
+                <b>{sender === userId ? 'You: ' : 'Alice: '}</b>
+                {body}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
       <div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={styles.sendMessage}>
           <input
+            className={styles.sendMessageInput}
             type="text"
             placeholder="write message"
             onChange={(e) => setText(e.target.value)}
             value={text}
           />
+          <button className={styles.sendButton} type="submit">
+            Send
+          </button>
         </form>
       </div>
     </>

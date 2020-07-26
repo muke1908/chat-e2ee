@@ -1,3 +1,44 @@
+.marginBlock {
+  background: #999;
+  height: 65vh;
+  padding-bottom: 60px;
+  padding-top: 30px;
+  padding-left: 30px;
+  padding-right: 30px;
+  margin-bottom: 30px;
+}
+
+.messageBlock {
+  background-color: #fff;
+  height: 65vh;
+  padding: 30px 0px 0px 30px;
+}
+
+.sendMessage {
+  display: flex;
+  background: #fff;
+  align-items: flex-start;
+  height: 52px;
+  width: 800px;
+}
+
+.sendMessageInput {
+  height: 100%;
+  width: 700px;
+  border-width: 0.3px;
+  border-color: #ddd;
+  outline: None;
+  font-family: inherit;
+  font-size: 18px;
+}
+
+.sendButton {
+  height: 100%;
+  width: 100px;
+  font-family: inherit;
+  font-size: 18px;
+}
+
 .keyContainer {
   padding: 10px;
   background: #fff;
