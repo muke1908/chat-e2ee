@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -119,37 +119,14 @@ const Chat = () => {
     initChat();
   }, [channelID]);
 
+  const alice = usersInChannel.find((u) => u.uuid !== userId);
+
   return (
     <>
-      <div>
-        <h3>Edit ./client/chat/index.js and make me beautiful</h3>
+      <div className={styles.userInfo}>
+        {alice ? 'Alice <Online>' : 'Waiting for Alice to join..'}
       </div>
-      <br />
-      {/* <div>
-        <b>Encryption</b>
-        <div>Your public key:</div>
-        <div className={styles.keyContainer}>{keyPair ? btoa(keyPair.publicKey) : '--'}</div>
-        <br />
-        <div>---</div>
-        <br />
-        Alice's public key:
-        <div className={styles.keyContainer}>
-          {receiverPublicKey ? btoa(receiverPublicKey) : 'Awaiting public key'}
-        </div>
-      </div> */}
-      <br />
-      <div>
-        <b>Users in this channel</b> :
-        <div>
-          {usersInChannel.map((u) => (
-            <div key={u.uuid}>
-              <b>{u.uuid === userId ? 'You' : 'Alice'}</b> - {u.uuid}
-            </div>
-          ))}
-        </div>
-      </div>
-      <br />
-      <div className={styles.marginBlock}>
+      <div className={styles.messageContainer}>
         <div className={styles.messageBlock}>
           <div>
             {messages.map(({ body, sender }, i) => (
@@ -160,19 +137,17 @@ const Chat = () => {
             ))}
           </div>
         </div>
-      </div>
-      <div>
-        <form onSubmit={handleSubmit} className={styles.sendMessage}>
+        <form onSubmit={handleSubmit} className={styles.sendMessageForm}>
           <input
             className={styles.sendMessageInput}
             type="text"
-            placeholder="write message"
+            placeholder="Write message"
             onChange={(e) => setText(e.target.value)}
             value={text}
           />
-          <button className={styles.sendButton} type="submit">
+          <div className={styles.sendButton} type="submit" role="button" onClick={handleSubmit}>
             Send
-          </button>
+          </div>
         </form>
       </div>
     </>

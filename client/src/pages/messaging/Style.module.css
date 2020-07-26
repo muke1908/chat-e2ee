@@ -1,49 +1,52 @@
-.marginBlock {
-  background: #999;
-  height: 65vh;
-  padding-bottom: 60px;
-  padding-top: 30px;
-  padding-left: 30px;
-  padding-right: 30px;
-  margin-bottom: 30px;
+.messageContainer {
+  padding-bottom: 50px;
 }
-
 .messageBlock {
   background-color: #fff;
   height: 65vh;
-  padding: 30px 0px 0px 30px;
+  padding: 20px;
+  margin-bottom: 50px;
+  overflow: auto;
 }
 
-.sendMessage {
+.sendMessageForm {
   display: flex;
   background: #fff;
   align-items: flex-start;
-  height: 52px;
-  width: 800px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 .sendMessageInput {
-  height: 100%;
-  width: 700px;
-  border-width: 0.3px;
-  border-color: #ddd;
-  outline: None;
   font-family: inherit;
   font-size: 18px;
+  resize: none;
+  flex: 1;
+  border: 0;
+  padding: 10px;
+  height: 50px;
+  box-sizing: border-box;
+  outline: none;
 }
 
 .sendButton {
-  height: 100%;
+  height: 50px;
+  display: flex;
   width: 100px;
   font-family: inherit;
   font-size: 18px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-left: 1px solid #ddd;
+  background: #eaedee;
+  transition: 180ms;
 }
-
-.keyContainer {
-  padding: 10px;
+.sendButton:hover {
   background: #fff;
-  border-radius: 3px;
-  font-family: monospace;
-  word-break: break-all;
-  border: 1px solid #ddd;
+}
+.userInfo {
+  padding: 15px;
+  font-weight: 400;
 }
