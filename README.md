@@ -1,10 +1,19 @@
 ## Idea
 
-Note: This is not a replacement of your usual chat application. This will allow two mutually agreed users to have a conversation with most privacy and anonymity. The app itself doesn't track you or ask any infromation from you.
+Note: This is not a replacement of your usual chat application. 
 
-Your data is owned by **only you** and **only while chatting**.
+This app will allow two mutually agreed users to have a conversation in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device.
 
-### Contribute ![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)
+> We are using NaCL & [TweetNaCL.js](https://github.com/dchest/tweetnacl-js/) library for assymetric encryption. The NaCL project is being lead by [Daniel J.Bernstein](http://cr.yp.to/djb.html), one of the most prominent Computer Scientists of our era.
+
+---
+
+![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)
+<a href="https://github.com/muke1908/chat-e2ee/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
+</a>
+
+### Contribute
 
 - [Contribution guide](https://github.com/muke1908/chat-e2ee/blob/master/CONTRIBUTING.md)  
   **Issues**:
@@ -37,8 +46,7 @@ Master branch is deployed to https://chat-e2ee.herokuapp.com/
 4. Bob receives the encrypted message and decrypts it with his private key and Alice's public key.
 
 In this way, no one else can decrypt the message because your private key is never exposed to the internet.
-
-**Encryption Library:** https://github.com/dchest/tweetnacl-js/
+More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
 ---
 
@@ -57,7 +65,6 @@ BE: The backend runs on express/nodejs. In production mode, express server expos
 
 1. Clone / Fork the repo.
 2. Run `npm install` in root dir.  
-   ~3. Navigate to `./client` and run `npm install` - this will install react app dependencies.~
 3. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
