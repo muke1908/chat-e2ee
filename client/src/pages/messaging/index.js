@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -12,7 +12,9 @@ import {
   createKeyPair,
   storeKeyPair,
   typedArrayToStr,
-  strToTypedArr
+  strToTypedArr,
+  encryptMsg,
+  decryptMsg
 } from './helpers';
 
 import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
@@ -25,8 +27,9 @@ const Chat = () => {
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
   const [usersInChannel, setUsers] = useState([]);
-  const [keyPair, setKeyPair] = useState(null);
-  const [receiverPublicKey, setReceiverPublicKey] = useState(null);
+
+  const myKeyRef = useRef(null);
+  const publicKeyRef = useRef(null);
 
   const { channelID } = useParams();
   let userId = getUserSessionID(channelID);
@@ -37,7 +40,9 @@ const Chat = () => {
     storeUserSessionID(channelID, userId);
   }
 
-  const pubnub = pubnubInit({ subscribeKey, userId, channelID });
+  const pubnub = useMemo(() => {
+    return pubnubInit({ subscribeKey, userId, channelID });
+  }, [userId, channelID]);
 
   const exchangePublicKey = (channelID) => {
     console.log('%cExchanging public key.', 'color:red; font-size:16px');
@@ -55,14 +60,41 @@ const Chat = () => {
       });
     }
 
-    setKeyPair(_keyPair);
+    myKeyRef.current = _keyPair;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    sendMessage({ channelID, userId, text });
-    setText('');
+    // TODO: show it in the UI that, still waiting for alice's public key
+    // either no joined the chat, or try fetching public manually
+    // need a button to refresh
+
+    if (!publicKeyRef.current) {
+      alert('No one is in chat!');
+      return;
+    }
+    try {
+      const { box, nonce } = encryptMsg({
+        text,
+        mySecretKey: myKeyRef.current.secretKey,
+        alicePublicKey: publicKeyRef.current
+      });
+
+      sendMessage({
+        channelID,
+        userId,
+        text: {
+          box: typedArrayToStr(box),
+          nonce: typedArrayToStr(nonce)
+        }
+      });
+
+      setText('');
+    } catch (err) {
+      alert('Failed to send message!');
+      console.error(err);
+    }
   };
 
   const getSetUsers = async (channelID) => {
@@ -74,14 +106,28 @@ const Chat = () => {
     // get alice's publicKey
     if (alice) {
       const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
-      setReceiverPublicKey(strToTypedArr(key.publicKey));
+      publicKeyRef.current = strToTypedArr(key.publicKey);
     }
   };
 
   const initChat = async () => {
     // TODO: handle error
     const messages = await fetchMessages(pubnub, channelID);
-    setMessages(messages);
+    // console.log(messages);
+    const formatMessages = messages.map((msg) => {
+      const {
+        sender,
+        body: { box, nonce }
+      } = msg;
+
+      return {
+        encrypted: true,
+        encryptionDetail: { box, nonce },
+        sender,
+        body: btoa(strToTypedArr(box)) // let's just stringify the array, to decrypt later
+      };
+    });
+    setMessages(formatMessages);
 
     pubnub.addListener({
       status: (statusEvent) => {
@@ -90,7 +136,26 @@ const Chat = () => {
       message: (msg) => {
         // new message
         if (msg.channel === channelID) {
-          setMessages((prevMsg) => prevMsg.concat(msg.message));
+          try {
+            const box = strToTypedArr(msg.message.body.box);
+            const nonce = strToTypedArr(msg.message.body.nonce);
+
+            const { msg: _msg } = decryptMsg({
+              box,
+              nonce,
+              mySecretKey: myKeyRef.current.secretKey,
+              alicePublicKey: publicKeyRef.current
+            });
+
+            setMessages((prevMsg) =>
+              prevMsg.concat({
+                body: _msg,
+                sender: msg.message.sender
+              })
+            );
+          } catch (err) {
+            console.error(err);
+          }
         }
       },
       presence: async ({ action, uuid: _userId }) => {
@@ -102,7 +167,7 @@ const Chat = () => {
 
         if (action === 'join' && _userId !== userId) {
           const key = await getPublicKey({ userId: _userId, channel: channelID });
-          setReceiverPublicKey(strToTypedArr(key.publicKey));
+          publicKeyRef.current = strToTypedArr(key.publicKey);
         }
       }
     });
@@ -129,8 +194,11 @@ const Chat = () => {
       <div className={styles.messageContainer}>
         <div className={styles.messageBlock}>
           <div>
-            {messages.map(({ body, sender }, i) => (
-              <div key={i}>
+            {messages.map(({ body, sender, encrypted }, i) => (
+              <div
+                key={i}
+                className={`${encrypted && styles.messageRowEncrypted}  ${styles.messageRow}`}
+              >
                 <b>{sender === userId ? 'You: ' : 'Alice: '}</b>
                 {body}
               </div>

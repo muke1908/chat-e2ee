@@ -50,3 +50,11 @@
   padding: 15px;
   font-weight: 400;
 }
+
+.messageRow {
+  word-break: break-all;
+  margin-bottom: 20px;
+}
+.messageRowEncrypted {
+  font-family: monospace;
+}

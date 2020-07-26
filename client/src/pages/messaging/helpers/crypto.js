@@ -17,6 +17,29 @@ export const createKeyPair = () => {
   return window.nacl.box.keyPair();
 };
 
+export const encryptMsg = ({ text, mySecretKey, alicePublicKey }) => {
+  const nonce = window.nacl.randomBytes(24);
+  const box = window.nacl.box(
+    window.nacl.util.decodeUTF8(text),
+    nonce,
+    alicePublicKey,
+    mySecretKey
+  );
+
+  return {
+    box,
+    nonce
+  };
+};
+
+export const decryptMsg = ({ box, nonce, mySecretKey, alicePublicKey }) => {
+  const payload = window.nacl.box.open(box, nonce, alicePublicKey, mySecretKey);
+  const utf8 = window.nacl.util.encodeUTF8(payload);
+  return {
+    msg: utf8
+  };
+};
+
 export const storeKeyPair = (channelID, { publicKey, secretKey }) => {
   const _keyPair = {
     publicKey: typedArrayToStr(publicKey),
