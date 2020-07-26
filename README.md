@@ -4,16 +4,14 @@ Note: This is not a replacement of your usual chat application.
 
 This app will allow two mutually agreed users to have a conversation in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device.
 
-> We are using NaCL & [TweetNaCL.js](https://github.com/dchest/tweetnacl-js/) library for assymetric encryption. The NaCL project is being lead by [Daniel J.Bernstein](http://cr.yp.to/djb.html), one of the most prominent Computer Scientists of our era.
-
 ---
 
-![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)
+![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee)
 <a href="https://github.com/muke1908/chat-e2ee/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
 </a>
 
-### Contribute
+### Contribute [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat-square)](https://github.com/muke1908/chat-e2ee/issues)
 
 - [Contribution guide](https://github.com/muke1908/chat-e2ee/blob/master/CONTRIBUTING.md)  
   **Issues**:
@@ -47,6 +45,9 @@ Master branch is deployed to https://chat-e2ee.herokuapp.com/
 
 In this way, no one else can decrypt the message because your private key is never exposed to the internet.
 More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
+
+> We are using NaCL & [TweetNaCL.js](https://github.com/dchest/tweetnacl-js/) library for asymmetric encryption. The NaCL project is being lead by [Daniel J.Bernstein](http://cr.yp.to/djb.html), one of the most prominent Computer Scientists of our era.
+
 
 ---
 
