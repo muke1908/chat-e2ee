@@ -125,7 +125,7 @@ const Chat = () => {
         <h3>Edit ./client/chat/index.js and make me beautiful</h3>
       </div>
       <br />
-      <div>
+      {/* <div>
         <b>Encryption</b>
         <div>Your public key:</div>
         <div className={styles.keyContainer}>{keyPair ? btoa(keyPair.publicKey) : '--'}</div>
@@ -136,7 +136,7 @@ const Chat = () => {
         <div className={styles.keyContainer}>
           {receiverPublicKey ? btoa(receiverPublicKey) : 'Awiting public key'}
         </div>
-      </div>
+      </div> */}
       <br />
       <div>
         <b>Users in this channel</b> :
