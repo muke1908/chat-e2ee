@@ -8,9 +8,9 @@ import {
   getUserSessionID,
   createUserSessionID,
   storeUserSessionID
-} from './../helpers';
+} from './helpers';
 
-import { sendMessage } from '../../../service';
+import { sendMessage } from '../../service';
 import styles from './Style.module.css';
 
 // create your key at https://www.pubnub.com/

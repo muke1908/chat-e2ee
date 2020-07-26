@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 import ChatLink from './pages/chatlink';
-import Messaging from './pages/messaging/main';
+import Messaging from './pages/messaging';
 
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
