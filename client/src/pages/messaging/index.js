@@ -102,7 +102,7 @@ const Chat = () => {
           <div>
             {messages.map(({ body, sender }, i) => (
               <div key={i}>
-                <b>{sender === userId ? 'You: ' : 'They: '}</b>
+                <b>{sender === userId ? 'You: ' : 'Alice: '}</b>
                 {body}
               </div>
             ))}
