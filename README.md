@@ -1,4 +1,4 @@
-## Idea
+## chat-e2ee
 
 Note: This is not a replacement of your usual chat application. 
 
@@ -7,9 +7,7 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 ---
 
 ![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee)
-<a href="https://github.com/muke1908/chat-e2ee/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
-</a>
 
 ### Contribute [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat-square)](https://github.com/muke1908/chat-e2ee/issues)
 
