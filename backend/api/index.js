@@ -19,6 +19,10 @@ router.post(
     const { token } = req.body;
 
     if (process.env.NODE_ENV === 'production') {
+      if (!token) {
+        return res.sendStatus(400);
+      }
+
       const captcha = await verifyCaptcha(token);
       if (!captcha.success) {
         return res.sendStatus(400);

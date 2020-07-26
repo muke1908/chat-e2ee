@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './style.css';
-import { Link } from 'react-router-dom';
 import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
 import Button from '../../components/Button.js';
