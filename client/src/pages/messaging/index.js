@@ -19,7 +19,7 @@ import {
 
 import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
 import styles from './Style.module.css';
-
+import MessageList from '../../components/MessageList/index.js';
 // create your key at https://www.pubnub.com/
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
 
@@ -204,6 +204,7 @@ const Chat = () => {
               </div>
             ))}
           </div>
+          <MessageList />
         </div>
         <form onSubmit={handleSubmit} className={styles.sendMessageForm}>
           <input

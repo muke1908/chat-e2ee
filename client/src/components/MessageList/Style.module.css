@@ -1,0 +1,20 @@
+.messageContainer {
+  background-color: #f2f2f2;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 18px;
+  width: 60%;
+  height: 50px;
+  margin-top: 25px;
+  margin-bottom: 25px;
+}
+
+.messageLeft {
+  justify-content: flex-start;
+  display: flex;
+}
+
+.messageRight {
+  justify-content: flex-end;
+  display: flex;
+}
