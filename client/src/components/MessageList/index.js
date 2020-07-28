@@ -3,37 +3,31 @@ import styles from './Style.module.css';
 
 const data = [
   {
-    self: true,
+    owner: true,
     body: 'Hey Alice'
   },
   {
-    self: false,
+    owner: false,
     body: 'Hi Bob'
   }
 ];
 
-var check1 = 0,
-  check2 = 0;
-
 const MessageList = (props) => {
   return (
-    <div>
-      {data.map((data, index) => (
+    <>
+      {data.map(({ owner, body }, index) => (
         <div>
-          <div
-            className={data.self === true ? styles.messageRight : styles.messageLeft}
-            key={index}
-          >
-            <MessageBox message={data.body} />
+          <div className={owner === true ? styles.messageRight : styles.messageLeft} key={index}>
+            <MessageBox message={body} />
           </div>
         </div>
       ))}
-    </div>
+    </>
   );
 };
 
-const MessageBox = (props) => {
-  return <div className={styles.messageContainer}>{props.message}</div>;
+const MessageBox = ({ message }) => {
+  return <div className={styles.messageContainer}>{message}</div>;
 };
 
 export default MessageList;
