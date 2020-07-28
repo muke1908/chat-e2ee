@@ -2,6 +2,14 @@
 
 **Note:** The project is still in **development** phase.
 
+**To dos:**  
+28/07/2020  
+- [ ] Design improvement - mobile first      
+- [ ] Handle edge cases - Enforce 1-to-1 chat, inactive sessions etc
+- [ ] Replace google re-captcha with custom solution   
+
+---
+
 This app will allow two mutually agreed users to have a conversation in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device. This is not a replacement of your usual chat application.
 
 ---
