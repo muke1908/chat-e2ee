@@ -39,7 +39,7 @@ const MessageList = (props) => {
   );
 };
 
-const MessageBox = ({ message, owner, index }) => {
+const MessageBox = ({ message }) => {
   return (
     <div className={styles.messageInfo}>
       <div className={styles.messageContainer}>{message}</div>
