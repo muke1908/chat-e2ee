@@ -185,7 +185,12 @@ const Chat = () => {
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
-
+  const messagesFormatted = messages.map(({ body, sender, encrypted }, i) => {
+    return {
+      owner: sender === userId,
+      body
+    };
+  });
   return (
     <>
       <div className={styles.userInfo}>
@@ -193,18 +198,7 @@ const Chat = () => {
       </div>
       <div className={styles.messageContainer}>
         <div className={styles.messageBlock}>
-          <div>
-            {messages.map(({ body, sender, encrypted }, i) => (
-              <div
-                key={i}
-                className={`${encrypted && styles.messageRowEncrypted}  ${styles.messageRow}`}
-              >
-                <b>{sender === userId ? 'You: ' : 'Alice: '}</b>
-                {body}
-              </div>
-            ))}
-          </div>
-          <MessageList />
+          <MessageList data={messagesFormatted} />
         </div>
         <form onSubmit={handleSubmit} className={styles.sendMessageForm}>
           <input

@@ -1,5 +1,6 @@
 .messageInfo {
   margin-bottom: 25px;
+  width: 80%;
 }
 
 .messageLeft {
@@ -29,11 +30,11 @@
 }
 
 .messageContainer {
-  background-color: #f2f2f2;
+  background-color: #e2e2e2;
   padding: 10px;
   font-size: 18px;
-  width: 400px;
   min-height: 50px;
+  word-break: break-word;
 }
 
 .sentReceived {
