@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import styles from './Style.module.css';
 
 const MessageList = ({ data }) => {
+  const divRef = useRef(null);
+
+  useEffect(() => {
+    divRef.current.scrollIntoView({ behaviour: 'smooth' });
+  }, [data.length]);
+
   return (
     <div>
       {data.map(({ owner, body }, index) => (
@@ -12,6 +18,7 @@ const MessageList = ({ data }) => {
           </div>
         </div>
       ))}
+      <div ref={divRef} />
     </div>
   );
 };
