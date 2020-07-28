@@ -24,15 +24,15 @@ const data = [
   }
 ];
 
-var sent = 0,
-  received = 0;
-
 const MessageList = (props) => {
   return (
     <div>
       {data.map(({ owner, body }, index) => (
         <div className={owner === true ? styles.messageRight : styles.messageLeft} key={index}>
-          <MessageBox message={body} owner={owner} index={index} />
+          <div>
+            <div className={styles.sentReceived}>You {owner === true ? 'sent' : 'received'}</div>
+            <MessageBox message={body} owner={owner} index={index} />
+          </div>
         </div>
       ))}
     </div>
@@ -40,18 +40,8 @@ const MessageList = (props) => {
 };
 
 const MessageBox = ({ message, owner, index }) => {
-  if (owner === true) {
-    sent = sent + 1;
-    received = 0;
-  } else {
-    received = received + 1;
-    sent = 0;
-  }
   return (
     <div className={styles.messageInfo}>
-      {(sent === 1 || received === 1 || index == 0) && (
-        <p className={styles.sentReceived}>You {owner === true ? 'sent' : 'received'}</p>
-      )}
       <div className={styles.messageContainer}>{message}</div>
     </div>
   );

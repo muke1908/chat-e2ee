@@ -12,6 +12,14 @@
   display: flex;
 }
 
+.messageLeft + .messageLeft .sentReceived {
+  display: none;
+}
+
+.messageRight + .messageRight .sentReceived {
+  display: none;
+}
+
 .messageLeft + .messageRight {
   margin-top: 25px;
 }
@@ -31,4 +39,5 @@
 .sentReceived {
   margin-bottom: 3px;
   font-size: 13px;
+  font-weight: 600;
 }
