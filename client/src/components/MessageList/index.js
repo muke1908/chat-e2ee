@@ -5,7 +5,12 @@ const MessageList = ({ data }) => {
   const divRef = useRef(null);
 
   useEffect(() => {
-    divRef.current.scrollIntoView({ behaviour: 'smooth' });
+    window.ff = divRef.current;
+    const timer = setTimeout(() => {
+      divRef.current.scrollIntoView({ behaviour: 'smooth' });
+    }, 100);
+
+    return () => window.clearTimeout(timer);
   }, [data.length]);
 
   return (
