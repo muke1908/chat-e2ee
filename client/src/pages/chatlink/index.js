@@ -70,8 +70,11 @@ const App = () => {
         </div>
         <div className="section--contribute">
           <div className="title">
-            Our source-code is public on Github. Feel free to contribute or build your own chat
-            client. Out APIs are open.
+            Our source-code is public on{' '}
+            <a href="https://github.com/muke1908/chat-e2ee" target="_blank">
+              Github
+            </a>
+            . Feel free to contribute or build your own chat client. Out APIs are open.
           </div>
         </div>
       </div>
