@@ -1,8 +1,16 @@
 ## chat-e2ee
 
-Note: This is not a replacement of your usual chat application.
+**Note:** The project is still in **development** phase.
 
-This app will allow two mutually agreed users to have a conversation in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device.
+**To dos:**  
+28/07/2020  
+- [ ] Design improvement - mobile first      
+- [ ] Handle edge cases - Enforce 1-to-1 chat, inactive sessions etc
+- [ ] Replace google re-captcha with custom solution   
+
+---
+
+This app will allow two mutually agreed users to have a conversation in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device. This is not a replacement of your usual chat application.
 
 ---
 
@@ -10,32 +18,31 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 ![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee) [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=com.lapots.breed.judge:judge-rule-engine&metric=alert_status)](https://sonarcloud.io/dashboard?id=muke1908_chat-e2ee)
 <img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
 
-### Contribute [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat-square)](https://github.com/muke1908/chat-e2ee/issues)
+### Contribute [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat-square)](https://github.com/muke1908/chat-e2ee/issues)  
 
-- [Contribution guide](https://github.com/muke1908/chat-e2ee/blob/master/CONTRIBUTING.md)  
-  **Issues**:
-- [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
-- [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)
+- [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)  
+- [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)  
+- [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  
 
 Master branch is deployed to https://chat-e2ee.herokuapp.com/
 
 ---
 
-### Key Features:
+### Key Features
 
 1. The end users are not tracable.
 2. Data is not stored on any remote server.
 3. No saved history i.e. once chat is closed the data is not recoverable.
 4. It doesn't ask any information from you -- no login/signup.
 
-### How to initiate chat:
+### How to initiate chat
 
 1. Generate unique link.
 2. Share the link with the person you want to chat with.
 3. Both users identify themselves.
 4. The messages are end-to-end encrypted hence, no one can decrypt your message other than you.
 
-**How the encryption works:**
+**How the encryption works**
 
 1. Alice and Bob generate a public and private key pair.
 2. Alice and Bob share their public keys with each other.
@@ -49,13 +56,13 @@ More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
 ---
 
-### Proposed flow:
+### Proposed flow
 
 ![flow](https://i.imgur.com/2GrBQMz.jpg)
 
 ---
 
-### For Developer
+### For developers
 
 FE: This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
 BE: The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.
@@ -70,7 +77,7 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 Check `.env.sample` to configure your `.env` file.
 
-### Folder structure:
+### Folder structure
 
 - The FE client is located in `./client` which is coupled with the backend
 - All the backend controllers goes to `./backend` folder
@@ -86,13 +93,13 @@ Check `.env.sample` to configure your `.env` file.
 
 ---
 
-1st July, 2020  
 Currently it's using [pubnub](https://pubnub.com) for real time communication. Utils are in `/backend/external/pubnub.js`.
 
 **Messaging flow**:
 
-- Client send encrypted message via REST
-- Client receives message in realtime via PUBNUB subscription and decrypt locally to read.
+- Client encrypts message at client-side and sends via REST call.  
+- Client receives message in realtime via PUBNUB subscription and decrypt locally at client side.
+- Your messages can not be recovered if you lose encryption keys.
 
 ---
 
