@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './style.css';
 import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
-import Button from '../../components/Button.js';
+import Button from '../../components/Button';
 import LinkDisplay from '../../components/LinkDisplay/index.js';
 
 const App = () => {
@@ -26,7 +26,7 @@ const App = () => {
   };
   const initCaptcha = async () => {
     const captchaIns = await getCaptchaInstance();
-    renderGoogleReCaptcha(captchaIns, setCaptchToken);
+    renderGoogleReCaptcha(captchaIns, setCaptchToken, 'captcha');
   };
 
   useEffect(() => {
@@ -36,9 +36,9 @@ const App = () => {
   return (
     <>
       <div className="app link-generation--page">
-        <div className="header">Generate temporary link and start chatting without worrying.</div>
+        <div className="header">Because privacy matters!</div>
         <div className="section--default">
-          <div className="title">Because privacy matters</div>
+          <div className="title">Generate temporary link and start chatting without worrying.</div>
           <div className="description">
             <ul>
               <li>No login/signup required.</li>
@@ -68,13 +68,13 @@ const App = () => {
             </div>
           )}
         </div>
-        <div className="section--contribute">
+        <div className="section--contribute section--default">
           <div className="title">
-            Our source-code is public on{' '}
+            Our source-code is public on&nbsp;
             <a href="https://github.com/muke1908/chat-e2ee" target="_blank">
               Github
             </a>
-            . Feel free to contribute or build your own chat client. Out APIs are open.
+            , feel free to contribute!
           </div>
         </div>
       </div>

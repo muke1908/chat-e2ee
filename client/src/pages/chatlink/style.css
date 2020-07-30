@@ -2,10 +2,7 @@
   padding: 20px;
   padding-left: 0px;
   font-size: 24px;
-}
-.link-generation--page .section--default {
-  background: #fff;
-  padding: 20px;
+  color: #4bb2f9;
 }
 
 .link-generation--page .generate-link-btn {
@@ -34,8 +31,5 @@
 }
 
 .section--contribute {
-  margin: 40px 0px 0px 0px;
-  padding: 50px 50px 50px 50px;
-  background-color: #fff;
-  text-align: center;
+  margin: 40px 0px 40px 0px;
 }

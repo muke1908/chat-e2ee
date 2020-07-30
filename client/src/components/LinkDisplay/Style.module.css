@@ -1,6 +1,6 @@
 .copyToClipboardContainer {
-  border: 1px solid #ddd;
-  background: #fff;
+  border: 1px solid #121212;
+  background: #121212;
   color: #fff;
   display: flex;
   padding: 2px;
@@ -22,11 +22,16 @@
   resize: none;
   box-sizing: border-box;
   padding-left: 10px;
+  background: #121212;
+  color: #aeaeae;
+  font-family: monospace;
 }
 
 .copyButton {
+  color: #aeaeae;
+  background: #434343;
   border-width: 1px;
-  border-color: #f2f2f2;
+  border-color: #434343;
   font-family: inherit;
   font-size: 18px;
   width: 100px;
@@ -38,7 +43,7 @@
 
 .linkIcon {
   font-size: 20px;
-  color: #000;
+  color: #aeaeae;
 }
 
 .copyIcon {

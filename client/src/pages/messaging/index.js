@@ -194,7 +194,13 @@ const Chat = () => {
   return (
     <>
       <div className={styles.userInfo}>
-        {alice ? 'Alice <Online>' : 'Waiting for Alice to join..'}
+        {alice ? (
+          <span className={styles.userInfoOnline}>
+            Alice {'<'}Online{'>'}
+          </span>
+        ) : (
+          'Waiting for Alice to join..'
+        )}
       </div>
       <div className={styles.messageContainer}>
         <div className={styles.messageBlock}>

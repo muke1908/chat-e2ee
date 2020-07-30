@@ -4,7 +4,8 @@ body {
     'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f2f2f2;
+  background: #121212;
+  color: #aeaeae;
 }
 
 .body-content {
@@ -14,4 +15,15 @@ body {
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.section--default {
+  background: #212121;
+  padding: 20px;
+  box-shadow: 4px 3px 10px #121212;
+  border-radius: 5px;
+}
+
+a {
+  color: inherit !important;
 }

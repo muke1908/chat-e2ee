@@ -2,19 +2,20 @@
   padding-bottom: 50px;
 }
 .messageBlock {
-  background-color: #fff;
   height: 65vh;
   padding: 20px;
   margin-bottom: 50px;
   overflow: auto;
   scroll-behavior: smooth;
+  background: #212121;
+  box-shadow: 4px 3px 10px #121212;
+  border-radius: 5px;
 }
 
 .sendMessageForm {
   display: flex;
-  background: #fff;
   align-items: flex-start;
-  border: 1px solid #ddd;
+  border: 1px solid #434343;
   border-radius: 2px;
   overflow: hidden;
 }
@@ -29,6 +30,8 @@
   height: 50px;
   box-sizing: border-box;
   outline: none;
+  background: #000;
+  color: #fff;
 }
 
 .sendButton {
@@ -40,18 +43,19 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-left: 1px solid #ddd;
-  background: #eaedee;
+  background: #434343;
   transition: 180ms;
 }
 .sendButton:hover {
-  background: #fff;
+  background: #666666;
 }
 .userInfo {
-  padding: 15px;
+  padding: 15px 0px 15px 0px;
   font-weight: 400;
 }
-
+.userInfoOnline {
+  color: #4caf50;
+}
 .messageRow {
   word-break: break-all;
   margin-bottom: 20px;

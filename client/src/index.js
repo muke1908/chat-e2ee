@@ -4,6 +4,7 @@ import './index.css';
 
 import ChatLink from './pages/chatlink';
 import Messaging from './pages/messaging';
+import PoweredBy from './components/PoweredBy';
 
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
@@ -14,6 +15,7 @@ ReactDOM.render(
         <Route exact path="/" component={ChatLink} />
         <Route exact path="/chat/:channelID" component={Messaging} />
       </Switch>
+      <PoweredBy />
     </div>
   </Router>,
   document.getElementById('root')

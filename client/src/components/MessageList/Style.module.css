@@ -30,11 +30,12 @@
 }
 
 .messageContainer {
-  background-color: #e2e2e2;
+  background-color: #363636;
   padding: 10px;
   font-size: 18px;
   min-height: 50px;
   word-break: break-word;
+  border-radius: 4px;
 }
 
 .sentReceived {
