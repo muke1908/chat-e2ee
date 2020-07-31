@@ -1,0 +1,37 @@
+.sendMessageForm {
+  display: flex;
+  align-items: flex-start;
+  border: 1px solid #434343;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.sendMessageInput {
+  font-family: inherit;
+  font-size: 18px;
+  resize: none;
+  flex: 1;
+  border: 0;
+  padding: 10px;
+  height: 50px;
+  box-sizing: border-box;
+  outline: none;
+  background: #000;
+  color: #fff;
+}
+
+.sendButton {
+  height: 50px;
+  display: flex;
+  width: 100px;
+  font-family: inherit;
+  font-size: 18px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #434343;
+  transition: 180ms;
+}
+.sendButton:hover {
+  background: #666666;
+}

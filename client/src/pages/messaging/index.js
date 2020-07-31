@@ -19,7 +19,8 @@ import {
 
 import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
 import styles from './Style.module.css';
-import MessageList from '../../components/MessageList/index.js';
+import { MessageList, UserStatusInfo, NewMessageForm } from '../../components/Messaging';
+
 // create your key at https://www.pubnub.com/
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
 
@@ -193,31 +194,12 @@ const Chat = () => {
   });
   return (
     <>
-      <div className={styles.userInfo}>
-        {alice ? (
-          <span className={styles.userInfoOnline}>
-            Alice {'<'}Online{'>'}
-          </span>
-        ) : (
-          'Waiting for Alice to join..'
-        )}
-      </div>
+      <UserStatusInfo online={alice} />
       <div className={styles.messageContainer}>
         <div className={styles.messageBlock}>
           <MessageList data={messagesFormatted} />
         </div>
-        <form onSubmit={handleSubmit} className={styles.sendMessageForm}>
-          <input
-            className={styles.sendMessageInput}
-            type="text"
-            placeholder="Write message"
-            onChange={(e) => setText(e.target.value)}
-            value={text}
-          />
-          <div className={styles.sendButton} type="submit" role="button" onClick={handleSubmit}>
-            Send
-          </div>
-        </form>
+        <NewMessageForm handleSubmit={handleSubmit} text={text} setText={setText} />
       </div>
     </>
   );

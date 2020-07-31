@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import styles from './Style.module.css';
+import styles from './styles/MessageList.module.css';
 
-const MessageList = ({ data }) => {
+export const MessageList = ({ data }) => {
   const divRef = useRef(null);
 
   useEffect(() => {
@@ -27,5 +27,3 @@ const MessageList = ({ data }) => {
     </div>
   );
 };
-
-export default MessageList;
