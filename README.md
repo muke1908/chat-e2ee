@@ -28,7 +28,7 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 
 **Demo:**  
 Master branch is deployed to following links:   
-MS Azure - https://chat-e2ee.azurewebsites.net/
+MS Azure - https://chat-e2ee.azurewebsites.net/  
 Heroku - https://chat-e2ee.herokuapp.com/  
 
 ---
