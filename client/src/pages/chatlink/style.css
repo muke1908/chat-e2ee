@@ -21,7 +21,7 @@
 }
 
 .link-generation--page .captcha-height-setter {
-  height: 75px;
+  min-height: 75px;
   display: flex;
   align-items: center;
 }

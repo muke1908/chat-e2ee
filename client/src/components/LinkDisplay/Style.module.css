@@ -53,3 +53,21 @@
 .textAreaContainer {
   flex: 1;
 }
+
+.openLink {
+  text-align: center;
+  margin-top: 10px;
+}
+.openLink a {
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid #434343;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: 180ms;
+  font-size: 12px;
+}
+.openLink a:hover {
+  color: #fff !important;
+  border-color: #fff;
+}

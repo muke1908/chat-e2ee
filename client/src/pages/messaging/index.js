@@ -19,8 +19,12 @@ import {
 
 import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
 import styles from './Style.module.css';
-import { MessageList, UserStatusInfo, NewMessageForm } from '../../components/Messaging';
-
+import {
+  MessageList,
+  UserStatusInfo,
+  NewMessageForm,
+  ScrollWrapper
+} from '../../components/Messaging';
 // create your key at https://www.pubnub.com/
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
 
@@ -197,7 +201,9 @@ const Chat = () => {
       <UserStatusInfo online={alice} />
       <div className={styles.messageContainer}>
         <div className={styles.messageBlock}>
-          <MessageList data={messagesFormatted} />
+          <ScrollWrapper messageCount={messagesFormatted.length}>
+            <MessageList data={messagesFormatted} />
+          </ScrollWrapper>
         </div>
         <NewMessageForm handleSubmit={handleSubmit} text={text} setText={setText} />
       </div>
