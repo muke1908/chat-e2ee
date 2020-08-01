@@ -27,3 +27,7 @@ code {
 a {
   color: inherit !important;
 }
+
+.full-width {
+  width: 100%;
+}

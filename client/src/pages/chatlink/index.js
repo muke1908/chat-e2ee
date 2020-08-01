@@ -71,7 +71,11 @@ const App = () => {
         <div className="section--contribute section--default">
           <div className="title">
             Our source-code is public on&nbsp;
-            <a href="https://github.com/muke1908/chat-e2ee" target="_blank">
+            <a
+              href="https://github.com/muke1908/chat-e2ee"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Github
             </a>
             , feel free to contribute!

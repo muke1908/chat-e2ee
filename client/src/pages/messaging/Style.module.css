@@ -5,9 +5,8 @@
   height: 65vh;
   padding: 20px;
   margin-bottom: 50px;
-  overflow: auto;
-  scroll-behavior: smooth;
   background: #212121;
   box-shadow: 4px 3px 10px #121212;
   border-radius: 5px;
+  display: flex;
 }
