@@ -16,6 +16,8 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 
 
 ![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee) [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=com.lapots.breed.judge:judge-rule-engine&metric=alert_status)](https://sonarcloud.io/dashboard?id=muke1908_chat-e2ee)
+
+**Contributors:**
 <img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
 
 ### Contribute [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat-square)](https://github.com/muke1908/chat-e2ee/issues)  
@@ -24,7 +26,9 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)  
 - [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  
 
-Master branch is deployed to https://chat-e2ee.herokuapp.com/
+Master branch is deployed to following links: 
+Heroku - https://chat-e2ee.herokuapp.com/  
+MS Azure - https://chat-e2ee.azurewebsites.net/
 
 ---
 
