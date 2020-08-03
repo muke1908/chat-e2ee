@@ -8,10 +8,10 @@ const Notification = (props) => {
   const [play, setPlay] = React.useState(props.play);
 
   if (play) {
-    setPlay(false);
+    setPlay((play) => !play);
     playAudio();
     if (!play) {
-      setPlay(true);
+      setPlay((play) => !play);
       playAudio();
     }
   }
