@@ -1,25 +1,19 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
-const Notification = (props) => {
-  function playAudio() {
-    const audio = document.getElementsByClassName('audio-component');
-    audio.play();
-  }
-  const [play, setPlay] = React.useState(props.play);
+const Notification = ({ play, audio }) => {
+  const audioFile = useRef(null);
+  const playAudio = () => {
+    audioFile.current.play();
+  };
 
-  if (play) {
-    playAudio();
-    setPlay((play) => !play);
-    playAudio();
-    setPlay((play) => !play);
-  }
+  useEffect(() => {
+    play && playAudio();
+  }, [play, audio]);
 
   return (
-    <div>
-      <audio class="audio-component">
-        <source src={props.audio}></source>
-      </audio>
-    </div>
+    <audio ref={audioFile}>
+      <source src={audio} />
+    </audio>
   );
 };
 export default Notification;
