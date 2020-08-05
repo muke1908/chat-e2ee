@@ -25,6 +25,8 @@ import {
   NewMessageForm,
   ScrollWrapper
 } from '../../components/Messaging';
+import Notification from '../../components/Notification';
+import notificationAudio from '../../components/Notification/audio.mp3';
 // create your key at https://www.pubnub.com/
 const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
 
@@ -32,9 +34,12 @@ const Chat = () => {
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
   const [usersInChannel, setUsers] = useState([]);
+  const [notificationState, setNotificationState] = useState(false);
 
   const myKeyRef = useRef(null);
   const publicKeyRef = useRef(null);
+
+  const notificationTimer = useRef(null);
 
   const { channelID } = useParams();
   let userId = getUserSessionID(channelID);
@@ -48,6 +53,15 @@ const Chat = () => {
   const pubnub = useMemo(() => {
     return pubnubInit({ subscribeKey, userId, channelID });
   }, [userId, channelID]);
+
+  const playNotification = () => {
+    setNotificationState(true);
+    window.clearTimeout(notificationTimer.current);
+    notificationTimer.current = setTimeout(() => {
+      setNotificationState(false);
+      console.log('getting called');
+    }, 500);
+  };
 
   const exchangePublicKey = (channelID) => {
     console.log('%cExchanging public key.', 'color:red; font-size:16px');
@@ -112,6 +126,7 @@ const Chat = () => {
     if (alice) {
       const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
       publicKeyRef.current = strToTypedArr(key.publicKey);
+      playNotification();
     }
   };
 
@@ -168,11 +183,17 @@ const Chat = () => {
         // let's update the userlist
 
         const usersInChannel = await getUsersInChannel(pubnub, channelID);
-        setUsers(usersInChannel);
+        setUsers(() => usersInChannel);
 
         if (action === 'join' && _userId !== userId) {
           const key = await getPublicKey({ userId: _userId, channel: channelID });
           publicKeyRef.current = strToTypedArr(key.publicKey);
+          playNotification();
+        }
+
+        if (action === 'timeout' && _userId !== userId) {
+          publicKeyRef.current = null;
+          playNotification();
         }
       }
     });
@@ -207,6 +228,7 @@ const Chat = () => {
         </div>
         <NewMessageForm handleSubmit={handleSubmit} text={text} setText={setText} />
       </div>
+      <Notification play={notificationState} audio={notificationAudio} />
     </>
   );
 };
