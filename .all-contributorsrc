@@ -2,18 +2,79 @@
   "files": [
     "README.md"
   ],
-  "imageSize": 100,
+  "imageSize": 80,
   "commit": false,
   "contributors": [
     {
-      "login": "jakebolam",
-      "name": "Jake Bolam",
-      "avatar_url": "https://avatars2.githubusercontent.com/u/3534236?v=4",
-      "profile": "https://jakebolam.com",
+      "login": "muke1908",
+      "name": "Mukesh",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/20297989?v=4",
+      "profile": "https://github.com/muke1908",
       "contributions": [
-        "infra",
-        "test",
         "code"
+      ]
+    },
+    {
+      "login": "gagan-aryan",
+      "name": "Gagan Aryan",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/62807661?v=4",
+      "profile": "https://github.com/gagan-aryan",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "jradha11",
+      "name": "Radha Jayaraman",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/59576984?v=4",
+      "profile": "https://github.com/jradha11",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "jessiematias",
+      "name": "Jessie",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/56523246?v=4",
+      "profile": "https://github.com/jessiematias",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "zygisS22",
+      "name": "zygisS22",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/54106114?v=4",
+      "profile": "https://github.com/zygisS22",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "lindsayjohnston",
+      "name": "lindsayjohnston",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/58899165?v=4",
+      "profile": "https://github.com/lindsayjohnston",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "JulienZD",
+      "name": "Julien",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/48630731?v=4",
+      "profile": "https://github.com/JulienZD",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "FabiSdr",
+      "name": "FabiSdr",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/62851653?v=4",
+      "profile": "https://github.com/FabiSdr",
+      "contributions": [
+        "doc"
       ]
     }
   ],
@@ -22,5 +83,6 @@
   "projectOwner": "muke1908",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "none"
 }
