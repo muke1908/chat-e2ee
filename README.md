@@ -14,9 +14,6 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 
 ![Open Source Love](https://img.shields.io/badge/Open%20Source-with%20love-CRIMSON.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee) [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=com.lapots.breed.judge:judge-rule-engine&metric=alert_status)](https://sonarcloud.io/dashboard?id=muke1908_chat-e2ee) [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues)
 
-**Contributors:**
-<img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
-
 **Contribute:**
 
 - [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
@@ -24,6 +21,41 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 - [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)
 
 ---
+
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
+
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/muke1908"><img src="https://avatars3.githubusercontent.com/u/20297989?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mukesh</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=muke1908" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/gagan-aryan"><img src="https://avatars3.githubusercontent.com/u/62807661?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gagan Aryan</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=gagan-aryan" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jradha11"><img src="https://avatars1.githubusercontent.com/u/59576984?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Radha Jayaraman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jradha11" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jessiematias"><img src="https://avatars1.githubusercontent.com/u/56523246?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jessie</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jessiematias" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/zygisS22"><img src="https://avatars2.githubusercontent.com/u/54106114?v=4?s=100" width="100px;" alt=""/><br /><sub><b>zygisS22</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=zygisS22" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lindsayjohnston"><img src="https://avatars0.githubusercontent.com/u/58899165?v=4?s=100" width="100px;" alt=""/><br /><sub><b>lindsayjohnston</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=lindsayjohnston" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/JulienZD"><img src="https://avatars0.githubusercontent.com/u/48630731?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Julien</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=JulienZD" title="Documentation">📖</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/FabiSdr"><img src="https://avatars1.githubusercontent.com/u/62851653?v=4?s=100" width="100px;" alt=""/><br /><sub><b>FabiSdr</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=FabiSdr" title="Documentation">📖</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ### Key Features
 
