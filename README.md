@@ -54,8 +54,9 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 
 1. The end users are not tracable.
 2. Data is not stored on any remote server.
-3. No saved history i.e. once chat is closed the data is not recoverable.
-4. It doesn't ask any information from you -- no login/signup.
+3. Secure image sharing. [Read more](https://github.com/muke1908/chat-e2ee/wiki/Secure-image-sharing)
+4. No saved history i.e. once chat is closed the data is not recoverable.
+5. It doesn't ask any information from you -- no login/signup.
 
 ### How to initiate chat
 
