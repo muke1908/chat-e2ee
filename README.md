@@ -1,12 +1,10 @@
 ## chat-e2ee
 
-**Note:** The project is still in **development** phase.
-
-**To dos:**  
-28/07/2020  
-- [ ] Design improvement - mobile first      
-- [ ] Handle edge cases - Enforce 1-to-1 chat, inactive sessions etc
-- [ ] Replace google re-captcha with custom solution   
+**Note:**  
+The project is still in **development** phase.  
+Working prototype:  
+MS Azure - https://chat-e2ee.azurewebsites.net/  
+Heroku - https://chat-e2ee.herokuapp.com/  
 
 ---
 
@@ -26,10 +24,6 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)  
 - [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  
 
-**Demo:**  
-Master branch is deployed to following links:   
-MS Azure - https://chat-e2ee.azurewebsites.net/  
-Heroku - https://chat-e2ee.herokuapp.com/  
 
 ---
 
@@ -74,13 +68,13 @@ BE: The backend runs on express/nodejs. In production mode, express server expos
 
 ### Installation
 
-1. Clone / Fork the repo.
+1. Fork the repo.
 2. Run `npm install` in root dir.
 3. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
 
-Check `.env.sample` to configure your `.env` file.
+**Important:** Check `.env.sample` to configure your `.env` file.
 
 ### Folder structure
 
