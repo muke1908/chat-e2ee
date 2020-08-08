@@ -4,7 +4,7 @@
 The project is still in **development** phase.  
 Working prototype:  
 MS Azure - https://chat-e2ee.azurewebsites.net/  
-Heroku - https://chat-e2ee.herokuapp.com/  
+Heroku - https://chat-e2ee.herokuapp.com/
 
 ---
 
@@ -12,18 +12,16 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 
 ---
 
-
-![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee) [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=com.lapots.breed.judge:judge-rule-engine&metric=alert_status)](https://sonarcloud.io/dashboard?id=muke1908_chat-e2ee) [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues)  
+![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee) [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=com.lapots.breed.judge:judge-rule-engine&metric=alert_status)](https://sonarcloud.io/dashboard?id=muke1908_chat-e2ee) [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues)
 
 **Contributors:**
 <img src="https://contributors-img.web.app/image?repo=muke1908/chat-e2ee" />
 
 **Contribute:**
 
-- [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)  
-- [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)  
-- [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  
-
+- [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
+- [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)
+- [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)
 
 ---
 
@@ -85,10 +83,11 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 ### APIs
 
-| url              | method | paylod                         | filename                  | description                                   |
-| ---------------- | ------ | ------------------------------ | ------------------------- | --------------------------------------------- |
-| `/api/getLink`   | `POST` | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
-| `/api/chat/send` | `POST` | `{ channel, sender, message }` | `/api/messaging/index.js` | to send a message to a specific channel       |
+| url                          | method | paylod                         | filename                  | description                                   |
+| ---------------------------- | ------ | ------------------------------ | ------------------------- | --------------------------------------------- |
+| `/api/getLink`               | `POST` | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
+| `/api/chat/send`             | `POST` | `{ channel, sender, message }` | `/api/messaging/index.js` | to send a message to a specific channel       |
+| `/api/validateLink/:channel` | `GET`  |                                | `/api/index.js`           | to check if a channel is valid                |
 
 ---
 
@@ -96,7 +95,7 @@ Currently it's using [pubnub](https://pubnub.com) for real time communication. U
 
 **Messaging flow**:
 
-- Client encrypts message at client-side and sends via REST call.  
+- Client encrypts message at client-side and sends via REST call.
 - Client receives message in realtime via PUBNUB subscription and decrypt locally at client side.
 - Your messages can not be recovered if you lose encryption keys.
 
