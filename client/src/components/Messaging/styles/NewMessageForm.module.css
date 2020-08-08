@@ -1,9 +1,11 @@
 .sendMessageForm {
   display: flex;
   align-items: flex-start;
-  border: 1px solid #434343;
-  border-radius: 2px;
+  border: 1px solid #000;
+  border-radius: 5px;
   overflow: hidden;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .sendMessageInput {
@@ -29,16 +31,19 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background: #434343;
+  background: #e91e63;
+  color: #fff;
   transition: 180ms;
 }
 .sendButton:hover {
-  background: #666666;
+  background: #ab0b42;
 }
 
 @media screen and (max-width: 640px) {
   .sendMessageForm {
     border-radius: 0px;
     border: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
   }
 }
