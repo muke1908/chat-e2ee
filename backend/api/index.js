@@ -46,7 +46,7 @@ router.get(
       return res.sendStatus(404).send('Invalid channel');
     }
 
-    return res.sendStatus(200).send('Valid channel');
+    return res.send({ status: 'ok' });
   })
 );
 
