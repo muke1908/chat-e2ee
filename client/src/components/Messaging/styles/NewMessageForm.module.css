@@ -35,3 +35,10 @@
 .sendButton:hover {
   background: #666666;
 }
+
+@media screen and (max-width: 640px) {
+  .sendMessageForm {
+    border-radius: 0px;
+    border: 0px;
+  }
+}

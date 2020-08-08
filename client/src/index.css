@@ -24,6 +24,12 @@ code {
   border-radius: 5px;
 }
 
+@media screen and (max-width: 640px) {
+  .section--default {
+    border-radius: 0px;
+  }
+}
+
 a {
   color: inherit !important;
 }

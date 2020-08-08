@@ -5,3 +5,9 @@
 .userInfoOnline {
   color: #4caf50;
 }
+
+@media screen and (max-width: 640px) {
+  .userInfo {
+    padding-left: 15px;
+  }
+}

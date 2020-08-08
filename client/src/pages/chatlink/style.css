@@ -33,3 +33,9 @@
 .section--contribute {
   margin: 40px 0px 40px 0px;
 }
+
+@media screen and (max-width: 640px) {
+  .link-generation--page .header {
+    padding-left: 20px;
+  }
+}
