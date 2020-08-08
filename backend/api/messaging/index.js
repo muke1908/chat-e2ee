@@ -17,7 +17,7 @@ router.post('/send', async (req, res) => {
   return res.send({ message: 'message sent' });
 });
 
-router.post('/updatePublicKey', async (req, res) => {
+router.post('/sharePublicKey', async (req, res) => {
   const { publicKey, sender, channel } = req.body;
   // TODO: do not store if already exists
   await insertInDb({ publicKey, sender, channel }, PUBLIC_KEY_COLLECTION);
