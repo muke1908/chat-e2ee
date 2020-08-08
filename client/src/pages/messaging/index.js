@@ -59,7 +59,6 @@ const Chat = () => {
     window.clearTimeout(notificationTimer.current);
     notificationTimer.current = setTimeout(() => {
       setNotificationState(false);
-      console.log('getting called');
     }, 500);
   };
 
