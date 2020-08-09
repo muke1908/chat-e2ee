@@ -37,3 +37,10 @@ a {
 .full-width {
   width: 100%;
 }
+
+body,
+html,
+#root,
+.body-content {
+  height: 100%;
+}
