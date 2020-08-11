@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './style.css';
 import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
 import Button from '../../components/Button';
 import LinkDisplay from '../../components/LinkDisplay/index.js';
+import { ThemeContext } from '../../ThemeContext.js';
+import styles from '../../Style.module.css';
+import stylesLocal from './Style.module.css';
+import { FiSun, FiMoon } from 'react-icons/fi';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
   const [captchaToken, setCaptchToken] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useContext(ThemeContext);
 
   const formBusy = !captchaToken || loading;
 
@@ -29,17 +34,33 @@ const App = () => {
     renderGoogleReCaptcha(captchaIns, setCaptchToken, 'captcha');
   };
 
+  const toggleTheme = () => {
+    setDarkMode(!darkMode);
+  };
+
   useEffect(() => {
     initCaptcha();
   }, []);
 
   return (
     <>
-      <div className="app link-generation--page">
-        <div className="header">Because privacy matters!</div>
-        <div className="section--default">
-          <div className="title">Generate temporary link and start chatting without worrying.</div>
-          <div className="description">
+      <div className={stylesLocal.linkGenerationPage}>
+        <div
+          className={`${stylesLocal.header} 
+          ${darkMode === true ? stylesLocal.darkModeHeader : stylesLocal.lightModeHeader}`}
+        >
+          Because privacy matters!
+          {darkMode === true ? <FiSun onClick={toggleTheme} /> : <FiMoon onClick={toggleTheme} />}
+        </div>
+        <div
+          className={`${
+            darkMode === true ? styles.sectionDefaultDark : styles.sectionDefaultLight
+          }`}
+        >
+          <div className={stylesLocal.title}>
+            Generate temporary link and start chatting without worrying.
+          </div>
+          <div className={stylesLocal.description}>
             <ul>
               <li>No login/signup required.</li>
               <li>We don't track you.</li>
@@ -51,7 +72,7 @@ const App = () => {
           </div>
           {!chatLink && (
             <>
-              <div id="captcha" className="captcha-height-setter"></div>
+              <div id="captcha" className={stylesLocal.captchaHeightSetter}></div>
               <br />
               <Button
                 label="Generate link"
@@ -63,13 +84,17 @@ const App = () => {
             </>
           )}
           {chatLink && (
-            <div className="chat-link captcha-height-setter">
+            <div className={styles.captchaHeightSetter}>
               <LinkDisplay content={chatLink.absoluteLink} />
             </div>
           )}
         </div>
-        <div className="section--contribute section--default">
-          <div className="title">
+        <div
+          className={`${stylesLocal.sectionContribute} ${
+            darkMode === true ? styles.sectionDefaultDark : styles.sectionDefaultLight
+          }`}
+        >
+          <div className={stylesLocal.title}>
             Our source-code is public on&nbsp;
             <a
               href="https://github.com/muke1908/chat-e2ee"

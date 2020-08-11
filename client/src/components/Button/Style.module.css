@@ -1,6 +1,4 @@
 .button {
-  background: #434343;
-  color: #fff;
   padding: 10px 20px;
   display: inline-block;
   border-radius: 3px;
@@ -17,4 +15,14 @@
   background: transparent;
   border: 1px solid #434343;
   color: #434343;
+}
+
+.darkMode {
+  background: #434343;
+  color: #fff;
+}
+
+.lightMode {
+  background: #3cb043;
+  color: #000000;
 }

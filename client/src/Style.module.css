@@ -4,11 +4,10 @@ body {
     'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #121212;
-  color: #aeaeae;
+  height: 100vh;
 }
 
-.body-content {
+.bodyContent {
   max-width: 800px;
   margin: auto;
 }
@@ -17,10 +16,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.section--default {
+.sectionDefaultDark {
   background: #212121;
   padding: 20px;
   box-shadow: 4px 3px 10px #121212;
+  border-radius: 5px;
+}
+
+.sectionDefaultLight {
+  background: #e3e3e3;
+  padding: 20px;
+  box-shadow: 4px 3px 10px #eeeeee;
   border-radius: 5px;
 }
 
@@ -36,4 +42,14 @@ a {
 
 .full-width {
   width: 100%;
+}
+
+.darkMode {
+  background: #121212;
+  color: #aeaeae;
+}
+
+.lightMode {
+  background: #f2f2f2;
+  color: #000000;
 }
