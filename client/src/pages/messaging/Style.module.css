@@ -2,7 +2,7 @@
   padding-bottom: 50px;
   /* height fallback */
   height: 90vh;
-  height: calc(100vh - 50px);
+  height: calc(100% - 50px);
   display: flex;
   flex-direction: column;
 }
