@@ -22,7 +22,7 @@ const LinkDisplay = ({ content }) => {
     <div className={styles.fullWidth}>
       <div
         className={`${styles.copyToClipboardContainer} 
-      ${darkMode === true ? styles.darkModeContainer : styles.lightModeContainer}`}
+      ${!darkMode && styles.lightModeContainer}`}
       >
         <FiLink className={styles.linkIcon} />
         <div className={styles.textAreaContainer}>
@@ -31,13 +31,13 @@ const LinkDisplay = ({ content }) => {
             value={content}
             onClick={selectText}
             className={`${styles.linkTextArea} 
-            ${darkMode === true ? styles.darkTextArea : styles.lightTextArea}`}
+            ${!darkMode && styles.lightTextArea}`}
           />
         </div>
         <div>
           <button
             className={`${styles.copyButton} 
-          ${darkMode === true ? styles.darkModeButton : styles.lightModeButton}`}
+          ${!darkMode && styles.lightModeButton}`}
             onClick={copyCodeToClipboard}
           >
             <FiCopy className={styles.copyIcon} /> {buttonText}

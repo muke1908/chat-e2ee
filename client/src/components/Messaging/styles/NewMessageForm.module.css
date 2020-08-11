@@ -22,6 +22,13 @@
   color: #fff;
 }
 
+.lightMessageInput {
+  background: #e2e2e2;
+  color: #000000;
+  outline: none;
+  border-color: #e2e2e2;
+}
+
 .sendButton {
   height: 50px;
   display: flex;
@@ -35,6 +42,16 @@
   color: #fff;
   transition: 180ms;
 }
+
+.lightModeSend {
+  background: #3cb043;
+  color: #fff;
+}
+
+.lightModeSend:hover {
+  background: #028a0f !important;
+}
+
 .sendButton:hover {
   background: #ab0b42;
 }

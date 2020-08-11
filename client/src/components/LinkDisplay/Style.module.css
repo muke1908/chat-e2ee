@@ -9,9 +9,6 @@
   justify-content: center;
   text-align: center;
   padding-left: 10px;
-}
-
-.darkModeContainer {
   border: 1px solid #121212;
   background: #121212;
 }
@@ -31,9 +28,6 @@
   box-sizing: border-box;
   padding-left: 10px;
   font-family: monospace;
-}
-
-.darkTextArea {
   background: #121212;
   color: #aeaeae;
 }
@@ -52,9 +46,6 @@
   border-radius: 5px;
   cursor: pointer;
   outline: none;
-}
-
-.darkModeButton {
   border-color: #434343;
   background: #434343;
   color: #aeaeae;

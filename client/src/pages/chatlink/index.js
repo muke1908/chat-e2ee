@@ -52,11 +52,7 @@ const App = () => {
           Because privacy matters!
           {darkMode === true ? <FiSun onClick={toggleTheme} /> : <FiMoon onClick={toggleTheme} />}
         </div>
-        <div
-          className={`${
-            darkMode === true ? styles.sectionDefaultDark : styles.sectionDefaultLight
-          }`}
-        >
+        <div className={`${styles.sectionDefault} ${!darkMode && styles.sectionDefaultLight}`}>
           <div className={stylesLocal.title}>
             Generate temporary link and start chatting without worrying.
           </div>
@@ -91,7 +87,7 @@ const App = () => {
         </div>
         <div
           className={`${stylesLocal.sectionContribute} ${
-            darkMode === true ? styles.sectionDefaultDark : styles.sectionDefaultLight
+            darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
           }`}
         >
           <div className={stylesLocal.title}>

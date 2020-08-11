@@ -13,7 +13,7 @@ const App = () => {
   const [darkMode, setdarkMode] = useContext(ThemeContext);
 
   return (
-    <body className={darkMode === true ? styles.darkMode : styles.lightMode}>
+    <body className={!darkMode && styles.lightMode}>
       <Router>
         <div className={styles.bodyContent}>
           <Switch>
