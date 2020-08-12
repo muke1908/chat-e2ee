@@ -7,7 +7,7 @@ import LinkDisplay from '../../components/LinkDisplay/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
 import styles from '../../Style.module.css';
 import stylesLocal from './Style.module.css';
-import { FiSun, FiMoon } from 'react-icons/fi';
+import ThemeToggle from '../../components/ThemeToggle/index.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
@@ -50,7 +50,7 @@ const App = () => {
           ${darkMode === true ? stylesLocal.darkModeHeader : stylesLocal.lightModeHeader}`}
         >
           Because privacy matters!
-          {darkMode === true ? <FiSun onClick={toggleTheme} /> : <FiMoon onClick={toggleTheme} />}
+          <ThemeToggle />
         </div>
         <div className={`${styles.sectionDefault} ${!darkMode && styles.sectionDefaultLight}`}>
           <div className={stylesLocal.title}>
