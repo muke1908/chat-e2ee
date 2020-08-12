@@ -5,7 +5,7 @@ import { ThemeContext } from '../../ThemeContext.js';
 const Button = (props) => {
   const { label, type = 'primary', disabled = false, onClick, width } = props;
 
-  const [darkMode, setDarkMode] = useContext(ThemeContext);
+  const [darkMode] = useContext(ThemeContext);
 
   const _styles = {
     width: width || 'auto'

@@ -10,7 +10,7 @@ import { ThemeProvider, ThemeContext } from './ThemeContext.js';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 const App = () => {
-  const [darkMode, setdarkMode] = useContext(ThemeContext);
+  const [darkMode] = useContext(ThemeContext);
 
   return (
     <div className={`${styles.defaultMode} ${!darkMode && styles.lightMode} `}>
