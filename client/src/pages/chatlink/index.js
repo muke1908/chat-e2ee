@@ -34,10 +34,6 @@ const App = () => {
     renderGoogleReCaptcha(captchaIns, setCaptchToken, 'captcha');
   };
 
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
-  };
-
   useEffect(() => {
     initCaptcha();
   }, []);
