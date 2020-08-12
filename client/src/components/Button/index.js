@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styles from './Style.module.css';
+import { ThemeContext } from '../../ThemeContext.js';
 
 const Button = (props) => {
   const { label, type = 'primary', disabled = false, onClick, width } = props;
+
+  const [darkMode] = useContext(ThemeContext);
 
   const _styles = {
     width: width || 'auto'
@@ -10,7 +13,12 @@ const Button = (props) => {
 
   return (
     <div
-      className={`${styles.button} ${disabled && styles.disabled}`}
+      className={`
+      ${styles.button} 
+      ${
+        disabled === true ? styles.disabled : darkMode === true ? styles.darkMode : styles.lightMode
+      } 
+      `}
       type={type}
       styles={_styles}
       onClick={onClick}
