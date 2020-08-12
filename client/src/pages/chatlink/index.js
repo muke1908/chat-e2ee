@@ -13,7 +13,7 @@ const App = () => {
   const [chatLink, setChatLink] = useState('');
   const [captchaToken, setCaptchToken] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useContext(ThemeContext);
+  const [darkMode] = useContext(ThemeContext);
 
   const formBusy = !captchaToken || loading;
 
