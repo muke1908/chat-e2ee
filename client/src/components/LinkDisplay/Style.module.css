@@ -1,6 +1,4 @@
 .copyToClipboardContainer {
-  border: 1px solid #121212;
-  background: #121212;
   color: #fff;
   display: flex;
   padding: 2px;
@@ -11,6 +9,13 @@
   justify-content: center;
   text-align: center;
   padding-left: 10px;
+  border: 1px solid #121212;
+  background: #121212;
+}
+
+.lightModeContainer {
+  border: 1px solid #f2f2f2;
+  background: #f2f2f2;
 }
 
 .linkTextArea {
@@ -22,16 +27,18 @@
   resize: none;
   box-sizing: border-box;
   padding-left: 10px;
+  font-family: monospace;
   background: #121212;
   color: #aeaeae;
-  font-family: monospace;
+}
+
+.lightTextArea {
+  background: #f2f2f2;
+  color: #000000;
 }
 
 .copyButton {
-  color: #aeaeae;
-  background: #434343;
   border-width: 1px;
-  border-color: #434343;
   font-family: inherit;
   font-size: 18px;
   width: 100px;
@@ -39,6 +46,15 @@
   border-radius: 5px;
   cursor: pointer;
   outline: none;
+  border-color: #434343;
+  background: #434343;
+  color: #aeaeae;
+}
+
+.lightModeButton {
+  border-color: #e2e2e2;
+  background: #e2e2e2;
+  color: #000000;
 }
 
 .linkIcon {
@@ -67,7 +83,16 @@
   transition: 180ms;
   font-size: 12px;
 }
-.openLink a:hover {
+.darkOpenLink a:hover {
   color: #fff !important;
   border-color: #fff;
+}
+
+.lightOpenLink a:hover {
+  color: #aeaeae !important;
+  border-color: #aeaeae;
+}
+
+.fullWidth {
+  width: 100%;
 }

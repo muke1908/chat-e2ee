@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -16,6 +16,7 @@ import {
   encryptMsg,
   decryptMsg
 } from './helpers';
+import { ThemeContext } from '../../ThemeContext.js';
 
 import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
 import styles from './Style.module.css';
@@ -35,6 +36,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [usersInChannel, setUsers] = useState([]);
   const [notificationState, setNotificationState] = useState(false);
+  const [darkMode] = useContext(ThemeContext);
 
   const myKeyRef = useRef(null);
   const publicKeyRef = useRef(null);
@@ -220,7 +222,7 @@ const Chat = () => {
     <>
       <UserStatusInfo online={alice} />
       <div className={styles.messageContainer}>
-        <div className={styles.messageBlock}>
+        <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
           <ScrollWrapper messageCount={messagesFormatted.length}>
             <MessageList data={messagesFormatted} />
           </ScrollWrapper>

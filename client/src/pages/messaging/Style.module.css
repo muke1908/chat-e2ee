@@ -1,7 +1,6 @@
 .messageContainer {
   padding-bottom: 50px;
   /* height fallback */
-  height: 90vh;
   height: calc(100% - 50px);
   display: flex;
   flex-direction: column;
@@ -14,6 +13,11 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+}
+
+.lightModeContainer {
+  background: #e3e3e3;
+  box-shadow: 4px 3px 10px #eeeeee;
 }
 
 @media screen and (max-width: 640px) {

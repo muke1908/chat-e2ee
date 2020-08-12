@@ -1,6 +1,8 @@
 .userInfo {
   padding: 15px 0px 15px 0px;
   font-weight: 400;
+  display: flex;
+  justify-content: space-between;
 }
 .userInfoOnline {
   color: #4caf50;
@@ -10,4 +12,16 @@
   .userInfo {
     padding-left: 15px;
   }
+}
+
+.toggleIcon {
+  font-size: 24px;
+}
+
+.FiMoon {
+  color: #231709;
+}
+
+.FiSun {
+  color: #4bb2f9;
 }
