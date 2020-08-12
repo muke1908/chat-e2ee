@@ -3,7 +3,7 @@ import styles from './styles/MessageList.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
 
 export const MessageList = ({ data }) => {
-  const [darkMode, setDarkMode] = useContext(ThemeContext);
+  const [darkMode] = useContext(ThemeContext);
   return (
     <>
       {data.map(({ owner, body }, index) => (

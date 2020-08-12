@@ -4,7 +4,7 @@ import { ThemeContext } from '../../ThemeContext.js';
 
 export const NewMessageForm = ({ handleSubmit, text, setText }) => {
   const inputRef = useRef(null);
-  const [darkMode, setDarkMode] = useContext(ThemeContext);
+  const [darkMode] = useContext(ThemeContext);
 
   const wrapperHandler = (e) => {
     inputRef.current.focus();

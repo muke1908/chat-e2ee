@@ -6,7 +6,7 @@ import { ThemeContext } from '../../ThemeContext.js';
 const LinkDisplay = ({ content }) => {
   const textAreaRef = useRef(null);
   const [buttonText, setButtonText] = useState('Copy');
-  const [darkMode, setDarkMode] = useContext(ThemeContext);
+  const [darkMode] = useContext(ThemeContext);
 
   const copyCodeToClipboard = () => {
     textAreaRef.current.select();
@@ -46,7 +46,7 @@ const LinkDisplay = ({ content }) => {
       </div>
       <div
         className={`${styles.openLink}
-      ${darkMode === true ? styles.darkOpenLink : styles.lightOpenLink}`}
+      ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
       >
         <a href={content} target="_blank" rel="noopener noreferrer">
           Open chat <FiExternalLink />

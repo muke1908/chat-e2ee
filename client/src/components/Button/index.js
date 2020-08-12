@@ -13,10 +13,12 @@ const Button = (props) => {
 
   return (
     <div
-      className={`${styles.button} 
+      className={`
+      ${styles.button} 
       ${
         disabled === true ? styles.disabled : darkMode === true ? styles.darkMode : styles.lightMode
-      } `}
+      } 
+      `}
       type={type}
       styles={_styles}
       onClick={onClick}
