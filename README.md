@@ -3,8 +3,8 @@
 **Note:**  
 The project is still in **development** phase.  
 Working prototype:  
-MS Azure - https://chat-e2ee.azurewebsites.net/  
-Heroku - https://chat-e2ee.herokuapp.com/
+Stable(`master`):  MS Azure - https://chat-e2ee.azurewebsites.net/  
+Latest(`contributions`): Heroku - https://chat-e2ee.herokuapp.com/
 
 ---
 
