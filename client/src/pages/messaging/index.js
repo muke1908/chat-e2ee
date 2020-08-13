@@ -89,6 +89,11 @@ const Chat = () => {
     // TODO: show it in the UI that, still waiting for alice's public key
     // either no joined the chat, or try fetching public manually
     // need a button to refresh
+    const checkEmptyMessage = (str) => !str.trim().length;
+    if (checkEmptyMessage(e.target.input_text.value)) {
+      alert('Please enter your message');
+      return;
+    }
 
     if (!publicKeyRef.current) {
       alert('No one is in chat!');
