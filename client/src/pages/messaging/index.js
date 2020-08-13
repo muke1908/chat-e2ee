@@ -14,7 +14,8 @@ import {
   typedArrayToStr,
   strToTypedArr,
   encryptMsg,
-  decryptMsg
+  decryptMsg,
+  isEmptyMessage
 } from './helpers';
 import { ThemeContext } from '../../ThemeContext.js';
 
@@ -86,9 +87,10 @@ const Chat = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // TODO: show it in the UI that, still waiting for alice's public key
-    // either no joined the chat, or try fetching public manually
-    // need a button to refresh
+    if (isEmptyMessage(text)) {
+      alert('Please enter your message!');
+      return;
+    }
 
     if (!publicKeyRef.current) {
       alert('No one is in chat!');
