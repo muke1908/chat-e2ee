@@ -8,7 +8,7 @@
     "build": "cd client && npm run build",
     "client": "cd client && npm start",
     "server": "NODE_ENV=development nodemon index",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "postinstall": "cd client && npm install",
     "start": "npm run build && NODE_ENV=production node index"
   },
@@ -40,6 +40,7 @@
     "eslint-plugin-react": "7.13.0",
     "eslint-plugin-react-hooks": "^4.0.5",
     "husky": "^4.2.5",
+    "jest": "^26.4.0",
     "lint-staged": "^10.2.11",
     "nodemon": "^2.0.4",
     "prettier": "^2.0.5"
