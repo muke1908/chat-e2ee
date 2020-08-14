@@ -10,7 +10,7 @@
     "server": "set NODE_ENV=development nodemon index",
     "test": "jest",
     "postinstall": "cd client && npm install",
-    "start": "npm run build && set NODE_ENV=production node index"
+    "start": "npm run build && set NODE_ENV=production &&  node index"
   },
   "author": "",
   "license": "ISC",
