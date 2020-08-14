@@ -1,4 +1,4 @@
-import loadJS from '../../utils/loadScript';
+import loadJS from '../../utils/loadJS';
 
 export const renderGoogleReCaptcha = (gr, callback, captchaEl) => {
   return new Promise((resolve) => {
