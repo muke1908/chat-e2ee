@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { ThemeContext } from '../../ThemeContext.js';
 import { FiSun, FiMoon } from 'react-icons/fi';
 import styles from './Style.module.css';
