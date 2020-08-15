@@ -7,10 +7,9 @@
     "dev": "concurrently \"npm run client\" \"npm run server\"",
     "build": "cd client && npm run build",
     "client": "cd client && npm start",
-    "server": "set NODE_ENV=development nodemon index",
-    "test": "jest",
-    "postinstall": "cd client && npm install",
-    "start": "npm run build && set NODE_ENV=production &&  node index"
+    "server": "cross-env NODE_ENV=development nodemon index",
+    "test": "cross-env NODE_ENV=test jest",
+    "start": "npm run build && cross-env NODE_ENV=production node index"
   },
   "author": "",
   "license": "ISC",
@@ -29,6 +28,7 @@
     "@commitlint/config-conventional": "^8.2.0",
     "babel-eslint": "^10.0.1",
     "concurrently": "^5.2.0",
+    "cross-env": "^7.0.2",
     "eslint": "^6.7.1",
     "eslint-config-airbnb": "17.1.0",
     "eslint-config-prettier": "^6.7.0",
