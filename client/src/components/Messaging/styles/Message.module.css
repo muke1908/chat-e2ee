@@ -47,3 +47,15 @@
 .lightModeContainer {
   background-color: #d3d3d3;
 }
+
+.messageError {
+  color: #828282;
+  font-size: 13px;
+}
+
+.messageRetry {
+  display: inline-block;
+  cursor: pointer;
+  color: #0f8cff;
+  margin-left: 5px;
+}
