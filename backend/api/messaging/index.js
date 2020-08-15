@@ -9,7 +9,9 @@ const router = express.Router({ mergeParams: true });
 
 router.post('/send', async (req, res) => {
   const { message, sender, channel } = req.body;
-
+  if (!message) {
+    res.send(400);
+  }
   const isChannelValid = await channelValid(channel);
   if (!isChannelValid) {
     return res.sendStatus(404);

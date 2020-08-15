@@ -1,4 +1,5 @@
 import storage from '../../../utils/storage';
+export { isEmptyMessage } from './validator';
 export { fetchMessages, getUsersInChannel, pubnubInit } from './pubnub';
 export {
   getKeyPair,

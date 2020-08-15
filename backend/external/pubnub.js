@@ -3,7 +3,7 @@ const PubNub = require('pubnub');
 const subscribeKey = process.env.PUBNUB_SUB_KEY;
 const publishKey = process.env.PUBNUB_PUB_KEY;
 
-if (!subscribeKey || !publishKey) {
+if ((!subscribeKey || !publishKey) && process.env.NODE_ENV !== 'test') {
   // eslint-disable-next-line no-console
   console.error('PUBNUB KEY NOT CONFIGURED!');
 }

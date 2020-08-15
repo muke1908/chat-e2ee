@@ -1,10 +1,10 @@
 ## chat-e2ee
 
-**Note:**  
-The project is still in **development** phase.  
+The project is still in **development** phase. [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
+
 Working prototype:  
-Stable(`master`):  MS Azure - https://chat-e2ee.azurewebsites.net/  
-Latest(`contributions`): Heroku - https://chat-e2ee.herokuapp.com/
+https://chat-e2ee.azurewebsites.net
+https://chat-e2ee.herokuapp.com
 
 ---
 
@@ -29,16 +29,18 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/muke1908"><img src="https://avatars3.githubusercontent.com/u/20297989?v=4?s=80" width="80px;" alt=""/><br /><sub><b>Mukesh</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=muke1908" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/gagan-aryan"><img src="https://avatars3.githubusercontent.com/u/62807661?v=4?s=80" width="80px;" alt=""/><br /><sub><b>Gagan Aryan</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=gagan-aryan" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/jradha11"><img src="https://avatars1.githubusercontent.com/u/59576984?v=4?s=80" width="80px;" alt=""/><br /><sub><b>Radha Jayaraman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jradha11" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/jessiematias"><img src="https://avatars1.githubusercontent.com/u/56523246?v=4?s=80" width="80px;" alt=""/><br /><sub><b>Jessie</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jessiematias" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/zygisS22"><img src="https://avatars2.githubusercontent.com/u/54106114?v=4?s=80" width="80px;" alt=""/><br /><sub><b>zygisS22</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=zygisS22" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/lindsayjohnston"><img src="https://avatars0.githubusercontent.com/u/58899165?v=4?s=80" width="80px;" alt=""/><br /><sub><b>lindsayjohnston</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=lindsayjohnston" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/JulienZD"><img src="https://avatars0.githubusercontent.com/u/48630731?v=4?s=80" width="80px;" alt=""/><br /><sub><b>Julien</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=JulienZD" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/muke1908"><img src="https://avatars3.githubusercontent.com/u/20297989?v=4" width="80px;" alt=""/><br /><sub><b>Mukesh</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=muke1908" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/gagan-aryan"><img src="https://avatars3.githubusercontent.com/u/62807661?v=4" width="80px;" alt=""/><br /><sub><b>Gagan Aryan</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=gagan-aryan" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jradha11"><img src="https://avatars1.githubusercontent.com/u/59576984?v=4" width="80px;" alt=""/><br /><sub><b>Radha Jayaraman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jradha11" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jessiematias"><img src="https://avatars1.githubusercontent.com/u/56523246?v=4" width="80px;" alt=""/><br /><sub><b>Jessie</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jessiematias" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/zygisS22"><img src="https://avatars2.githubusercontent.com/u/54106114?v=4" width="80px;" alt=""/><br /><sub><b>zygisS22</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=zygisS22" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lindsayjohnston"><img src="https://avatars0.githubusercontent.com/u/58899165?v=4" width="80px;" alt=""/><br /><sub><b>lindsayjohnston</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=lindsayjohnston" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/JulienZD"><img src="https://avatars0.githubusercontent.com/u/48630731?v=4" width="80px;" alt=""/><br /><sub><b>Julien</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=JulienZD" title="Documentation">📖</a></td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/FabiSdr"><img src="https://avatars1.githubusercontent.com/u/62851653?v=4?s=80" width="80px;" alt=""/><br /><sub><b>FabiSdr</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=FabiSdr" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/FabiSdr"><img src="https://avatars1.githubusercontent.com/u/62851653?v=4" width="80px;" alt=""/><br /><sub><b>FabiSdr</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=FabiSdr" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://audreykadjar.world/"><img src="https://avatars2.githubusercontent.com/u/38159391?v=4" width="80px;" alt=""/><br /><sub><b>AudreyKj</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=AudreyKj" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/DarkSouL11"><img src="https://avatars1.githubusercontent.com/u/8626394?v=4" width="80px;" alt=""/><br /><sub><b>Sundeep Babbur</b></sub></a><br /><a href="#infra-DarkSouL11" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/muke1908/chat-e2ee/commits?author=DarkSouL11" title="Code">💻</a></td>
   </tr>
 </table>
 
@@ -85,7 +87,8 @@ More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
 ---
 
-### For developers
+### For developers  
+
 
 FE: This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
 BE: The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.

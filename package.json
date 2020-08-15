@@ -7,10 +7,10 @@
     "dev": "concurrently \"npm run client\" \"npm run server\"",
     "build": "cd client && npm run build",
     "client": "cd client && npm start",
-    "server": "NODE_ENV=development nodemon index",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "cd client && npm install",
-    "start": "npm run build && NODE_ENV=production node index"
+    "server": "cross-env NODE_ENV=development nodemon index",
+    "test": "cross-env NODE_ENV=test jest",
+    "start": "npm run build && cross-env NODE_ENV=production node index",
+    "postinstall": "cd client && npm install"
   },
   "author": "",
   "license": "ISC",
@@ -22,7 +22,8 @@
     "mongodb": "^3.5.9",
     "node-fetch": "^2.6.0",
     "pubnub": "^4.28.2",
-    "uuid": "^8.2.0"
+    "uuid": "^8.2.0",
+    "cross-env": "^7.0.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.2.0",
@@ -40,9 +41,11 @@
     "eslint-plugin-react": "7.13.0",
     "eslint-plugin-react-hooks": "^4.0.5",
     "husky": "^4.2.5",
+    "jest": "^24.9.0",
     "lint-staged": "^10.2.11",
     "nodemon": "^2.0.4",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "supertest": "^4.0.2"
   },
   "husky": {
     "hooks": {

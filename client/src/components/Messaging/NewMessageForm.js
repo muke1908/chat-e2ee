@@ -17,6 +17,7 @@ export const NewMessageForm = ({ handleSubmit, text, setText }) => {
         ref={inputRef}
         className={`${styles.sendMessageInput} ${!darkMode && styles.lightMessageInput}`}
         type="text"
+        name="input_text"
         placeholder="Write message"
         onChange={(e) => setText(e.target.value)}
         value={text}
