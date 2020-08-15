@@ -9,7 +9,8 @@
     "client": "cd client && npm start",
     "server": "cross-env NODE_ENV=development nodemon index",
     "test": "cross-env NODE_ENV=test jest",
-    "start": "npm run build && cross-env NODE_ENV=production node index"
+    "start": "npm run build && cross-env NODE_ENV=production node index",
+    "postinstall": "cd client && npm install"
   },
   "author": "",
   "license": "ISC",
