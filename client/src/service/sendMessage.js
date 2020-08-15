@@ -1,4 +1,4 @@
-import makeRequest from '../utils/request';
+import makeRequest from '../utils/makeRequest';
 
 const sendMessage = async ({ channelID, userId, text }) => {
   await makeRequest('chat/send', {
