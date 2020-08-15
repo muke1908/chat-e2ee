@@ -36,7 +36,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [usersInChannel, setUsers] = useState([]);
   const [notificationState, setNotificationState] = useState(false);
-  const [darkMode] = useContext(ThemeContext);
+  const [darkMode, setDarkMode] = useContext(ThemeContext);
 
   const myKeyRef = useRef(null);
   const publicKeyRef = useRef(null);
