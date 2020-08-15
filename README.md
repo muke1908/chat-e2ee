@@ -1,10 +1,10 @@
 ## chat-e2ee
 
-**Note:**  
-The project is still in **development** phase.  
+The project is still in **development** phase. [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
+
 Working prototype:  
-https://chat-e2ee.azurewebsites.net/   !['up-down'](https://img.shields.io/website-up-down-green-red/https/chat-e2ee.azurewebsites.net)  
-https://chat-e2ee.herokuapp.com/   !['up-down'](https://img.shields.io/website-up-down-green-red/https/chat-e2ee.herokuapp.com)
+https://chat-e2ee.azurewebsites.net
+https://chat-e2ee.herokuapp.com
 
 ---
 
@@ -87,7 +87,8 @@ More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
 ---
 
-### For developers
+### For developers  
+
 
 FE: This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
 BE: The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.
