@@ -22,14 +22,14 @@
     "mongodb": "^3.5.9",
     "node-fetch": "^2.6.0",
     "pubnub": "^4.28.2",
-    "uuid": "^8.2.0"
+    "uuid": "^8.2.0",
+    "cross-env": "^7.0.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
     "babel-eslint": "^10.0.1",
     "concurrently": "^5.2.0",
-    "cross-env": "^7.0.2",
     "eslint": "^6.7.1",
     "eslint-config-airbnb": "17.1.0",
     "eslint-config-prettier": "^6.7.0",
