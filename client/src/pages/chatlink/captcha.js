@@ -1,11 +1,12 @@
 import loadJS from '../../utils/loadJS';
 
-export const renderGoogleReCaptcha = (gr, callback, captchaEl) => {
+export const renderGoogleReCaptcha = (gr, captchaEl, callback, expiredCallback) => {
   return new Promise((resolve) => {
     gr.ready(() => {
       gr.render(captchaEl, {
         sitekey: process.env.REACT_APP_CAPTCHA_KEY,
         callback: callback,
+        'expired-callback': expiredCallback,
         theme: 'dark'
       });
       resolve();
