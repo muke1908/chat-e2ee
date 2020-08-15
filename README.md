@@ -3,8 +3,8 @@
 **Note:**  
 The project is still in **development** phase.  
 Working prototype:  
-Stable(`master`):  MS Azure - https://chat-e2ee.azurewebsites.net/  
-Latest(`contributions`): Heroku - https://chat-e2ee.herokuapp.com/
+https://chat-e2ee.azurewebsites.net/   !['up-down'](https://img.shields.io/website-up-down-green-red/https/chat-e2ee.azurewebsites.net)  
+https://chat-e2ee.herokuapp.com/   !['up-down'](https://img.shields.io/website-up-down-green-red/https/chat-e2ee.herokuapp.com)
 
 ---
 
