@@ -1,4 +1,4 @@
-import makeRequest from '../utils/request';
+import makeRequest from '../utils/makeRequest';
 
 export const sharePublicKey = ({ publicKey, sender, channel }) => {
   return makeRequest('chat/sharePublicKey', {

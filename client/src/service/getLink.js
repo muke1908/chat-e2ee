@@ -1,4 +1,4 @@
-import makeRequest from '../utils/request';
+import makeRequest from '../utils/makeRequest';
 
 const getLink = async ({ token }) => {
   return makeRequest('getLink', {
