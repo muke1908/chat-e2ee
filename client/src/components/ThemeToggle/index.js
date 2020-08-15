@@ -7,9 +7,6 @@ import storage from '../../utils/storage';
 const ThemeToggle = () => {
   const [darkMode, setDarkMode] = useContext(ThemeContext);
 
-  useEffect(() => {
-    setDarkMode(storage.get('theme'));
-  }, []);
   const toggleTheme = () => {
     storage.set('theme', !darkMode);
     setDarkMode(!darkMode);
