@@ -29,9 +29,14 @@ const App = () => {
     setChatLink(linkResp);
     setLoading(false);
   };
+
+  const resetCaptchToken = () => {
+    setCaptchToken(null);
+  };
+
   const initCaptcha = async () => {
     const captchaIns = await getCaptchaInstance();
-    renderGoogleReCaptcha(captchaIns, setCaptchToken, 'captcha');
+    renderGoogleReCaptcha(captchaIns, 'captcha', setCaptchToken, resetCaptchToken);
   };
 
   useEffect(() => {
