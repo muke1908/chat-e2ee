@@ -222,6 +222,7 @@ const Chat = () => {
     //this will send the public key
     exchangePublicKey(channelID);
     initChat();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
@@ -233,18 +234,15 @@ const Chat = () => {
     };
   });
 
-
   return (
     <>
       <UserStatusInfo online={alice} />
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
           <ScrollWrapper messageCount={messagesFormatted.length}>
-            {
-                messagesFormatted.map((message, index)=> (
-                    <Message key={index} handleSend={handleSend} index={index} message={message} />
-                ))
-            }
+            {messagesFormatted.map((message, index) => (
+              <Message key={index} handleSend={handleSend} index={index} message={message} />
+            ))}
           </ScrollWrapper>
         </div>
         <NewMessageForm handleSubmit={handleSubmit} text={text} setText={setText} />

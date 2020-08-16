@@ -41,13 +41,14 @@ const App = () => {
 
   useEffect(() => {
     initCaptcha();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <>
       <div className={stylesLocal.linkGenerationPage}>
         <div
-          className={`${stylesLocal.header} 
+          className={`${stylesLocal.header}
           ${darkMode === true ? stylesLocal.darkModeHeader : stylesLocal.lightModeHeader}`}
         >
           Because privacy matters!
