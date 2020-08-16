@@ -10,7 +10,6 @@ const imagePicker = (e) => {
       resolve(e.target.result);
     };
 
-    reader.onload = resolve;
     reader.onerror = reject;
   });
 };

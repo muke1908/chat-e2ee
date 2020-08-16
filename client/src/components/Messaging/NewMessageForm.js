@@ -25,7 +25,7 @@ export const NewMessageForm = ({ handleSubmit, text, setText }) => {
         value={text}
       />
       <div className={styles.imagePickerContainer}>
-        <label className={styles.imagePickerLabel} forhtml="file-upload">
+        <label className={styles.imagePickerLabel}>
           <input className={styles.inputImagePicker} type="file" onChange={imagePicker} />
           <img className={styles.imagePickerIcon} src={imagePickerIcon} alt="file-upload" />
         </label>
