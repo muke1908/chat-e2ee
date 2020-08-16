@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo, useContext } from 'react';
+import React, { useCallback, useEffect, useState, useRef, useMemo, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -21,12 +21,7 @@ import { ThemeContext } from '../../ThemeContext.js';
 
 import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
 import styles from './Style.module.css';
-import {
-  MessageList,
-  UserStatusInfo,
-  NewMessageForm,
-  ScrollWrapper
-} from '../../components/Messaging';
+import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from '../../components/Messaging';
 import Notification from '../../components/Notification';
 import notificationAudio from '../../components/Notification/audio.mp3';
 // create your key at https://www.pubnub.com/
@@ -96,14 +91,26 @@ const Chat = () => {
       alert('No one is in chat!');
       return;
     }
-    try {
+    setMessages((prevMsg) =>
+      prevMsg.concat({
+        body: text,
+        sender: userId,
+        local: true
+      })
+    );
+
+    setText('');
+  };
+
+  const handleSend = useCallback(
+    async (body, index) => {
       const { box, nonce } = encryptMsg({
-        text,
+        text: body,
         mySecretKey: myKeyRef.current.secretKey,
         alicePublicKey: publicKeyRef.current
       });
 
-      sendMessage({
+      await sendMessage({
         channelID,
         userId,
         text: {
@@ -112,12 +119,15 @@ const Chat = () => {
         }
       });
 
-      setText('');
-    } catch (err) {
-      alert('Failed to send message!');
-      console.error(err);
-    }
-  };
+      setMessages((prevMsg) => {
+        const { ...message } = prevMsg[index];
+        message.local = false;
+        prevMsg[index] = message;
+        return [...prevMsg];
+      });
+    },
+    [channelID, userId]
+  );
 
   const getSetUsers = async (channelID) => {
     const usersInChannel = await getUsersInChannel(pubnub, channelID);
@@ -157,8 +167,9 @@ const Chat = () => {
         // console.log('statusEvent', statusEvent);
       },
       message: (msg) => {
-        // new message
-        if (msg.channel === channelID) {
+        // TODO Handle case where same user is logged in from multiple tabs
+        // new message (ignore self messages)
+        if (msg.channel === channelID && userId !== msg.message.sender) {
           try {
             const box = strToTypedArr(msg.message.body.box);
             const nonce = strToTypedArr(msg.message.body.nonce);
@@ -214,19 +225,27 @@ const Chat = () => {
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
-  const messagesFormatted = messages.map(({ body, sender, encrypted }, i) => {
+  const messagesFormatted = messages.map(({ body, sender, local }, i) => {
     return {
       owner: sender === userId,
-      body
+      body,
+      local
     };
   });
+
+
   return (
     <>
       <UserStatusInfo online={alice} />
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
           <ScrollWrapper messageCount={messagesFormatted.length}>
-            <MessageList data={messagesFormatted} />
+            {
+                messagesFormatted.map((message, index)=> (
+                    <Message key={index} handleSend={handleSend} index={index} message={message} 
+                    />
+                )
+            }
           </ScrollWrapper>
         </div>
         <NewMessageForm handleSubmit={handleSubmit} text={text} setText={setText} />
