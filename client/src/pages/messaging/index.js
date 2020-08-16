@@ -233,9 +233,6 @@ const Chat = () => {
     };
   });
 
-  function messageUi(message, index) {
-    return <Message key={index} handleSend={handleSend} index={index} message={message} />;
-  }
 
   return (
     <>
