@@ -36,13 +36,14 @@ const App = () => {
 
   const initCaptcha = async () => {
     const captchaIns = await getCaptchaInstance();
-    renderGoogleReCaptcha(captchaIns, 'captcha', setCaptchToken, resetCaptchToken);
+    const colorMode = darkMode ? 'dark' : 'light';
+    renderGoogleReCaptcha(captchaIns, 'captcha', setCaptchToken, resetCaptchToken, colorMode);
   };
 
   useEffect(() => {
     initCaptcha();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [darkMode]);
 
   return (
     <>
