@@ -243,7 +243,12 @@ const Chat = () => {
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
           <ScrollWrapper messageCount={messagesFormatted.length}>
-            {messagesFormatted.map(messageUi)}
+            {
+                messagesFormatted.map((message, index)=> (
+                    <Message key={index} handleSend={handleSend} index={index} message={message} 
+                    />
+                )
+            }
           </ScrollWrapper>
         </div>
         <NewMessageForm handleSubmit={handleSubmit} text={text} setText={setText} />
