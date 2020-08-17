@@ -45,7 +45,7 @@ const App = () => {
     initCaptcha();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [darkMode]);
 
   useEffect(() => {
     let cleanUp;
