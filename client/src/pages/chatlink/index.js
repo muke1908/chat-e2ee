@@ -14,7 +14,7 @@ const App = () => {
   const [captchaToken, setCaptchToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [darkMode] = useContext(ThemeContext);
-  let key = 0;
+  const [elKey, setElKey] = useState(0);
 
   const formBusy = !captchaToken || loading;
 
@@ -42,20 +42,11 @@ const App = () => {
   };
 
   useEffect(() => {
+    setElKey(elKey + 1);
     initCaptcha();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [darkMode]);
-
-  useEffect(() => {
-    let cleanUp;
-    key++;
-
-    return () => {
-      cleanUp = true;
-      window.location.reload();
-    };
-  }, [darkMode, key]);
 
   return (
     <>
@@ -83,7 +74,7 @@ const App = () => {
           </div>
           {!chatLink && (
             <>
-              <div id="captcha" className={stylesLocal.captchaHeightSetter} key={key}></div>
+              <div id="captcha" className={stylesLocal.captchaHeightSetter} key={elKey}></div>
               <br />
               <Button
                 label="Generate link"
