@@ -1,9 +1,9 @@
 ## chat-e2ee
-
-The project is still in **development** phase. [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
+The project is still in **development** phase.
 
 Working prototype:  
-https://chat-e2ee.azurewebsites.net
+https://chat-e2ee.azurewebsites.net  
 https://chat-e2ee.herokuapp.com
 
 ---
