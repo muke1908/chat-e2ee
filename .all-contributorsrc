@@ -95,6 +95,24 @@
         "infra",
         "code"
       ]
+    },
+    {
+      "login": "imlaxman",
+      "name": "imlaxman",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/34925185?v=4",
+      "profile": "https://github.com/imlaxman",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ARKEOLOGIST",
+      "name": "Arkadyuti Bandyopadhyay",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/34165124?v=4",
+      "profile": "https://github.com/ARKEOLOGIST",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

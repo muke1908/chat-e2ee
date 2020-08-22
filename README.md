@@ -1,9 +1,9 @@
 ## chat-e2ee
-
-The project is still in **development** phase. [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
+The project is still in **development** phase.
 
 Working prototype:  
-https://chat-e2ee.azurewebsites.net
+https://chat-e2ee.azurewebsites.net  
 https://chat-e2ee.herokuapp.com
 
 ---
@@ -41,6 +41,8 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
     <td align="center"><a href="https://github.com/FabiSdr"><img src="https://avatars1.githubusercontent.com/u/62851653?v=4" width="80px;" alt=""/><br /><sub><b>FabiSdr</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=FabiSdr" title="Documentation">📖</a></td>
     <td align="center"><a href="https://audreykadjar.world/"><img src="https://avatars2.githubusercontent.com/u/38159391?v=4" width="80px;" alt=""/><br /><sub><b>AudreyKj</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=AudreyKj" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/DarkSouL11"><img src="https://avatars1.githubusercontent.com/u/8626394?v=4" width="80px;" alt=""/><br /><sub><b>Sundeep Babbur</b></sub></a><br /><a href="#infra-DarkSouL11" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/muke1908/chat-e2ee/commits?author=DarkSouL11" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/imlaxman"><img src="https://avatars3.githubusercontent.com/u/34925185?v=4" width="80px;" alt=""/><br /><sub><b>imlaxman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=imlaxman" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ARKEOLOGIST"><img src="https://avatars1.githubusercontent.com/u/34165124?v=4" width="80px;" alt=""/><br /><sub><b>Arkadyuti Bandyopadhyay</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=ARKEOLOGIST" title="Code">💻</a></td>
   </tr>
 </table>
 

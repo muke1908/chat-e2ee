@@ -44,6 +44,7 @@ const App = () => {
   useEffect(() => {
     setElKey(elKey + 1);
     initCaptcha();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [darkMode]);
 
