@@ -2,7 +2,7 @@ import React, { useRef, useContext } from 'react';
 import styles from './styles/NewMessageForm.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
 import imagePicker from '../../utils/imagePicker.js';
-import imagePickerIcon from './image-picker.png';
+import imagePickerIcon from './assets/image-picker.png';
 
 export const NewMessageForm = ({ handleSubmit, text, setText }) => {
   const inputRef = useRef(null);
@@ -14,7 +14,10 @@ export const NewMessageForm = ({ handleSubmit, text, setText }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.sendMessageForm}>
+    <form
+      onSubmit={handleSubmit}
+      className={`${styles.sendMessageForm} ${!darkMode && styles.lightsendMessageForm}`}
+    >
       <input
         ref={inputRef}
         className={`${styles.sendMessageInput} ${!darkMode && styles.lightMessageInput}`}

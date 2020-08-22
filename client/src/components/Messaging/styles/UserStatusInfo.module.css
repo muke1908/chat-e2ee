@@ -3,6 +3,7 @@
   font-weight: 400;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 .userInfoOnline {
   color: #4caf50;

@@ -8,6 +8,10 @@
   margin-bottom: 20px;
 }
 
+.lightsendMessageForm {
+  border-color: #cbcbcb;
+}
+
 .sendMessageInput {
   font-family: inherit;
   font-size: 18px;
