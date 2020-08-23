@@ -3,13 +3,28 @@ const { findOneFromDB } = require('../../db');
 
 const channelValid = async (channel) => {
   const ifExists = await findOneFromDB({ hash: channel }, LINK_COLLECTION);
-  if (ifExists) {
-    if (ifExists.deleted || ifExists.expired) {
-      return false;
-    }
-    return ifExists;
+  if (!ifExists) {
+    return {
+      valid: false,
+      state: 'NOT_FOUND'
+    };
   }
-  return ifExists;
+  if (ifExists.deleted) {
+    return {
+      valid: false,
+      state: 'DELETED'
+    };
+  }
+  if (ifExists.expired) {
+    return {
+      valid: false,
+      state: 'EXPIRED'
+    };
+  }
+  return {
+    valid: true,
+    state: 'ACTIVE'
+  };
 };
 
 module.exports = channelValid;

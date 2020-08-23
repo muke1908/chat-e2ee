@@ -7,7 +7,9 @@ const generateLink = () => {
   return {
     hash,
     link: `/chat/${hash}`,
-    absoluteLink: `${chatLinkDomain}/chat/${hash}`
+    absoluteLink: `${chatLinkDomain}/chat/${hash}`,
+    expired: false,
+    deleted: false
   };
 };
 
