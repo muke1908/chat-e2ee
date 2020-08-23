@@ -40,9 +40,9 @@ router.get(
   '/validateLink/:channel',
   asyncHandler(async (req, res) => {
     const { channel } = req.params;
-    const isChannelValid = await channelValid(channel);
+    const { valid } = await channelValid(channel);
 
-    if (!isChannelValid) {
+    if (!valid) {
       return res.sendStatus(404).send('Invalid channel');
     }
 
