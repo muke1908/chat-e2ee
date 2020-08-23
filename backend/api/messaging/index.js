@@ -1,7 +1,7 @@
 const express = require('express');
 const { publishMessage } = require('../../external/pubnub');
 const { insertInDb, findOneFromDB } = require('../../db');
-const channelValid = require('./validateChannel');
+const channelValid = require('../chatLink/utils/validateChannel');
 
 const { PUBLIC_KEY_COLLECTION } = require('../../db/const');
 
@@ -40,8 +40,9 @@ router.post('/sharePublicKey', async (req, res) => {
 router.get('/getPublicKey', async (req, res) => {
   const { userId, channel } = req.query;
 
-  const isChannelValid = await channelValid(channel);
-  if (!isChannelValid) {
+  const { valid } = await channelValid(channel);
+
+  if (!valid) {
     return res.sendStatus(404);
   }
 

@@ -4,9 +4,9 @@ const Notification = ({ play, audio }) => {
   const audioFile = useRef(null);
   const playAudio = () => {
     try {
-      audioFile.current.play();
+      // audioFile.current.play();
     } catch (err) {
-      console.error(err);
+      console.log(err);
     }
   };
 
