@@ -43,6 +43,7 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
     <td align="center"><a href="https://github.com/DarkSouL11"><img src="https://avatars1.githubusercontent.com/u/8626394?v=4" width="80px;" alt=""/><br /><sub><b>Sundeep Babbur</b></sub></a><br /><a href="#infra-DarkSouL11" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/muke1908/chat-e2ee/commits?author=DarkSouL11" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/imlaxman"><img src="https://avatars3.githubusercontent.com/u/34925185?v=4" width="80px;" alt=""/><br /><sub><b>imlaxman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=imlaxman" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ARKEOLOGIST"><img src="https://avatars1.githubusercontent.com/u/34165124?v=4" width="80px;" alt=""/><br /><sub><b>Arkadyuti Bandyopadhyay</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=ARKEOLOGIST" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/nafees87n"><img src="https://avatars2.githubusercontent.com/u/56021937?v=4" width="80px;" alt=""/><br /><sub><b>Nafees Nehar</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=nafees87n" title="Code">💻</a></td>
   </tr>
 </table>
 
