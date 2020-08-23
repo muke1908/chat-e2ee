@@ -20,6 +20,8 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)
 - [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)
 
+For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#for-developers).
+
 ---
 
 ## Contributors ✨
@@ -117,9 +119,10 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 | url                          | method | paylod                         | filename                  | description                                   |
 | ---------------------------- | ------ | ------------------------------ | ------------------------- | --------------------------------------------- |
-| `/api/getLink`               | `POST` | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
+| `/api/chat-link/generate`               | `POST` | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
+| `/api/chat-link/validate/:channel` | `GET`  |                                | `/api/index.js`           | to check if a channel is valid                |
 | `/api/chat/send`             | `POST` | `{ channel, sender, message }` | `/api/messaging/index.js` | to send a message to a specific channel       |
-| `/api/validateLink/:channel` | `GET`  |                                | `/api/index.js`           | to check if a channel is valid                |
+
 
 ---
 
