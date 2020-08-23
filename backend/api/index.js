@@ -31,6 +31,8 @@ router.post(
     }
 
     const link = generateLink();
+    link.expired = false;
+    link.deleted = false;
     await insertInDb(link, LINK_COLLECTION);
     return res.send(link);
   })
