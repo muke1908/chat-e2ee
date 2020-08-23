@@ -25,7 +25,7 @@ router.post('/send', async (req, res) => {
   return res.send({ message: 'message sent' });
 });
 
-router.post('/sharePublicKey', async (req, res) => {
+router.post('/share-public-key', async (req, res) => {
   const { publicKey, sender, channel } = req.body;
 
   const isChannelValid = await channelValid(channel);
@@ -37,7 +37,7 @@ router.post('/sharePublicKey', async (req, res) => {
   return res.send({ status: 'ok' });
 });
 
-router.get('/getPublicKey', async (req, res) => {
+router.get('/get-public-key', async (req, res) => {
   const { userId, channel } = req.query;
 
   const { valid } = await channelValid(channel);
