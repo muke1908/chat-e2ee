@@ -1,17 +1,13 @@
 import React from 'react';
 
 const Image = ({ src, maxHeight, maxWidth }) => {
-  const customStyle = {
+  const style = {
     objectFit: 'contain',
-    maxHeight: { maxHeight },
-    maxWidth: { maxWidth }
+    maxHeight,
+    maxWidth
   };
 
-  return (
-    <div>
-      <img src={src} style={customStyle} alt="" />;
-    </div>
-  );
+  return <img src={src} style={style} alt="" />;
 };
 
 export default Image;
