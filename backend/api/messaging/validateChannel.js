@@ -9,22 +9,18 @@ const channelValid = async (channel) => {
       state: 'NOT_FOUND'
     };
   }
-  if (ifExists.deleted) {
-    return {
-      valid: false,
-      state: 'DELETED'
-    };
-  }
-  if (ifExists.expired) {
-    return {
-      valid: false,
-      state: 'EXPIRED'
-    };
-  }
-  return {
-    valid: true,
-    state: 'ACTIVE'
-  };
+const { expired, deleted } = ifExists;
+const inValid =  (expired || deleted);
+
+const validState = 'ACTIVE';
+const invalidState =  (deleted && 'DELETED') || (expired && 'EXPIRED'); 
+
+const state = inValid ? invalidState : validState;
+
+return { 
+    valid: !invalid, 
+    state 
+}
 };
 
 module.exports = channelValid;
