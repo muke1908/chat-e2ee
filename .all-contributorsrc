@@ -122,6 +122,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "tskull01",
+      "name": "Tyler Skulley",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/25822696?v=4",
+      "profile": "http://twsprogramming.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
