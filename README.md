@@ -46,6 +46,7 @@ For installation instruction, go to [developer section](https://github.com/muke1
     <td align="center"><a href="https://github.com/imlaxman"><img src="https://avatars3.githubusercontent.com/u/34925185?v=4" width="80px;" alt=""/><br /><sub><b>imlaxman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=imlaxman" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ARKEOLOGIST"><img src="https://avatars1.githubusercontent.com/u/34165124?v=4" width="80px;" alt=""/><br /><sub><b>Arkadyuti Bandyopadhyay</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=ARKEOLOGIST" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/nafees87n"><img src="https://avatars2.githubusercontent.com/u/56021937?v=4" width="80px;" alt=""/><br /><sub><b>Nafees Nehar</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=nafees87n" title="Code">💻</a></td>
+    <td align="center"><a href="http://twsprogramming.com"><img src="https://avatars0.githubusercontent.com/u/25822696?v=4" width="80px;" alt=""/><br /><sub><b>Tyler Skulley</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=tskull01" title="Code">💻</a></td>
   </tr>
 </table>
 
