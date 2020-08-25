@@ -10,7 +10,7 @@ const { LINK_COLLECTION } = require('../../db/const');
 const router = express.Router({ mergeParams: true });
 
 router.post(
-  '/generate',
+  '/',
   asyncHandler(async (req, res) => {
     const { token } = req.body;
 
@@ -32,7 +32,7 @@ router.post(
 );
 
 router.get(
-  '/validate/:channel',
+  '/status/:channel',
   asyncHandler(async (req, res) => {
     const { channel } = req.params;
     const { valid } = await channelValid(channel);
@@ -45,7 +45,7 @@ router.get(
   })
 );
 router.delete(
-  '/delete/:channel',
+  '/:channel',
   asyncHandler(async (req, res) => {
     const { channel } = req.params;
     const { state } = await channelValid(channel);

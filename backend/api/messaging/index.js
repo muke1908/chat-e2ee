@@ -7,7 +7,7 @@ const { PUBLIC_KEY_COLLECTION } = require('../../db/const');
 
 const router = express.Router({ mergeParams: true });
 
-router.post('/send', async (req, res) => {
+router.post('/message', async (req, res) => {
   const { message, sender, channel } = req.body;
   if (!message) {
     res.send(400);
