@@ -50,7 +50,8 @@ router.delete(
     const { channel } = req.params;
     const { state } = await channelValid(channel);
 
-    if (state === 'DELETED' || state === 'NOT_FOUND') {
+    const invalidstates = ['DELETED', 'NOT_FOUND'];
+    if (invalidstates.includes(state)) {
       return res.sendStatus(404).send('Invalid channel');
     }
 
