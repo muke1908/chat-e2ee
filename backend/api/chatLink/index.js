@@ -4,7 +4,7 @@ const asyncHandler = require('../../middleware/asyncHandler');
 const generateLink = require('./utils/link');
 const channelValid = require('./utils/validateChannel');
 
-const { insertInDb } = require('../../db');
+const { insertInDb, updateOneFromDb } = require('../../db');
 const { LINK_COLLECTION } = require('../../db/const');
 
 const router = express.Router({ mergeParams: true });
@@ -44,5 +44,19 @@ router.get(
     return res.send({ status: 'ok' });
   })
 );
+router.delete(
+  '/delete/:channel',
+  asyncHandler(async (req, res) => {
+    const { channel } = req.params;
+    const { state } = await channelValid(channel);
 
+    const invalidstates = ['DELETED', 'NOT_FOUND'];
+    if (invalidstates.includes(state)) {
+      return res.sendStatus(404).send('Invalid channel');
+    }
+
+    await updateOneFromDb({ hash: channel }, { deleted: true }, LINK_COLLECTION);
+    return res.send({ status: 'ok' });
+  })
+);
 module.exports = router;
