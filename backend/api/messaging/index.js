@@ -12,8 +12,8 @@ router.post('/message', async (req, res) => {
   if (!message) {
     res.send(400);
   }
-  const isChannelValid = await channelValid(channel);
-  if (!isChannelValid) {
+  const { valid } = await channelValid(channel);
+  if (!valid) {
     return res.sendStatus(404);
   }
 
@@ -28,8 +28,8 @@ router.post('/message', async (req, res) => {
 router.post('/share-public-key', async (req, res) => {
   const { publicKey, sender, channel } = req.body;
 
-  const isChannelValid = await channelValid(channel);
-  if (!isChannelValid) {
+  const { valid } = await channelValid(channel);
+  if (!valid) {
     return res.sendStatus(404);
   }
   // TODO: do not store if already exists
