@@ -25,9 +25,15 @@ const findOneFromDB = (findCondition, collectionName) => {
   return db.collection(collectionName).findOne(findCondition);
 };
 
+const updateOneFromDb = async (condition, setData, collectionName) => {
+  const res = await db.collection(collectionName).updateOne(condition, { $set: setData });
+  return res;
+};
+
 module.exports = {
   db,
   connectDb,
   insertInDb,
-  findOneFromDB
+  findOneFromDB,
+  updateOneFromDb
 };
