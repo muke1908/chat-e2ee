@@ -236,7 +236,7 @@ const Chat = () => {
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
-  const messagesFormatted = messages.map(({ body, sender, local, image }, i) => {
+  const messagesFormatted = messages.map(({ body, sender, local }, i) => {
     return {
       owner: sender === userId,
       body,
