@@ -1,4 +1,5 @@
 ## chat-e2ee
+
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
 The project is still in **development** phase.
 
@@ -46,11 +47,13 @@ For installation instruction, go to [developer section](https://github.com/muke1
     <td align="center"><a href="https://github.com/imlaxman"><img src="https://avatars3.githubusercontent.com/u/34925185?v=4" width="80px;" alt=""/><br /><sub><b>imlaxman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=imlaxman" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ARKEOLOGIST"><img src="https://avatars1.githubusercontent.com/u/34165124?v=4" width="80px;" alt=""/><br /><sub><b>Arkadyuti Bandyopadhyay</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=ARKEOLOGIST" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/nafees87n"><img src="https://avatars2.githubusercontent.com/u/56021937?v=4" width="80px;" alt=""/><br /><sub><b>Nafees Nehar</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=nafees87n" title="Code">💻</a></td>
+    <td align="center"><a href="http://twsprogramming.com"><img src="https://avatars0.githubusercontent.com/u/25822696?v=4" width="80px;" alt=""/><br /><sub><b>Tyler Skulley</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=tskull01" title="Code">💻</a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 > This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
@@ -92,8 +95,7 @@ More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
 ---
 
-### For developers  
-
+### For developers
 
 FE: This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
 BE: The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.
@@ -117,12 +119,12 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 ### APIs
 
-| url                          | method | paylod                         | filename                  | description                                   |
-| ---------------------------- | ------ | ------------------------------ | ------------------------- | --------------------------------------------- |
-| `/api/chat-link/generate`               | `POST` | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
-| `/api/chat-link/validate/:channel` | `GET`  |                                | `/api/index.js`           | to check if a channel is valid                |
-| `/api/chat/send`             | `POST` | `{ channel, sender, message }` | `/api/messaging/index.js` | to send a message to a specific channel       |
-
+| url                              | method   | paylod                         | filename                  | description                                   |
+| -------------------------------- | -------- | ------------------------------ | ------------------------- | --------------------------------------------- |
+| `/api/chat-link`                 | `POST`   | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
+| `/api/chat-link/status/:channel` | `GET`    |                                | `/api/index.js`           | to check if a channel is valid                |
+| `/api/chat/message`              | `POST`   | `{ channel, sender, message }` | `/api/messaging/index.js` | to send a message to a specific channel       |
+| `/api/chat-link/:channel`        | `DELETE` |                                | `/api/index.js`           | to delete a channel                           |
 
 ---
 
@@ -148,3 +150,4 @@ External:
 
 | **<a><img src="https://d2c805weuec6z7.cloudfront.net/Powered_By_PubNub.png" alt="Powered By PubNub" width="100"></a>** | **<a><img src="https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png" alt="Powered By Mongodb" width="100"></a>** |
 | :--------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------: |
+

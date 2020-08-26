@@ -2,6 +2,9 @@ const { LINK_COLLECTION } = require('../../../db/const');
 const { findOneFromDB } = require('../../../db');
 
 const channelValid = async (channel) => {
+  if (!channel) {
+    throw new Error('channel - required param');
+  }
   const ifExists = await findOneFromDB({ hash: channel }, LINK_COLLECTION);
   if (!ifExists) {
     return {

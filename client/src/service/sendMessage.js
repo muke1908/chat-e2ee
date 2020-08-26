@@ -1,7 +1,7 @@
 import makeRequest from '../utils/makeRequest';
 
 const sendMessage = async ({ channelID, userId, text }) => {
-  await makeRequest('chat/send', {
+  await makeRequest('chat/message', {
     method: 'POST',
     body: {
       channel: channelID,
