@@ -9,7 +9,7 @@ const apiController = require('./backend/api');
 const app = express();
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb', extended: true }));
 
 // add routes
 app.use('/api', apiController);

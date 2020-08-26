@@ -79,7 +79,7 @@ const Chat = () => {
     myKeyRef.current = _keyPair;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e, imgUrl = '') => {
     e.preventDefault();
 
     if (isEmptyMessage(text)) {
@@ -91,13 +91,23 @@ const Chat = () => {
       alert('No one is in chat!');
       return;
     }
-    setMessages((prevMsg) =>
-      prevMsg.concat({
-        body: text,
-        sender: userId,
-        local: true
-      })
-    );
+    if (imgUrl !== '') {
+      setMessages((prevMsg) =>
+        prevMsg.concat({
+          body: imgUrl,
+          sender: userId,
+          local: true
+        })
+      );
+    } else {
+      setMessages((prevMsg) =>
+        prevMsg.concat({
+          body: text,
+          sender: userId,
+          local: true
+        })
+      );
+    }
 
     setText('');
   };
@@ -226,7 +236,7 @@ const Chat = () => {
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
-  const messagesFormatted = messages.map(({ body, sender, local }, i) => {
+  const messagesFormatted = messages.map(({ body, sender, local, image }, i) => {
     return {
       owner: sender === userId,
       body,
