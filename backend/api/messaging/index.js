@@ -23,8 +23,13 @@ router.post('/message', async (req, res) => {
 
   if (image) {
     const data = image.substr(image.indexOf(',') + 1);
-    const imageResponse = await uploadImage(data);
-    imageurl = imageResponse.data.image.url;
+
+    try {
+      const imageResponse = await uploadImage(data);
+      imageurl = imageResponse.data.image.url;
+    } catch (err) {
+      return res.status(500).send({ message: 'failed to send image' });
+    }
   }
 
   try {
