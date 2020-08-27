@@ -96,7 +96,8 @@ const Chat = () => {
 
     setMessages((prevMsg) =>
       prevMsg.concat({
-        body: selectedImg || text,
+        body: text,
+        image: selectedImg,
         sender: userId,
         local: true
       })
@@ -108,12 +109,14 @@ const Chat = () => {
   };
 
   const handleSend = useCallback(
-    async (body, index) => {
+    async (body, image, index) => {
       const { box, nonce } = encryptMsg({
         text: body,
         mySecretKey: myKeyRef.current.secretKey,
         alicePublicKey: publicKeyRef.current
       });
+
+      // TODO: need to handle image
 
       await sendMessage({
         channelID,
@@ -231,10 +234,11 @@ const Chat = () => {
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
-  const messagesFormatted = messages.map(({ body, sender, local }, i) => {
+  const messagesFormatted = messages.map(({ body, sender, image, local }, i) => {
     return {
       owner: sender === userId,
       body,
+      image,
       local
     };
   });

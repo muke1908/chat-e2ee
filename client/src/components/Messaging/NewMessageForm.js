@@ -1,7 +1,7 @@
 import React, { useRef, useContext } from 'react';
 import styles from './styles/NewMessageForm.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
-import ImagePicker from '../ImagePicker';
+import ImagePicker from './ImagePicker';
 export const NewMessageForm = ({
   handleSubmit,
   text,
@@ -33,13 +33,15 @@ export const NewMessageForm = ({
         onChange={(e) => setText(e.target.value)}
         value={text}
       />
-      <ImagePicker
-        selectedImg={selectedImg}
-        setSelectedImg={setSelectedImg}
-        setText={setText}
-        previewImg={previewImg}
-        setPreviewImg={setPreviewImg}
-      />
+      <div className={styles.imagePickerContainer}>
+        <ImagePicker
+          selectedImg={selectedImg}
+          setSelectedImg={setSelectedImg}
+          setText={setText}
+          previewImg={previewImg}
+          setPreviewImg={setPreviewImg}
+        />
+      </div>
       <div
         className={`${styles.sendButton} ${!darkMode && styles.lightModeSend}`}
         type="submit"

@@ -60,6 +60,11 @@
   background: #ab0b42;
 }
 
+.imagePickerContainer {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
 @media screen and (max-width: 640px) {
   .sendMessageForm {
     border-radius: 0px;
