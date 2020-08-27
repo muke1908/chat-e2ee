@@ -30,13 +30,13 @@ export const Message = ({ handleSend, index, message: { owner, body, local } }) 
 
   const [darkMode] = useContext(ThemeContext);
   const regex = /\bdata:image\b/g;
-  const imgTest = body.match(regex);
+  const isImg = body.match(regex);
   return (
     <div className={owner === true ? styles.messageRight : styles.messageLeft}>
       <div className={styles.messageInfo}>
         <div className={styles.sentReceived}>You {owner === true ? 'sent' : 'received'}</div>
         <div className={`${styles.messageContainer} ${!darkMode && styles.lightModeContainer}`}>
-          {imgTest ? <Image src={body} maxWidth="100%" maxHeight="auto" /> : body}
+          {isImg ? <Image src={body} maxWidth="300px" maxHeight="300px" /> : body}
         </div>
         {failed && !sending && (
           <div className={styles.messageError}>
