@@ -1,6 +1,7 @@
 ## chat-e2ee
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 The project is still in **development** phase.
 
 Working prototype:  
@@ -23,40 +24,8 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 
 For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#for-developers).
 
----
-
-## Contributors ✨
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://github.com/muke1908"><img src="https://avatars3.githubusercontent.com/u/20297989?v=4" width="80px;" alt=""/><br /><sub><b>Mukesh</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=muke1908" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/gagan-aryan"><img src="https://avatars3.githubusercontent.com/u/62807661?v=4" width="80px;" alt=""/><br /><sub><b>Gagan Aryan</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=gagan-aryan" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/jradha11"><img src="https://avatars1.githubusercontent.com/u/59576984?v=4" width="80px;" alt=""/><br /><sub><b>Radha Jayaraman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jradha11" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/jessiematias"><img src="https://avatars1.githubusercontent.com/u/56523246?v=4" width="80px;" alt=""/><br /><sub><b>Jessie</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jessiematias" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/zygisS22"><img src="https://avatars2.githubusercontent.com/u/54106114?v=4" width="80px;" alt=""/><br /><sub><b>zygisS22</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=zygisS22" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/lindsayjohnston"><img src="https://avatars0.githubusercontent.com/u/58899165?v=4" width="80px;" alt=""/><br /><sub><b>lindsayjohnston</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=lindsayjohnston" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/JulienZD"><img src="https://avatars0.githubusercontent.com/u/48630731?v=4" width="80px;" alt=""/><br /><sub><b>Julien</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=JulienZD" title="Documentation">📖</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/FabiSdr"><img src="https://avatars1.githubusercontent.com/u/62851653?v=4" width="80px;" alt=""/><br /><sub><b>FabiSdr</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=FabiSdr" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://audreykadjar.world/"><img src="https://avatars2.githubusercontent.com/u/38159391?v=4" width="80px;" alt=""/><br /><sub><b>AudreyKj</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=AudreyKj" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/DarkSouL11"><img src="https://avatars1.githubusercontent.com/u/8626394?v=4" width="80px;" alt=""/><br /><sub><b>Sundeep Babbur</b></sub></a><br /><a href="#infra-DarkSouL11" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/muke1908/chat-e2ee/commits?author=DarkSouL11" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/imlaxman"><img src="https://avatars3.githubusercontent.com/u/34925185?v=4" width="80px;" alt=""/><br /><sub><b>imlaxman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=imlaxman" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/ARKEOLOGIST"><img src="https://avatars1.githubusercontent.com/u/34165124?v=4" width="80px;" alt=""/><br /><sub><b>Arkadyuti Bandyopadhyay</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=ARKEOLOGIST" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/nafees87n"><img src="https://avatars2.githubusercontent.com/u/56021937?v=4" width="80px;" alt=""/><br /><sub><b>Nafees Nehar</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=nafees87n" title="Code">💻</a></td>
-    <td align="center"><a href="http://twsprogramming.com"><img src="https://avatars0.githubusercontent.com/u/25822696?v=4" width="80px;" alt=""/><br /><sub><b>Tyler Skulley</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=tskull01" title="Code">💻</a></td>
-  </tr>
-</table>
-
-<!-- markdownlint-enable -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-> This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+**Contributor highlight**  
+[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/0)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/0)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/1)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/1)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/2)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/2)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/3)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/3)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/4)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/4)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/5)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/5)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/6)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/6)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/7)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/7)
 
 ---
 
@@ -150,4 +119,39 @@ External:
 
 | **<a><img src="https://d2c805weuec6z7.cloudfront.net/Powered_By_PubNub.png" alt="Powered By PubNub" width="100"></a>** | **<a><img src="https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png" alt="Powered By Mongodb" width="100"></a>** |
 | :--------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------: |
+
+---
+
+## Contributors ✨
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/muke1908"><img src="https://avatars3.githubusercontent.com/u/20297989?v=4" width="80px;" alt=""/><br /><sub><b>Mukesh</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=muke1908" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/gagan-aryan"><img src="https://avatars3.githubusercontent.com/u/62807661?v=4" width="80px;" alt=""/><br /><sub><b>Gagan Aryan</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=gagan-aryan" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jradha11"><img src="https://avatars1.githubusercontent.com/u/59576984?v=4" width="80px;" alt=""/><br /><sub><b>Radha Jayaraman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jradha11" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jessiematias"><img src="https://avatars1.githubusercontent.com/u/56523246?v=4" width="80px;" alt=""/><br /><sub><b>Jessie</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=jessiematias" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/zygisS22"><img src="https://avatars2.githubusercontent.com/u/54106114?v=4" width="80px;" alt=""/><br /><sub><b>zygisS22</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=zygisS22" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lindsayjohnston"><img src="https://avatars0.githubusercontent.com/u/58899165?v=4" width="80px;" alt=""/><br /><sub><b>lindsayjohnston</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=lindsayjohnston" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/JulienZD"><img src="https://avatars0.githubusercontent.com/u/48630731?v=4" width="80px;" alt=""/><br /><sub><b>Julien</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=JulienZD" title="Documentation">📖</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/FabiSdr"><img src="https://avatars1.githubusercontent.com/u/62851653?v=4" width="80px;" alt=""/><br /><sub><b>FabiSdr</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=FabiSdr" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://audreykadjar.world/"><img src="https://avatars2.githubusercontent.com/u/38159391?v=4" width="80px;" alt=""/><br /><sub><b>AudreyKj</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=AudreyKj" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/DarkSouL11"><img src="https://avatars1.githubusercontent.com/u/8626394?v=4" width="80px;" alt=""/><br /><sub><b>Sundeep Babbur</b></sub></a><br /><a href="#infra-DarkSouL11" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/muke1908/chat-e2ee/commits?author=DarkSouL11" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/imlaxman"><img src="https://avatars3.githubusercontent.com/u/34925185?v=4" width="80px;" alt=""/><br /><sub><b>imlaxman</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=imlaxman" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ARKEOLOGIST"><img src="https://avatars1.githubusercontent.com/u/34165124?v=4" width="80px;" alt=""/><br /><sub><b>Arkadyuti Bandyopadhyay</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=ARKEOLOGIST" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/nafees87n"><img src="https://avatars2.githubusercontent.com/u/56021937?v=4" width="80px;" alt=""/><br /><sub><b>Nafees Nehar</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=nafees87n" title="Code">💻</a></td>
+    <td align="center"><a href="http://twsprogramming.com"><img src="https://avatars0.githubusercontent.com/u/25822696?v=4" width="80px;" alt=""/><br /><sub><b>Tyler Skulley</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=tskull01" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+> This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
