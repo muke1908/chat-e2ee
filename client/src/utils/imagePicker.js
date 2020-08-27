@@ -3,7 +3,9 @@ const imagePicker = (e) => {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
     let file = e.target.files[0];
-
+    if (!file) {
+      reject('No file selected');
+    }
     reader.readAsDataURL(file);
 
     reader.onload = (e) => {

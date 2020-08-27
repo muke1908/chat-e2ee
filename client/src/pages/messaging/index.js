@@ -30,6 +30,8 @@ const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
 const Chat = () => {
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([]);
+  const [selectedImg, setSelectedImg] = useState('');
+  const [previewImg, setPreviewImg] = useState(false);
   const [usersInChannel, setUsers] = useState([]);
   const [notificationState, setNotificationState] = useState(false);
   const [darkMode] = useContext(ThemeContext);
@@ -91,14 +93,17 @@ const Chat = () => {
       alert('No one is in chat!');
       return;
     }
+
     setMessages((prevMsg) =>
       prevMsg.concat({
-        body: text,
+        body: selectedImg || text,
         sender: userId,
         local: true
       })
     );
 
+    setSelectedImg('');
+    setPreviewImg(false);
     setText('');
   };
 
@@ -245,7 +250,15 @@ const Chat = () => {
             ))}
           </ScrollWrapper>
         </div>
-        <NewMessageForm handleSubmit={handleSubmit} text={text} setText={setText} />
+        <NewMessageForm
+          handleSubmit={handleSubmit}
+          text={text}
+          setText={setText}
+          selectedImg={selectedImg}
+          setSelectedImg={setSelectedImg}
+          previewImg={previewImg}
+          setPreviewImg={setPreviewImg}
+        />
       </div>
       <Notification play={notificationState} audio={notificationAudio} />
     </>

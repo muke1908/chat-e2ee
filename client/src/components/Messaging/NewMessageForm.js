@@ -1,10 +1,16 @@
 import React, { useRef, useContext } from 'react';
 import styles from './styles/NewMessageForm.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
-import imagePicker from '../../utils/imagePicker.js';
-import imagePickerIcon from './assets/image-picker.png';
-
-export const NewMessageForm = ({ handleSubmit, text, setText }) => {
+import ImagePicker from '../ImagePicker';
+export const NewMessageForm = ({
+  handleSubmit,
+  text,
+  setText,
+  selectedImg,
+  setSelectedImg,
+  previewImg,
+  setPreviewImg
+}) => {
   const inputRef = useRef(null);
   const [darkMode] = useContext(ThemeContext);
 
@@ -27,12 +33,13 @@ export const NewMessageForm = ({ handleSubmit, text, setText }) => {
         onChange={(e) => setText(e.target.value)}
         value={text}
       />
-      <div className={styles.imagePickerContainer}>
-        <label className={styles.imagePickerLabel}>
-          <input className={styles.inputImagePicker} type="file" onChange={imagePicker} />
-          <img className={styles.imagePickerIcon} src={imagePickerIcon} alt="file-upload" />
-        </label>
-      </div>
+      <ImagePicker
+        selectedImg={selectedImg}
+        setSelectedImg={setSelectedImg}
+        setText={setText}
+        previewImg={previewImg}
+        setPreviewImg={setPreviewImg}
+      />
       <div
         className={`${styles.sendButton} ${!darkMode && styles.lightModeSend}`}
         type="submit"
