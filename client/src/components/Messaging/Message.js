@@ -19,7 +19,7 @@ export const Message = ({ handleSend, index, message: { owner, body, image, loca
       setFailed(true);
     }
     setSending(false);
-  }, [body, handleSend, index]);
+  }, [body, image, handleSend, index]);
 
   useEffect(() => {
     if (local) {

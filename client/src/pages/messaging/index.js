@@ -121,6 +121,7 @@ const Chat = () => {
       await sendMessage({
         channelID,
         userId,
+        image,
         text: {
           box: typedArrayToStr(box),
           nonce: typedArrayToStr(nonce)
@@ -154,9 +155,10 @@ const Chat = () => {
   const initChat = async () => {
     // TODO: handle error
     const messages = await fetchMessages(pubnub, channelID);
-    // console.log(messages);
+
     const formatMessages = messages.map((msg) => {
       const {
+        image,
         sender,
         body: { box, nonce }
       } = msg;
@@ -165,6 +167,7 @@ const Chat = () => {
         encrypted: true,
         encryptionDetail: { box, nonce },
         sender,
+        image,
         body: btoa(strToTypedArr(box)) // let's just stringify the array, to decrypt later
       };
     });
@@ -179,6 +182,7 @@ const Chat = () => {
         // new message (ignore self messages)
         if (msg.channel === channelID && userId !== msg.message.sender) {
           try {
+            // console.log(msg);
             const box = strToTypedArr(msg.message.body.box);
             const nonce = strToTypedArr(msg.message.body.nonce);
 
@@ -191,6 +195,7 @@ const Chat = () => {
 
             setMessages((prevMsg) =>
               prevMsg.concat({
+                image: msg.message.image,
                 body: _msg,
                 sender: msg.message.sender
               })

@@ -14,12 +14,13 @@ const pubnub = new PubNub({
   uuid: 'chat-e2ee'
 });
 
-const publishMessage = ({ channel, sender, message }) => {
+const publishMessage = ({ channel, sender, message, image }) => {
   const publishPayload = {
     channel,
     message: {
       sender,
-      body: message
+      body: message,
+      image
     }
   };
   return new Promise((resolve, reject) => {

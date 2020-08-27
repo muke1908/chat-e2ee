@@ -1,5 +1,6 @@
 const express = require('express');
 const { publishMessage } = require('../../external/pubnub');
+const uploadImage = require('../../external/imagebb');
 const { insertInDb, findOneFromDB } = require('../../db');
 const channelValid = require('../chatLink/utils/validateChannel');
 
@@ -8,7 +9,8 @@ const { PUBLIC_KEY_COLLECTION } = require('../../db/const');
 const router = express.Router({ mergeParams: true });
 
 router.post('/message', async (req, res) => {
-  const { message, sender, channel } = req.body;
+  const { message, sender, channel, image } = req.body;
+
   if (!message) {
     res.send(400);
   }
@@ -17,8 +19,16 @@ router.post('/message', async (req, res) => {
     return res.sendStatus(404);
   }
 
+  let imageurl = null;
+
+  if (image) {
+    const data = image.substr(image.indexOf(',') + 1);
+    const imageResponse = await uploadImage(data);
+    imageurl = imageResponse.data.image.url;
+  }
+
   try {
-    await publishMessage({ channel, sender, message });
+    await publishMessage({ channel, sender, message, image: imageurl });
   } catch (err) {
     console.log(err);
   }
