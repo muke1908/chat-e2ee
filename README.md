@@ -35,9 +35,11 @@ For installation instruction, go to [developer section](https://github.com/muke1
 
 1. The end users are not tracable.
 2. Data is not stored on any remote server.
-3. Secure image sharing. [Read more](https://github.com/muke1908/chat-e2ee/wiki/Secure-image-sharing)
+3. Secure image sharing. [Read more](https://github.com/muke1908/chat-e2ee/wiki/Secure-image-sharing)  
+**IMPORTANT:** The image sharing feature is imcomplete!! Images are stored to [imagebb](https://mukesh-biswas.imgbb.com/) server. (27/08/2020)  
 4. No saved history i.e. once chat is closed the data is not recoverable.
-5. It doesn't ask any information from you -- no login/signup.
+5. It doesn't ask any information from you -- no login/signup.  
+
 
 ### How to initiate chat
 
