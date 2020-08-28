@@ -8,16 +8,26 @@ const uploadImage = async (base64) => {
   if (!base64) {
     throw new Error('base64 - required arg');
   }
+
+  const imageData = base64.substr(base64.indexOf(',') + 1);
+
   const form = new FormData();
-  form.append('image', base64);
+  form.append('image', imageData);
   const url = `${api}?expiration=600&key=${API_KEY}`;
 
   const response = await fetch(url, {
     method: 'POST',
     body: form
   });
-  const data = await response.json();
-  return data;
+  const imageResponse = await response.json();
+
+  try {
+    return {
+      imageurl: imageResponse.data.image.url
+    };
+  } catch (err) {
+    throw new Error('failed to send image');
+  }
 };
 
 module.exports = uploadImage;

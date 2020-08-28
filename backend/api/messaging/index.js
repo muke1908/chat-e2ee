@@ -15,25 +15,24 @@ router.post('/message', async (req, res) => {
     res.send(400);
   }
   const { valid } = await channelValid(channel);
+
   if (!valid) {
     return res.sendStatus(404);
   }
 
-  let imageurl = null;
+  const dataToPublish = {
+    channel,
+    sender,
+    message
+  };
 
   if (image) {
-    const data = image.substr(image.indexOf(',') + 1);
-
-    try {
-      const imageResponse = await uploadImage(data);
-      imageurl = imageResponse.data.image.url;
-    } catch (err) {
-      return res.status(500).send({ message: 'failed to send image' });
-    }
+    const { imageurl } = await uploadImage(image);
+    dataToPublish.image = imageurl;
   }
 
   try {
-    await publishMessage({ channel, sender, message, image: imageurl });
+    await publishMessage(dataToPublish);
   } catch (err) {
     console.log(err);
   }
