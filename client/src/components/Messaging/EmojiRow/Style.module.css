@@ -1,0 +1,13 @@
+.emojiRow {
+  font-family: inherit;
+  font-size: 18px;
+  resize: none;
+  flex: 1;
+  border: 0;
+  padding: 10px;
+  height: 50px;
+  box-sizing: border-box;
+  outline: none;
+  background: #000;
+  color: #fff;
+}

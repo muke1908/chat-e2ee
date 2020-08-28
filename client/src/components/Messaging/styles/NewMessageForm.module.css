@@ -73,3 +73,16 @@
     margin-bottom: 0px;
   }
 }
+
+.buttonImageContainer {
+  display: flex;
+}
+
+.msgBtnImgContainer {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.emojiMessageContainer {
+  width: 100%;
+}
