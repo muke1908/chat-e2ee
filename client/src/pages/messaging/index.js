@@ -1,14 +1,12 @@
-import React, { useCallback, useEffect, useState, useRef, useMemo, useContext } from 'react';
+import React, { useCallback, useEffect, useState, useRef, useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import socketIOClient from 'socket.io-client';
 
 import {
-  pubnubInit,
-  getUsersInChannel,
-  fetchMessages,
   getUserSessionID,
   createUserSessionID,
   storeUserSessionID,
-  getKeyPair,
+  getKeyPairFromCache,
   createKeyPair,
   storeKeyPair,
   typedArrayToStr,
@@ -19,13 +17,11 @@ import {
 } from './helpers';
 import { ThemeContext } from '../../ThemeContext.js';
 
-import { sendMessage, sharePublicKey, getPublicKey } from '../../service';
+import { sendMessage, sharePublicKey, getPublicKey, getUsersInChannel } from '../../service';
 import styles from './Style.module.css';
 import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from '../../components/Messaging';
 import Notification from '../../components/Notification';
 import notificationAudio from '../../components/Notification/audio.mp3';
-// create your key at https://www.pubnub.com/
-const subscribeKey = process.env.REACT_APP_PUBNUB_SUB_KEY;
 
 const Chat = () => {
   const [text, setText] = useState('');
@@ -50,10 +46,6 @@ const Chat = () => {
     storeUserSessionID(channelID, userId);
   }
 
-  const pubnub = useMemo(() => {
-    return pubnubInit({ subscribeKey, userId, channelID });
-  }, [userId, channelID]);
-
   const playNotification = () => {
     setNotificationState(true);
     window.clearTimeout(notificationTimer.current);
@@ -62,15 +54,14 @@ const Chat = () => {
     }, 500);
   };
 
-  const exchangePublicKey = (channelID) => {
-    console.log('%cExchanging public key.', 'color:red; font-size:16px');
-
-    let _keyPair = getKeyPair(channelID);
+  const initPublicKey = (channelID) => {
+    let _keyPair = getKeyPairFromCache(channelID);
     if (!_keyPair) {
       _keyPair = createKeyPair();
-
       storeKeyPair(channelID, _keyPair);
 
+      //this will send the public key
+      console.log('%cSharing public key.', 'color:red; font-size:16px');
       sharePublicKey({
         channel: channelID,
         publicKey: typedArrayToStr(_keyPair.publicKey),
@@ -139,7 +130,7 @@ const Chat = () => {
   );
 
   const getSetUsers = async (channelID) => {
-    const usersInChannel = await getUsersInChannel(pubnub, channelID);
+    const usersInChannel = await getUsersInChannel({ channel: channelID });
     setUsers(usersInChannel);
     const alice = usersInChannel.find((user) => user.uuid !== userId);
 
@@ -154,87 +145,82 @@ const Chat = () => {
 
   const initChat = async () => {
     // TODO: handle error
-    const messages = await fetchMessages(pubnub, channelID);
-
-    const formatMessages = messages.map((msg) => {
-      const {
-        image,
-        sender,
-        body: { box, nonce }
-      } = msg;
-
-      return {
-        encrypted: true,
-        encryptionDetail: { box, nonce },
-        sender,
-        image,
-        body: btoa(strToTypedArr(box)) // let's just stringify the array, to decrypt later
-      };
-    });
-    setMessages(formatMessages);
-
-    pubnub.addListener({
-      status: (statusEvent) => {
-        // console.log('statusEvent', statusEvent);
-      },
-      message: (msg) => {
-        // TODO Handle case where same user is logged in from multiple tabs
-        // new message (ignore self messages)
-        if (msg.channel === channelID && userId !== msg.message.sender) {
-          try {
-            // console.log(msg);
-            const box = strToTypedArr(msg.message.body.box);
-            const nonce = strToTypedArr(msg.message.body.nonce);
-
-            const { msg: _msg } = decryptMsg({
-              box,
-              nonce,
-              mySecretKey: myKeyRef.current.secretKey,
-              alicePublicKey: publicKeyRef.current
-            });
-
-            setMessages((prevMsg) =>
-              prevMsg.concat({
-                image: msg.message.image,
-                body: _msg,
-                sender: msg.message.sender
-              })
-            );
-          } catch (err) {
-            console.error(err);
-          }
-        }
-      },
-      presence: async ({ action, uuid: _userId }) => {
-        // some user might have joined or left
-        // let's update the userlist
-
-        const usersInChannel = await getUsersInChannel(pubnub, channelID);
-        setUsers(() => usersInChannel);
-
-        if (action === 'join' && _userId !== userId) {
-          const key = await getPublicKey({ userId: _userId, channel: channelID });
-          publicKeyRef.current = strToTypedArr(key.publicKey);
-          playNotification();
-        }
-
-        if (action === 'timeout' && _userId !== userId) {
-          publicKeyRef.current = null;
-          playNotification();
-        }
-      }
-    });
+    // const messages = await fetchMessages(pubnub, channelID);
+    //
+    // const formatMessages = messages.map((msg) => {
+    //   const {
+    //     image,
+    //     sender,
+    //     body: { box, nonce }
+    //   } = msg;
+    //
+    //   return {
+    //     encrypted: true,
+    //     encryptionDetail: { box, nonce },
+    //     sender,
+    //     image,
+    //     body: btoa(strToTypedArr(box)) // let's just stringify the array, to decrypt later
+    //   };
+    // });
+    // setMessages(formatMessages);
   };
 
   useEffect(() => {
-    if (!subscribeKey) {
-      throw new Error('Configure subscribeKey (PUBNUB)');
-    }
-    getSetUsers(channelID);
+    // this is update the public key ref
+    initPublicKey(channelID);
 
-    //this will send the public key
-    exchangePublicKey(channelID);
+    const socket = socketIOClient(`/`);
+    socket.emit('chat-join', {
+      channelID,
+      userID: userId,
+      publicKey: typedArrayToStr(myKeyRef.current.publicKey)
+    });
+
+    // an event to notify that the other person is joined.
+    socket.on('on-alice-join', ({ publicKey }) => {
+      if (publicKey) {
+        publicKeyRef.current = strToTypedArr(publicKey);
+        playNotification();
+      }
+      getSetUsers(channelID);
+    });
+
+    socket.on('on-alice-disconnect', () => {
+      console.log('alice disconnected!!');
+      publicKeyRef.current = null;
+      playNotification();
+
+      getSetUsers(channelID);
+    });
+
+    socket.on('chat-message', (msg) => {
+      try {
+        const box = strToTypedArr(msg.message.box);
+        const nonce = strToTypedArr(msg.message.nonce);
+
+        const { msg: _msg } = decryptMsg({
+          box,
+          nonce,
+          mySecretKey: myKeyRef.current.secretKey,
+          alicePublicKey: publicKeyRef.current
+        });
+
+        setMessages((prevMsg) =>
+          prevMsg.concat({
+            image: msg.image,
+            body: _msg,
+            sender: msg.sender
+          })
+        );
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    getSetUsers(channelID);
     initChat();
+
+    return () => socket.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelID]);
 

@@ -7,22 +7,23 @@ const initSocket = (server) => {
   if (io) {
     return io;
   }
-  io = socketIO.listen(server);
 
+  io = socketIO.listen(server);
   // eslint-disable-next-line no-console
   console.log('Websocket is up!');
 
   // add listeners
-  io.on('connection', connectionListener);
-  return io;
-};
-
-const getSocketInstance = () => {
-  if (!io) {
-    throw new Error('Socket not initiated');
-  }
+  io.on('connection', (socket) => connectionListener(socket, io));
 
   return io;
 };
 
-module.exports = { getSocketInstance, initSocket };
+const socketEmit = (topic, sid, data) => {
+  const socket = io.sockets.sockets[sid];
+  socket.emit(topic, data);
+};
+
+module.exports = {
+  initSocket,
+  socketEmit
+};

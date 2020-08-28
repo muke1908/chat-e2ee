@@ -1,67 +1,96 @@
 const express = require('express');
-const { publishMessage } = require('../../external/pubnub');
+// const { publishMessage } = require('../../external/pubnub');
 const uploadImage = require('../../external/imagebb');
 const { insertInDb, findOneFromDB } = require('../../db');
 const channelValid = require('../chatLink/utils/validateChannel');
+const { socketEmit } = require('../../socket.io');
+const clients = require('../../socket.io/clients');
+const asyncHandler = require('../../middleware/asyncHandler');
 
 const { PUBLIC_KEY_COLLECTION } = require('../../db/const');
 
 const router = express.Router({ mergeParams: true });
 
-router.post('/message', async (req, res) => {
-  const { message, sender, channel, image } = req.body;
+router.post(
+  '/message',
+  asyncHandler(async (req, res) => {
+    const { message, sender, channel, image } = req.body;
 
-  if (!message) {
-    res.send(400);
-  }
-  const { valid } = await channelValid(channel);
+    if (!message) {
+      res.send(400);
+    }
+    const { valid } = await channelValid(channel);
 
-  if (!valid) {
-    return res.sendStatus(404);
-  }
+    if (!valid) {
+      return res.sendStatus(404);
+    }
 
-  const dataToPublish = {
-    channel,
-    sender,
-    message
-  };
+    const dataToPublish = {
+      channel,
+      sender,
+      message
+    };
 
-  if (image) {
-    const { imageurl } = await uploadImage(image);
-    dataToPublish.image = imageurl;
-  }
+    if (image) {
+      const { imageurl } = await uploadImage(image);
+      dataToPublish.image = imageurl;
+    }
 
-  try {
-    await publishMessage(dataToPublish);
-  } catch (err) {
-    console.log(err);
-  }
-  return res.send({ message: 'message sent' });
-});
+    // await publishMessage(dataToPublish);
+    // send to internal socket server
+    const { sid } = clients.getReceiverByChannel(channel, sender);
+    socketEmit('chat-message', sid, dataToPublish);
 
-router.post('/share-public-key', async (req, res) => {
-  const { publicKey, sender, channel } = req.body;
+    return res.send({ message: 'message sent' });
+  })
+);
 
-  const { valid } = await channelValid(channel);
-  if (!valid) {
-    return res.sendStatus(404);
-  }
-  // TODO: do not store if already exists
-  await insertInDb({ publicKey, sender, channel }, PUBLIC_KEY_COLLECTION);
-  return res.send({ status: 'ok' });
-});
+router.post(
+  '/share-public-key',
+  asyncHandler(async (req, res) => {
+    const { publicKey, sender, channel } = req.body;
 
-router.get('/get-public-key', async (req, res) => {
-  const { userId, channel } = req.query;
+    const { valid } = await channelValid(channel);
+    if (!valid) {
+      return res.sendStatus(404);
+    }
+    // TODO: do not store if already exists
+    await insertInDb({ publicKey, sender, channel }, PUBLIC_KEY_COLLECTION);
+    return res.send({ status: 'ok' });
+  })
+);
 
-  const { valid } = await channelValid(channel);
+router.get(
+  '/get-public-key',
+  asyncHandler(async (req, res) => {
+    const { userId, channel } = req.query;
 
-  if (!valid) {
-    return res.sendStatus(404);
-  }
+    const { valid } = await channelValid(channel);
 
-  const data = await findOneFromDB({ channel, sender: userId }, PUBLIC_KEY_COLLECTION);
-  return res.send(data);
-});
+    if (!valid) {
+      return res.sendStatus(404);
+    }
+
+    const data = await findOneFromDB({ channel, sender: userId }, PUBLIC_KEY_COLLECTION);
+    return res.send(data);
+  })
+);
+
+router.get(
+  '/get-users-in-channel',
+  asyncHandler(async (req, res) => {
+    const { channel } = req.query;
+
+    const { valid } = await channelValid(channel);
+
+    if (!valid) {
+      return res.sendStatus(404);
+    }
+
+    const data = clients.getClientsByChannel(channel);
+    const usersInChannel = data ? Object.keys(data).map((userId) => ({ uuid: userId })) : [];
+    return res.send(usersInChannel);
+  })
+);
 
 module.exports = router;

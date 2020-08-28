@@ -1,6 +1,6 @@
 ## chat-e2ee
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee) [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 The project is still in **development** phase.
 
@@ -24,8 +24,7 @@ This app will allow two mutually agreed users to have a conversation in _end-to-
 
 For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#for-developers).
 
-**Contributor highlight:**  
-
+**Contributor highlight:**
 
 [![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/0)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/0)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/1)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/1)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/2)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/2)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/3)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/3)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/4)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/4)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/5)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/5)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/6)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/6)[![](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/images/7)](https://sourcerer.io/fame/muke1908/muke1908/chat-e2ee/links/7)
 
@@ -36,10 +35,9 @@ For installation instruction, go to [developer section](https://github.com/muke1
 1. The end users are not tracable.
 2. Data is not stored on any remote server.
 3. Secure image sharing. [Read more](https://github.com/muke1908/chat-e2ee/wiki/Secure-image-sharing)  
-**IMPORTANT:** The image sharing feature is imcomplete!! Images are stored to [imagebb](https://mukesh-biswas.imgbb.com/) server. (27/08/2020)  
+   **IMPORTANT:** The image sharing feature is imcomplete!! Images are stored to [imagebb](https://mukesh-biswas.imgbb.com/) server. (27/08/2020)
 4. No saved history i.e. once chat is closed the data is not recoverable.
-5. It doesn't ask any information from you -- no login/signup.  
-
+5. It doesn't ask any information from you -- no login/signup.
 
 ### How to initiate chat
 
@@ -101,12 +99,10 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 ---
 
-Currently it's using [pubnub](https://pubnub.com) for real time communication. Utils are in `/backend/external/pubnub.js`.
-
 **Messaging flow**:
 
 - Client encrypts message at client-side and sends via REST call.
-- Client receives message in realtime via PUBNUB subscription and decrypt locally at client side.
+- Client receives message in realtime via websocket and decrypt locally at client side.
 - Your messages can not be recovered if you lose encryption keys.
 
 ---
@@ -116,13 +112,6 @@ https://github.com/conventional-changelog/commitlint/#what-is-commitlint
 
 Example:  
 `git commit -m"feat: some relevant message"`
-
----
-
-External:
-
-| **<a><img src="https://d2c805weuec6z7.cloudfront.net/Powered_By_PubNub.png" alt="Powered By PubNub" width="100"></a>** | **<a><img src="https://webassets.mongodb.com/_com_assets/cms/MongoDB_Logo_FullColorBlack_RGB-4td3yuxzjs.png" alt="Powered By Mongodb" width="100"></a>** |
-| :--------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------: |
 
 ---
 
@@ -158,4 +147,3 @@ External:
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 > This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
-
