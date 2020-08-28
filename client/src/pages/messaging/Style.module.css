@@ -1,5 +1,4 @@
 .messageContainer {
-  padding-bottom: 50px;
   /* height fallback */
   height: calc(100% - 60px);
   display: flex;
