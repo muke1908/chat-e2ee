@@ -1,5 +1,5 @@
 import storage from '../../../utils/storage';
-export const getKeyPair = (channelID) => {
+export const getKeyPairFromCache = (channelID) => {
   const keyPair_storage = storage.get('session-keyPair') || {};
   const keyPair = keyPair_storage.channelID === channelID ? keyPair_storage.keyPair : null;
 
