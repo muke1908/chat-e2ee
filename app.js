@@ -2,8 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-// create websocket server
+
 const app = express();
+// create websocket server
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 // import controller
