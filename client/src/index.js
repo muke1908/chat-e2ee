@@ -14,7 +14,7 @@ const App = () => {
   const [darkMode] = useContext(ThemeContext);
 
   useEffect(() => {
-    const socket = socketIOClient(`${window.location.hostname}:3002`);
+    const socket = socketIOClient(`${window.location.hostname}:3001`);
     socket.on('message', (message) => {
       console.log(`Message from server ${message}`);
     });
