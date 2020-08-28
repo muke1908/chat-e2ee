@@ -2,12 +2,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 // import controller
 const apiController = require('./backend/api');
 
-// create express instance
-const app = express();
-
+io.on('connection', (socket) => {
+  socket.emit('message', 'check check');
+});
+http.listen(3002, () => console.log(`Websocket listening on port 3002`));
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb', extended: true }));
 
