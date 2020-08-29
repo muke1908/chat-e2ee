@@ -1,8 +1,17 @@
 const clients = require('./clients');
+const channelValid = require('../api/chatLink/utils/validateChannel');
 
 const connectionListener = (socket, io) => {
-  socket.on('chat-join', (data) => {
+  socket.on('chat-join', async (data) => {
     const { userID, channelID, publicKey } = data;
+    try {
+      await channelValid(channelID);
+    }
+    catch (err) {
+      // eslint-disable-next-line no-console
+      console.log(err);
+      return;
+    }
     clients.setClientToChannel(userID, channelID, socket.id);
     socket.channelID = channelID;
     socket.userID = userID;
