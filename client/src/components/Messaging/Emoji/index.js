@@ -1,12 +1,9 @@
 import React from 'react';
 import styles from './Style.module.css';
 
-const Emoji = ({ symbol, text, setText }) => {
-  const changeText = () => {
-    setText(text + symbol);
-  };
+const Emoji = ({ symbol, onClick }) => {
   return (
-    <span className={styles.emoji} role="img" onClick={changeText}>
+    <span className={styles.emoji} role="img" onClick={onClick}>
       {symbol}
     </span>
   );
