@@ -139,11 +139,13 @@ Example:
     <td align="center"><a href="https://github.com/nafees87n"><img src="https://avatars2.githubusercontent.com/u/56021937?v=4" width="80px;" alt=""/><br /><sub><b>Nafees Nehar</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=nafees87n" title="Code">💻</a></td>
     <td align="center"><a href="http://twsprogramming.com"><img src="https://avatars0.githubusercontent.com/u/25822696?v=4" width="80px;" alt=""/><br /><sub><b>Tyler Skulley</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=tskull01" title="Code">💻</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/drmartell"><img src="https://avatars3.githubusercontent.com/u/49651717?v=4" width="80px;" alt=""/><br /><sub><b>drmartell</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=drmartell" title="Code">💻</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 > This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
