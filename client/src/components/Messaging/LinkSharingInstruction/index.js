@@ -10,7 +10,7 @@ const LinkSharingInstruction = ({ online, link }) => {
   return (
     <div className={linkSharingInstruction}>
       <div>Send this link to who you want to chat with</div>
-      <input ref={inputRef} onClick={clickHandler} className={linkText} value={link} />
+      <input ref={inputRef} onClick={clickHandler} className={linkText} value={link} readOnly />
     </div>
   );
 };

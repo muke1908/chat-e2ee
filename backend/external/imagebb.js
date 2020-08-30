@@ -5,6 +5,9 @@ const API_KEY = process.env.IMAGE_BB_API_KEY;
 const api = `https://api.imgbb.com/1/upload`;
 
 const uploadImage = async (base64) => {
+  if (!API_KEY) {
+    throw new Error('IMAGE_BB_API_KEY - required');
+  }
   if (!base64) {
     throw new Error('base64 - required arg');
   }

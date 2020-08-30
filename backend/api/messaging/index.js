@@ -17,7 +17,7 @@ router.post(
     const { message, sender, channel, image } = req.body;
 
     if (!message) {
-      res.send(400);
+      return res.send(400);
     }
     const { valid } = await channelValid(channel);
 

@@ -28,6 +28,9 @@ const connectionListener = (socket, io) => {
 
   socket.on('disconnect', () => {
     const { channelID, userID } = socket;
+    if (!(channelID && userID)) {
+      return;
+    }
     try {
       const receiver = clients.getReceiverByChannel(channelID, userID);
       if (receiver) {
