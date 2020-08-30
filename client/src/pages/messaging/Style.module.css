@@ -1,6 +1,6 @@
 .messageContainer {
   /* height fallback */
-  height: calc(100% - 60px);
+  height: calc(100% - 54px);
   display: flex;
   flex-direction: column;
 }

@@ -3,11 +3,8 @@ import React, { useRef, useEffect } from 'react';
 const Notification = ({ play, audio }) => {
   const audioFile = useRef(null);
   const playAudio = () => {
-    try {
-      // audioFile.current.play();
-    } catch (err) {
-      console.log(err);
-    }
+    const audioPromise = audioFile.current.play();
+    audioPromise.catch((err) => console.error(err));
   };
 
   useEffect(() => {

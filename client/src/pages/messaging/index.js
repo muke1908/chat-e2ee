@@ -21,6 +21,7 @@ import { sendMessage, sharePublicKey, getPublicKey, getUsersInChannel } from '..
 import styles from './Style.module.css';
 import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from '../../components/Messaging';
 import Notification from '../../components/Notification';
+import LinkSharingInstruction from '../../components/Messaging/LinkSharingInstruction';
 import notificationAudio from '../../components/Notification/audio.mp3';
 
 const Chat = () => {
@@ -30,6 +31,7 @@ const Chat = () => {
   const [previewImg, setPreviewImg] = useState(false);
   const [usersInChannel, setUsers] = useState([]);
   const [notificationState, setNotificationState] = useState(false);
+
   const [darkMode] = useContext(ThemeContext);
 
   const myKeyRef = useRef(null);
@@ -243,6 +245,7 @@ const Chat = () => {
             {messagesFormatted.map((message, index) => (
               <Message key={index} handleSend={handleSend} index={index} message={message} />
             ))}
+            {!alice && <LinkSharingInstruction link={window.location.href} />}
           </ScrollWrapper>
         </div>
         <NewMessageForm

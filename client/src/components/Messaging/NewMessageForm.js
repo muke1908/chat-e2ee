@@ -37,6 +37,7 @@ export const NewMessageForm = ({
             placeholder="Write message"
             onChange={(e) => setText(e.target.value)}
             value={text}
+            autocomplete="off"
           />
           <div className={styles.buttonImageContainer}>
             <div className={styles.imagePickerContainer}>

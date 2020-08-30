@@ -45,3 +45,17 @@
 .sectionContribute {
   margin: 40px 0px 40px 0px;
 }
+
+.sectionDefault {
+  background: #212121;
+  padding: 20px;
+  box-shadow: 4px 3px 10px #121212;
+  border-radius: 5px;
+}
+
+.sectionDefaultLight {
+  background: #e3e3e3;
+  padding: 20px;
+  box-shadow: 4px 3px 10px #eeeeee;
+  border-radius: 5px;
+}
