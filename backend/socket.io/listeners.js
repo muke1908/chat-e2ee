@@ -5,7 +5,9 @@ const connectionListener = (socket, io) => {
   socket.on('chat-join', async (data) => {
     const { userID, channelID, publicKey } = data;
     try {
-      await channelValid(channelID);
+      const { valid }  = await channelValid(channelID);
+      if (!valid)
+        return;
     }
     catch (err) {
       // eslint-disable-next-line no-console
