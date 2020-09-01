@@ -10,18 +10,18 @@ const connectionListener = (socket, io) => {
       console.error('Invalid channelID - ', channelID);
       return;
     }
-    const users = clients.getClientsByChannel(channelID);
-    const userIDs = users && Object.keys(users);
+    const usersInChannel = clients.getClientsByChannel(channelID) || {};
+    const userCount = Object.keys(usersInChannel).length;
 
-    if (!users || userIDs.length < 2) {
-      clients.setClientToChannel(userID, channelID, socket.id);
-      socket.channelID = channelID;
-      socket.userID = userID;
-    } else {
+    if (userCount === 2) {
       const receiverSocket = io.sockets.sockets[socket.id];
-      receiverSocket.emit('unauthorised-user');
+      receiverSocket.emit('limit-reached');
       return;
     }
+
+    clients.setClientToChannel(userID, channelID, socket.id);
+    socket.channelID = channelID;
+    socket.userID = userID;
     // share the public key to the receiver if present
     const receiver = clients.getReceiverByChannel(channelID, userID);
 

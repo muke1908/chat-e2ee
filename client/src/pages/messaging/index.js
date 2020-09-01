@@ -177,11 +177,11 @@ const Chat = () => {
       userID: userId,
       publicKey: typedArrayToStr(myKeyRef.current.publicKey)
     });
-    socket.on('unauthorised-user', () => {
+    socket.on('limit-reached', () => {
       setMessages((prevMsg) =>
         prevMsg.concat({
           image: '',
-          body: `UNAUTHORIZED! Already Two Users are Connected`,
+          body: `Sorry, can't be used by more than two users. Check if the link is open on other tab`,
           sender: ''
         })
       );
