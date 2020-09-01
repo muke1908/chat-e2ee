@@ -177,7 +177,15 @@ const Chat = () => {
       userID: userId,
       publicKey: typedArrayToStr(myKeyRef.current.publicKey)
     });
-
+    socket.on('limit-reached', () => {
+      setMessages((prevMsg) =>
+        prevMsg.concat({
+          image: '',
+          body: `Sorry, can't be used by more than two users. Check if the link is open on other tab`,
+          sender: ''
+        })
+      );
+    });
     // an event to notify that the other person is joined.
     socket.on('on-alice-join', ({ publicKey }) => {
       if (publicKey) {

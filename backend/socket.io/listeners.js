@@ -10,6 +10,14 @@ const connectionListener = (socket, io) => {
       console.error('Invalid channelID - ', channelID);
       return;
     }
+    const usersInChannel = clients.getClientsByChannel(channelID) || {};
+    const userCount = Object.keys(usersInChannel).length;
+
+    if (userCount === 2) {
+      const receiverSocket = io.sockets.sockets[socket.id];
+      receiverSocket.emit('limit-reached');
+      return;
+    }
 
     clients.setClientToChannel(userID, channelID, socket.id);
     socket.channelID = channelID;
