@@ -1,5 +1,4 @@
 const express = require('express');
-// const { publishMessage } = require('../../external/pubnub');
 const uploadImage = require('../../external/imagebb');
 const { insertInDb, findOneFromDB } = require('../../db');
 const channelValid = require('../chatLink/utils/validateChannel');
@@ -24,6 +23,12 @@ router.post(
     if (!valid) {
       return res.sendStatus(404);
     }
+    const usersInChannel = Object.keys(clients.getClientsByChannel(channel) || {});
+    const ifSenderIsInChannel = usersInChannel.find((u) => u === sender);
+
+    if (!ifSenderIsInChannel) {
+      return res.status(401).send({ error: 'Limit reached' });
+    }
 
     const dataToPublish = {
       channel,
@@ -36,9 +41,8 @@ router.post(
       dataToPublish.image = imageurl;
     }
 
-    // await publishMessage(dataToPublish);
-    // send to internal socket server
     const { sid } = clients.getReceiverByChannel(channel, sender);
+    console.log(clients.getClients());
     socketEmit('chat-message', sid, dataToPublish);
 
     return res.send({ message: 'message sent' });

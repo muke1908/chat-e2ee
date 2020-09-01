@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './styles/UserStatusInfo.module.css';
 import ThemeToggle from '../ThemeToggle/index.js';
 
-export const UserStatusInfo = ({ online }) => {
+export const UserStatusInfo = ({ online, usersInChannel }) => {
   return (
     <div className={styles.userInfo}>
       {online ? (

@@ -246,7 +246,7 @@ const Chat = () => {
 
   return (
     <>
-      <UserStatusInfo online={alice} />
+      <UserStatusInfo online={alice} usersInChannel={usersInChannel} />
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
           <ScrollWrapper messageCount={messagesFormatted.length}>
