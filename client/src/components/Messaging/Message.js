@@ -1,25 +1,25 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import styles from './styles/Message.module.css';
+import Image from '../Image';
 
 import { ThemeContext } from '../../ThemeContext.js';
 
-export const Message = ({ handleSend, index, message: { owner, body, local } }) => {
+export const Message = ({ handleSend, index, message: { owner, body, image, local } }) => {
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
-
   const sendMessage = useCallback(async () => {
     setSending(true);
     setFailed(false);
 
     try {
-      await handleSend(body, index);
+      await handleSend(body, image, index);
     } catch (error) {
       console.log({ error });
       setFailed(true);
     }
     setSending(false);
-  }, [body, handleSend, index]);
+  }, [body, image, handleSend, index]);
 
   useEffect(() => {
     if (local) {
@@ -29,11 +29,14 @@ export const Message = ({ handleSend, index, message: { owner, body, local } }) 
   }, []);
 
   const [darkMode] = useContext(ThemeContext);
+  // const regex = /\bdata:image\b/g;
+  // const isImg = body.match(regex);
   return (
     <div className={owner === true ? styles.messageRight : styles.messageLeft}>
       <div className={styles.messageInfo}>
         <div className={styles.sentReceived}>You {owner === true ? 'sent' : 'received'}</div>
         <div className={`${styles.messageContainer} ${!darkMode && styles.lightModeContainer}`}>
+          {image && <Image src={image} maxWidth="300px" maxHeight="300px" />}
           {body}
         </div>
         {failed && !sending && (

@@ -1,0 +1,31 @@
+.linkSharingInstruction {
+  text-align: center;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.linkText {
+  margin-top: 12px;
+  font-family: monospace;
+  /* font-size: 18px; */
+  background: transparent;
+  color: #cecece;
+  border: 1px dotted #aeaeae;
+  width: 400px;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  outline: none;
+}
+
+.linkText::selection {
+  background-color: #fff;
+  color: #111;
+}
+
+@media screen and (max-width: 640px) {
+  .linkText {
+    padding: 5px 10px;
+    width: 100%;
+  }
+}

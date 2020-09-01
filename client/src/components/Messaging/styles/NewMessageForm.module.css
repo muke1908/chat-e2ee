@@ -8,6 +8,10 @@
   margin-bottom: 20px;
 }
 
+.lightsendMessageForm {
+  border-color: #cbcbcb;
+}
+
 .sendMessageInput {
   font-family: inherit;
   font-size: 18px;
@@ -56,6 +60,11 @@
   background: #ab0b42;
 }
 
+.imagePickerContainer {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
 @media screen and (max-width: 640px) {
   .sendMessageForm {
     border-radius: 0px;
@@ -65,19 +74,15 @@
   }
 }
 
-.imagePickerContainer {
-  margin: 0 10px;
+.buttonImageContainer {
+  display: flex;
 }
 
-.imagePickerLabel {
-  cursor: pointer;
+.msgBtnImgContainer {
+  display: flex;
+  justify-content: flex-start;
 }
 
-.inputImagePicker {
-  display: none;
-}
-
-.imagePickerIcon {
-  width: 45px;
-  height: auto;
+.emojiMessageContainer {
+  width: 100%;
 }

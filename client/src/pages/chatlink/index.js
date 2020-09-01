@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import './style.css';
 import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
 import Button from '../../components/Button';
 import LinkDisplay from '../../components/LinkDisplay/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
-import styles from '../../Style.module.css';
-import stylesLocal from './Style.module.css';
+import styles from './Style.module.css';
 import ThemeToggle from '../../components/ThemeToggle/index.js';
 
 const App = () => {
@@ -50,19 +48,19 @@ const App = () => {
 
   return (
     <>
-      <div className={stylesLocal.linkGenerationPage}>
+      <div className={styles.linkGenerationPage}>
         <div
-          className={`${stylesLocal.header}
-          ${darkMode === true ? stylesLocal.darkModeHeader : stylesLocal.lightModeHeader}`}
+          className={`${styles.header}
+          ${darkMode === true ? styles.darkModeHeader : styles.lightModeHeader}`}
         >
           Because privacy matters!
           <ThemeToggle />
         </div>
         <div className={`${styles.sectionDefault} ${!darkMode && styles.sectionDefaultLight}`}>
-          <div className={stylesLocal.title}>
+          <div className={styles.title}>
             Generate temporary link and start chatting without worrying.
           </div>
-          <div className={stylesLocal.description}>
+          <div className={styles.description}>
             <ul>
               <li>No login/signup required.</li>
               <li>We don't track you.</li>
@@ -74,7 +72,7 @@ const App = () => {
           </div>
           {!chatLink && (
             <>
-              <div id="captcha" className={stylesLocal.captchaHeightSetter} key={elKey}></div>
+              <div id="captcha" className={styles.captchaHeightSetter} key={elKey}></div>
               <br />
               <Button
                 label="Generate link"
@@ -92,11 +90,11 @@ const App = () => {
           )}
         </div>
         <div
-          className={`${stylesLocal.sectionContribute} ${
+          className={`${styles.sectionContribute} ${
             darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
           }`}
         >
-          <div className={stylesLocal.title}>
+          <div className={styles.title}>
             Our source-code is public on&nbsp;
             <a
               href="https://github.com/muke1908/chat-e2ee"

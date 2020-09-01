@@ -23,20 +23,6 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.sectionDefault {
-  background: #212121;
-  padding: 20px;
-  box-shadow: 4px 3px 10px #121212;
-  border-radius: 5px;
-}
-
-.sectionDefaultLight {
-  background: #e3e3e3;
-  padding: 20px;
-  box-shadow: 4px 3px 10px #eeeeee;
-  border-radius: 5px;
-}
-
 @media screen and (max-width: 640px) {
   .section--default {
     border-radius: 0px;
@@ -47,7 +33,7 @@ a {
   color: inherit !important;
 }
 
-.full-width {
+.fullWidth {
   width: 100%;
 }
 

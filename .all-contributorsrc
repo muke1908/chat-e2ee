@@ -95,6 +95,51 @@
         "infra",
         "code"
       ]
+    },
+    {
+      "login": "imlaxman",
+      "name": "imlaxman",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/34925185?v=4",
+      "profile": "https://github.com/imlaxman",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ARKEOLOGIST",
+      "name": "Arkadyuti Bandyopadhyay",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/34165124?v=4",
+      "profile": "https://github.com/ARKEOLOGIST",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "nafees87n",
+      "name": "Nafees Nehar",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/56021937?v=4",
+      "profile": "https://github.com/nafees87n",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "tskull01",
+      "name": "Tyler Skulley",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/25822696?v=4",
+      "profile": "http://twsprogramming.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "drmartell",
+      "name": "drmartell",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/49651717?v=4",
+      "profile": "https://github.com/drmartell",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
