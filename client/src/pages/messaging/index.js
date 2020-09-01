@@ -177,7 +177,15 @@ const Chat = () => {
       userID: userId,
       publicKey: typedArrayToStr(myKeyRef.current.publicKey)
     });
-
+    socket.on('unauthorised-user', () => {
+      setMessages((prevMsg) =>
+        prevMsg.concat({
+          image: '',
+          body: `UNAUTHORIZED! Already Two Users are Connected`,
+          sender: ''
+        })
+      );
+    });
     // an event to notify that the other person is joined.
     socket.on('on-alice-join', ({ publicKey }) => {
       if (publicKey) {
