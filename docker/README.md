@@ -9,11 +9,10 @@ We have provided a Dockerfile which can be used to set-up the entire system with
 
 
 ##### Building the docker image 
-Copy the client-side recaptcha key and provide the key in `client/src/pages/chatlink/captcha.json`
 From the project root directory, issue the following command :
-
+You need to provide the client side recaptcha-key as a build time argument.
 ```
-docker build . -f docker/Dockerfile -t chat-e2e:latest
+docker build . -f docker/Dockerfile --build-arg recaptcha_client_key=<your_client_recaptcha_key> -t chat-e2e:latest
 ```
 
 ##### Running the docker container 

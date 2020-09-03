@@ -1,16 +1,18 @@
 FROM node:12.18.3-buster
 
 #Set production mode deployment
-ENV NODE_ENV "Production"
+ARG recaptcha_client_key
+ENV NODE_ENV "production"
 
 #copy the content of current directory to /app inside container
-COPY . /app
+COPY . /chat-e2ee
 
-WORKDIR /app 
+WORKDIR /chat-e2ee 
 
-RUN npm install && npm run postinstall
+RUN npm install --unsafe-perm
 
-RUN npm run build
+ENV REACT_APP_CAPTCHA_KEY=$recaptcha_client_key
+RUN npm run build 
 
 RUN rm .env.sample
 
