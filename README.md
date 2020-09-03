@@ -81,6 +81,8 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 **Important:** Check `.env.sample` to configure your `.env` file.
 
+We also provide a Dockerfile to build and run the docker image. More details can be found 
+
 ### Folder structure
 
 - The FE client is located in `./client` which is coupled with the backend
