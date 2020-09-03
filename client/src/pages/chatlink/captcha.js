@@ -1,5 +1,6 @@
 import loadJS from '../../utils/loadJS';
 
+
 export const renderGoogleReCaptcha = (gr, captchaEl, callback, expiredCallback, colorMode) => {
   return new Promise((resolve) => {
     gr.ready(() => {
