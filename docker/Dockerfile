@@ -1,7 +1,7 @@
 FROM node:12.18.3-buster
 
 #Set production mode deployment
-ENV NODE_ENV "Production"
+ENV NODE_ENV "production"
 
 #copy the content of current directory to /app inside container
 COPY . /app
