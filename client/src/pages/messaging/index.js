@@ -248,12 +248,7 @@ const Chat = () => {
 
   return (
     <>
-      <UserStatusInfo
-        online={alice}
-        usersInChannel={usersInChannel}
-        getSetUsers={getSetUsers}
-        channelID={channelID}
-      />
+      <UserStatusInfo online={alice} getSetUsers={getSetUsers} channelID={channelID} />
 
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
