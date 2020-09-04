@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './styles/UserStatusInfo.module.css';
 import ThemeToggle from '../ThemeToggle/index.js';
+import imageRetryIcon from './assets/image-retry.png';
 
-export const UserStatusInfo = ({ online, usersInChannel }) => {
+export const UserStatusInfo = ({ online, getSetUsers, channelID }) => {
+  const [loading, setLoading] = useState(false);
+
+  const fetchKeyAgain = async () => {
+    if (loading) return;
+
+    setLoading(true);
+    await getSetUsers(channelID);
+    setLoading(false);
+  };
+
   return (
     <div className={styles.userInfo}>
       {online ? (
@@ -10,7 +21,17 @@ export const UserStatusInfo = ({ online, usersInChannel }) => {
           Alice {'<'}Online{'>'}
         </span>
       ) : (
-        'Waiting for Alice to join..'
+        <div className={styles.userOnlineWaiting}>
+          Waiting for Alice to join...
+          <img
+            className={
+              loading ? `${styles.retryImageIcon} ${styles.loading}` : `${styles.retryImageIcon}`
+            }
+            src={imageRetryIcon}
+            onClick={fetchKeyAgain}
+            alt="retry-icon"
+          />
+        </div>
       )}
       <ThemeToggle />
     </div>

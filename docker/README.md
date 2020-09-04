@@ -1,24 +1,27 @@
 #### Build docker image for chat-e2ee
+
 We have provided a Dockerfile which can be used to set-up the entire system with a single command.
 
-##### Requirements 
+##### Requirements
+
     1. Docker compatible operating System.
     2. Docker CE 18.0 +
-    3. MongoDB 
+    3. MongoDB
     4. Recaptcha 2.0 account with client and server keys
 
+##### Building the docker image
 
-##### Building the docker image 
 From the project root directory, issue the following command :
 You need to provide the client side recaptcha-key as a build time argument.
+
 ```
 docker build . -f docker/Dockerfile --build-arg recaptcha_client_key=<your_client_recaptcha_key> -t chat-e2e:latest
 ```
 
-##### Running the docker container 
+##### Running the docker container
 
 1. Create a .env file
-Create a new .env file which exports Mongo DB URI and secret keys, it will contain following ENV variables.
+   Create a new .env file which exports Mongo DB URI and secret keys, it will contain following ENV variables.
 
 ```
 GOOGLE_RECAPTCHA_SECRET=''

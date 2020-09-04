@@ -11,7 +11,7 @@
     "test": "cross-env NODE_ENV=test jest",
     "start": "npm run build && cross-env NODE_ENV=production node index",
     "postinstall": "cd client && npm install",
-    "docker_start" : "cross-env NODE_ENV=production node index"
+    "docker_start": "cross-env NODE_ENV=production node index"
   },
   "author": "",
   "license": "ISC",

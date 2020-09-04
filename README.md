@@ -81,7 +81,7 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 **Important:** Check `.env.sample` to configure your `.env` file.
 
-We also provide a Dockerfile to build and run the docker image. More details can be found 
+We also provide a Dockerfile to build and run the docker image. More details can be found
 
 ### Folder structure
 
@@ -149,6 +149,7 @@ Example:
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 > This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

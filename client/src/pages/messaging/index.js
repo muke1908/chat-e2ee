@@ -40,6 +40,7 @@ const Chat = () => {
   const notificationTimer = useRef(null);
 
   const { channelID } = useParams();
+
   let userId = getUserSessionID(channelID);
 
   // if not in session, lets create one and store.
@@ -133,6 +134,7 @@ const Chat = () => {
 
   const getSetUsers = async (channelID) => {
     const usersInChannel = await getUsersInChannel({ channel: channelID });
+
     setUsers(usersInChannel);
     const alice = usersInChannel.find((user) => user.uuid !== userId);
 
@@ -246,7 +248,8 @@ const Chat = () => {
 
   return (
     <>
-      <UserStatusInfo online={alice} usersInChannel={usersInChannel} />
+      <UserStatusInfo online={alice} getSetUsers={getSetUsers} channelID={channelID} />
+
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
           <ScrollWrapper messageCount={messagesFormatted.length}>
