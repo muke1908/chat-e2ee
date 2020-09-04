@@ -16,6 +16,7 @@ const connectionListener = (socket, io) => {
     if (userCount === 2) {
       const receiverSocket = io.sockets.sockets[socket.id];
       receiverSocket.emit('limit-reached');
+      receiverSocket.disconnect();
       return;
     }
 
