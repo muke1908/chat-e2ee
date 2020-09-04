@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from './styles/UserStatusInfo.module.css';
 import ThemeToggle from '../ThemeToggle/index.js';
 import imageRetryIcon from './assets/image-retry.png';
@@ -6,15 +6,12 @@ import imageRetryIcon from './assets/image-retry.png';
 export const UserStatusInfo = ({ online, getSetUsers, channelID }) => {
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (online) setLoading(false);
-  }, [online]);
-
-  const fetchKeyAgain = () => {
+  const fetchKeyAgain = async () => {
     if (loading) return;
 
     setLoading(true);
-    getSetUsers(channelID);
+    await getSetUsers(channelID);
+    setLoading(false);
   };
 
   return (
