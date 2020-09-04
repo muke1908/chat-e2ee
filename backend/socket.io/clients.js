@@ -19,6 +19,15 @@ const clients = {
     }
     return clientRecord[channelID];
   },
+  getSenderByChannel: (channelID, userID) => {
+    if (!(channelID && userID)) {
+      throw new Error('channelID, userID - required param');
+    }
+    const users = Object.keys(clientRecord[channelID]);
+
+    const sender = users.find((u) => u === userID);
+    return clientRecord[channelID][sender];
+  },
   getReceiverByChannel: (channelID, userID) => {
     if (!(channelID && userID)) {
       throw new Error('channelID, userID - required param');

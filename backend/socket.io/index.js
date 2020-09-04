@@ -21,6 +21,9 @@ const initSocket = (server) => {
 const socketEmit = (topic, sid, data) => {
   const socket = io.sockets.sockets[sid];
   socket.emit(topic, data);
+  return socket.on('received', () => {
+    return true;
+  });
 };
 
 module.exports = {

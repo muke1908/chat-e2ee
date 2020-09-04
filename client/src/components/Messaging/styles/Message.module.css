@@ -52,6 +52,10 @@
   color: #828282;
   font-size: 13px;
 }
+.messageDelivered {
+  color: #c8afaf;
+  font-size: 13px;
+}
 
 .messageRetry {
   display: inline-block;

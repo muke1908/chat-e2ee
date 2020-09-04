@@ -31,7 +31,7 @@ const Chat = () => {
   const [previewImg, setPreviewImg] = useState(false);
   const [usersInChannel, setUsers] = useState([]);
   const [notificationState, setNotificationState] = useState(false);
-
+  const [delivered, setDelivered] = useState(false);
   const [darkMode] = useContext(ThemeContext);
 
   const myKeyRef = useRef(null);
@@ -188,6 +188,9 @@ const Chat = () => {
         })
       );
     });
+    socket.on('delivered', () => {
+      setDelivered(true);
+    });
     // an event to notify that the other person is joined.
     socket.on('on-alice-join', ({ publicKey }) => {
       if (publicKey) {
@@ -209,7 +212,6 @@ const Chat = () => {
       try {
         const box = strToTypedArr(msg.message.box);
         const nonce = strToTypedArr(msg.message.nonce);
-
         const { msg: _msg } = decryptMsg({
           box,
           nonce,
@@ -224,6 +226,7 @@ const Chat = () => {
             sender: msg.sender
           })
         );
+        socket.emit('received');
       } catch (err) {
         console.error(err);
       }
@@ -254,7 +257,13 @@ const Chat = () => {
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
           <ScrollWrapper messageCount={messagesFormatted.length}>
             {messagesFormatted.map((message, index) => (
-              <Message key={index} handleSend={handleSend} index={index} message={message} />
+              <Message
+                key={index}
+                handleSend={handleSend}
+                index={index}
+                message={message}
+                delivered={delivered}
+              />
             ))}
             {!alice && <LinkSharingInstruction link={window.location.href} />}
           </ScrollWrapper>

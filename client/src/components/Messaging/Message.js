@@ -5,7 +5,12 @@ import Image from '../Image';
 
 import { ThemeContext } from '../../ThemeContext.js';
 
-export const Message = ({ handleSend, index, message: { owner, body, image, local } }) => {
+export const Message = ({
+  handleSend,
+  index,
+  message: { owner, body, image, local },
+  delivered
+}) => {
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
   const sendMessage = useCallback(async () => {
@@ -46,6 +51,9 @@ export const Message = ({ handleSend, index, message: { owner, body, image, loca
               Try again
             </div>
           </div>
+        )}
+        {owner && delivered && !sending && !failed && (
+          <div className={styles.messageDelivered}>Delivered</div>
         )}
       </div>
     </div>
