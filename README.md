@@ -144,12 +144,12 @@ Example:
   <tr>
     <td align="center"><a href="https://github.com/drmartell"><img src="https://avatars3.githubusercontent.com/u/49651717?v=4" width="80px;" alt=""/><br /><sub><b>drmartell</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=drmartell" title="Code">💻</a></td>
     <td align="center"><a href="https://Narasimha1997.github.io"><img src="https://avatars2.githubusercontent.com/u/20423357?v=4" width="80px;" alt=""/><br /><sub><b>Narasimha Prasanna HN</b></sub></a><br /><a href="#infra-Narasimha1997" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    <td align="center"><a href="https://github.com/loneWarrior581"><img src="https://avatars2.githubusercontent.com/u/67538935?v=4" width="80px;" alt=""/><br /><sub><b>Uttkarsh singh</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=loneWarrior581" title="Code">💻</a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 > This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

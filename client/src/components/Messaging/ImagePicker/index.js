@@ -18,7 +18,12 @@ const ImagePicker = (props) => {
   return (
     <div className={styles.imagePickerContainer}>
       <label className={styles.imagePickerLabel}>
-        <input className={styles.inputImagePicker} type="file" onChange={selectImage} />
+        <input
+          className={styles.inputImagePicker}
+          type="file"
+          accept="image/png, image/jpeg"
+          onChange={selectImage}
+        />
         {previewImg ? (
           <Image src={selectedImg} maxWidth="45px" maxHeight="auto" />
         ) : (
