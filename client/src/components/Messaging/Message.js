@@ -34,8 +34,7 @@ export const Message = ({
   }, []);
 
   const [darkMode] = useContext(ThemeContext);
-  // const regex = /\bdata:image\b/g;
-  // const isImg = body.match(regex);
+
   return (
     <div className={owner === true ? styles.messageRight : styles.messageLeft}>
       <div className={styles.messageInfo}>
@@ -52,8 +51,8 @@ export const Message = ({
             </div>
           </div>
         )}
-        {owner && deliveredID.includes(id) && !sending && !failed && (
-          <div className={styles.messageDelivered}>Delivered</div>
+        {deliveredID.includes(id) && (
+          <div className={styles.messageDelivered}>Delivered&nbsp;&#10004;</div>
         )}
       </div>
     </div>

@@ -45,7 +45,7 @@ router.post(
     const { sid } = clients.getReceiverByChannel(channel, sender);
     socketEmit('chat-message', sid, dataToPublish);
 
-    return res.send({ message: 'message sent' });
+    return res.send({ message: 'message sent', id });
   })
 );
 

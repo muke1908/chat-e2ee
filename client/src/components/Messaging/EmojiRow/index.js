@@ -3,6 +3,7 @@ import styles from './Style.module.css';
 import Emoji from '../Emoji';
 import '../Emoji/index.js';
 import { ThemeContext } from '../../../ThemeContext.js';
+const emojis = ['🙂', '😀', '😂', '😍', '😘', '😜', '🧐', '😎', '🤩', '😏', '😒', '😔', '😩', '😭'];
 
 const EmojiRow = ({ text, setText }) => {
   const [darkMode] = useContext(ThemeContext);
@@ -10,23 +11,6 @@ const EmojiRow = ({ text, setText }) => {
   const selectEmoji = (symbol) => {
     setText(text + symbol);
   };
-  const emojis = [
-    '🙂',
-    '😀',
-    '😂',
-    '😍',
-    '😘',
-    '😜',
-    '🧐',
-    '😎',
-    '🤩',
-    '🥳',
-    '😏',
-    '😒',
-    '😔',
-    '😩',
-    '😭'
-  ];
 
   return (
     <div className={`${styles.emojiRow} ${!darkMode && styles.lightEmojiRow}`}>

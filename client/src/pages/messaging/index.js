@@ -110,9 +110,7 @@ const Chat = () => {
         alicePublicKey: publicKeyRef.current
       });
 
-      // TODO: need to handle image
-
-      await sendMessage({
+      const { id } = await sendMessage({
         channelID,
         userId,
         image,
@@ -125,6 +123,7 @@ const Chat = () => {
       setMessages((prevMsg) => {
         const { ...message } = prevMsg[index];
         message.local = false;
+        message.id = id;
         prevMsg[index] = message;
         return [...prevMsg];
       });
@@ -148,25 +147,7 @@ const Chat = () => {
   };
 
   const initChat = async () => {
-    // TODO: handle error
-    // const messages = await fetchMessages(pubnub, channelID);
-    //
-    // const formatMessages = messages.map((msg) => {
-    //   const {
-    //     image,
-    //     sender,
-    //     body: { box, nonce }
-    //   } = msg;
-    //
-    //   return {
-    //     encrypted: true,
-    //     encryptionDetail: { box, nonce },
-    //     sender,
-    //     image,
-    //     body: btoa(strToTypedArr(box)) // let's just stringify the array, to decrypt later
-    //   };
-    // });
-    // setMessages(formatMessages);
+    // TODO: restore previous messages from local storage
   };
 
   useEffect(() => {
@@ -190,11 +171,6 @@ const Chat = () => {
     });
     socket.on('delivered', (id) => {
       setDeliveredID((prev) => [...prev, id]);
-      setMessages((prev) => {
-        const copy = [...prev];
-        copy[copy.length - 1].id = id;
-        return [...copy];
-      });
     });
     // an event to notify that the other person is joined.
     socket.on('on-alice-join', ({ publicKey }) => {
@@ -213,6 +189,7 @@ const Chat = () => {
       getSetUsers(channelID);
     });
 
+    //handle incoming message
     socket.on('chat-message', (msg) => {
       try {
         const box = strToTypedArr(msg.message.box);
@@ -245,6 +222,7 @@ const Chat = () => {
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
+  console.log(messages);
   const messagesFormatted = messages.map(({ body, sender, image, local, id }, i) => {
     return {
       owner: sender === userId,
