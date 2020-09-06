@@ -93,8 +93,7 @@ const Chat = () => {
         body: text,
         image: selectedImg,
         sender: userId,
-        local: true,
-        id: new Date().valueOf()
+        local: true
       })
     );
 
@@ -104,7 +103,7 @@ const Chat = () => {
   };
 
   const handleSend = useCallback(
-    async (body, image, index, id) => {
+    async (body, image, index) => {
       const { box, nonce } = encryptMsg({
         text: body,
         mySecretKey: myKeyRef.current.secretKey,
@@ -117,7 +116,6 @@ const Chat = () => {
         channelID,
         userId,
         image,
-        id,
         text: {
           box: typedArrayToStr(box),
           nonce: typedArrayToStr(nonce)
@@ -192,6 +190,11 @@ const Chat = () => {
     });
     socket.on('delivered', (id) => {
       setDeliveredID((prev) => [...prev, id]);
+      setMessages((prev) => {
+        const copy = [...prev];
+        copy[copy.length - 1].id = id;
+        return [...copy];
+      });
     });
     // an event to notify that the other person is joined.
     socket.on('on-alice-join', ({ publicKey }) => {
@@ -210,7 +213,7 @@ const Chat = () => {
       getSetUsers(channelID);
     });
 
-    socket.on('chat-message', (msg, callback) => {
+    socket.on('chat-message', (msg) => {
       try {
         const box = strToTypedArr(msg.message.box);
         const nonce = strToTypedArr(msg.message.nonce);
@@ -228,10 +231,9 @@ const Chat = () => {
             id: msg.id
           })
         );
-        callback({ ok: true });
+        socket.emit('received', { channel: msg.channel, sender: msg.sender, id: msg.id });
       } catch (err) {
         console.error(err);
-        callback({ ok: false });
       }
     });
 

@@ -13,7 +13,7 @@ const router = express.Router({ mergeParams: true });
 router.post(
   '/message',
   asyncHandler(async (req, res) => {
-    const { message, sender, channel, image, id } = req.body;
+    const { message, sender, channel, image } = req.body;
 
     if (!message) {
       return res.send(400);
@@ -29,7 +29,7 @@ router.post(
     if (!ifSenderIsInChannel) {
       return res.status(401).send({ error: 'Limit reached' });
     }
-
+    const id = new Date().valueOf();
     const dataToPublish = {
       channel,
       sender,
@@ -43,13 +43,9 @@ router.post(
     }
 
     const { sid } = clients.getReceiverByChannel(channel, sender);
-    const received = await socketEmit('chat-message', sid, dataToPublish);
-    if (received) {
-      const senderID = clients.getSenderByChannel(channel, sender);
-      socketEmit('delivered', senderID.sid, id);
-      return res.send({ message: 'message sent' });
-    }
-    return res.send(400);
+    socketEmit('chat-message', sid, dataToPublish);
+
+    return res.send({ message: 'message sent' });
   })
 );
 

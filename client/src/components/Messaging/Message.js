@@ -18,13 +18,13 @@ export const Message = ({
     setFailed(false);
 
     try {
-      await handleSend(body, image, index, id);
+      await handleSend(body, image, index);
     } catch (error) {
       console.log({ error });
       setFailed(true);
     }
     setSending(false);
-  }, [body, image, handleSend, index, id]);
+  }, [body, image, handleSend, index]);
 
   useEffect(() => {
     if (local) {

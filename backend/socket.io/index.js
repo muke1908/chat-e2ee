@@ -20,11 +20,7 @@ const initSocket = (server) => {
 
 const socketEmit = (topic, sid, data) => {
   const socket = io.sockets.sockets[sid];
-  return new Promise((resolve) => {
-    socket.emit(topic, data, (res) => {
-      resolve(res.ok);
-    });
-  });
+  socket.emit(topic, data);
 };
 
 module.exports = {
