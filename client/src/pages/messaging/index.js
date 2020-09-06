@@ -31,7 +31,7 @@ const Chat = () => {
   const [previewImg, setPreviewImg] = useState(false);
   const [usersInChannel, setUsers] = useState([]);
   const [notificationState, setNotificationState] = useState(false);
-  const [delivered, setDelivered] = useState(false);
+  const [deliveredID, setDeliveredID] = useState([]);
   const [darkMode] = useContext(ThemeContext);
 
   const myKeyRef = useRef(null);
@@ -93,7 +93,8 @@ const Chat = () => {
         body: text,
         image: selectedImg,
         sender: userId,
-        local: true
+        local: true,
+        id: new Date().valueOf()
       })
     );
 
@@ -103,7 +104,7 @@ const Chat = () => {
   };
 
   const handleSend = useCallback(
-    async (body, image, index) => {
+    async (body, image, index, id) => {
       const { box, nonce } = encryptMsg({
         text: body,
         mySecretKey: myKeyRef.current.secretKey,
@@ -116,6 +117,7 @@ const Chat = () => {
         channelID,
         userId,
         image,
+        id,
         text: {
           box: typedArrayToStr(box),
           nonce: typedArrayToStr(nonce)
@@ -188,8 +190,8 @@ const Chat = () => {
         })
       );
     });
-    socket.on('delivered', () => {
-      setDelivered(true);
+    socket.on('delivered', (id) => {
+      setDeliveredID((prev) => [...prev, id]);
     });
     // an event to notify that the other person is joined.
     socket.on('on-alice-join', ({ publicKey }) => {
@@ -208,7 +210,7 @@ const Chat = () => {
       getSetUsers(channelID);
     });
 
-    socket.on('chat-message', (msg) => {
+    socket.on('chat-message', (msg, callback) => {
       try {
         const box = strToTypedArr(msg.message.box);
         const nonce = strToTypedArr(msg.message.nonce);
@@ -218,17 +220,18 @@ const Chat = () => {
           mySecretKey: myKeyRef.current.secretKey,
           alicePublicKey: publicKeyRef.current
         });
-
         setMessages((prevMsg) =>
           prevMsg.concat({
             image: msg.image,
             body: _msg,
-            sender: msg.sender
+            sender: msg.sender,
+            id: msg.id
           })
         );
-        socket.emit('received');
+        callback({ ok: true });
       } catch (err) {
         console.error(err);
+        callback({ ok: false });
       }
     });
 
@@ -240,12 +243,13 @@ const Chat = () => {
   }, [channelID]);
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
-  const messagesFormatted = messages.map(({ body, sender, image, local }, i) => {
+  const messagesFormatted = messages.map(({ body, sender, image, local, id }, i) => {
     return {
       owner: sender === userId,
       body,
       image,
-      local
+      local,
+      id
     };
   });
 
@@ -262,7 +266,7 @@ const Chat = () => {
                 handleSend={handleSend}
                 index={index}
                 message={message}
-                delivered={delivered}
+                deliveredID={deliveredID}
               />
             ))}
             {!alice && <LinkSharingInstruction link={window.location.href} />}

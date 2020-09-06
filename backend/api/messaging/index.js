@@ -13,7 +13,7 @@ const router = express.Router({ mergeParams: true });
 router.post(
   '/message',
   asyncHandler(async (req, res) => {
-    const { message, sender, channel, image } = req.body;
+    const { message, sender, channel, image, id } = req.body;
 
     if (!message) {
       return res.send(400);
@@ -33,7 +33,8 @@ router.post(
     const dataToPublish = {
       channel,
       sender,
-      message
+      message,
+      id
     };
 
     if (image) {
@@ -42,13 +43,12 @@ router.post(
     }
 
     const { sid } = clients.getReceiverByChannel(channel, sender);
-    const received = socketEmit('chat-message', sid, dataToPublish);
+    const received = await socketEmit('chat-message', sid, dataToPublish);
     if (received) {
       const senderID = clients.getSenderByChannel(channel, sender);
-      socketEmit('delivered', senderID.sid, {});
+      socketEmit('delivered', senderID.sid, id);
       return res.send({ message: 'message sent' });
     }
-
     return res.send(400);
   })
 );

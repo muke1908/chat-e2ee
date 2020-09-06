@@ -8,8 +8,8 @@ import { ThemeContext } from '../../ThemeContext.js';
 export const Message = ({
   handleSend,
   index,
-  message: { owner, body, image, local },
-  delivered
+  message: { owner, body, image, local, id },
+  deliveredID
 }) => {
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -18,7 +18,7 @@ export const Message = ({
     setFailed(false);
 
     try {
-      await handleSend(body, image, index);
+      await handleSend(body, image, index, id);
     } catch (error) {
       console.log({ error });
       setFailed(true);
@@ -52,7 +52,7 @@ export const Message = ({
             </div>
           </div>
         )}
-        {owner && delivered && !sending && !failed && (
+        {owner && deliveredID.includes(id) && !sending && !failed && (
           <div className={styles.messageDelivered}>Delivered</div>
         )}
       </div>

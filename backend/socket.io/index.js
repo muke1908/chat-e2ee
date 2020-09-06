@@ -20,9 +20,10 @@ const initSocket = (server) => {
 
 const socketEmit = (topic, sid, data) => {
   const socket = io.sockets.sockets[sid];
-  socket.emit(topic, data);
-  return socket.on('received', () => {
-    return true;
+  return new Promise((resolve) => {
+    socket.emit(topic, data, (res) => {
+      resolve(res.ok);
+    });
   });
 };
 
