@@ -24,7 +24,7 @@ export const Message = ({
       setFailed(true);
     }
     setSending(false);
-  }, [body, image, handleSend, index]);
+  }, [body, image, handleSend, index, id]);
 
   useEffect(() => {
     if (local) {
