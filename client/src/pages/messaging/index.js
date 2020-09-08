@@ -93,7 +93,10 @@ const Chat = () => {
         local: true
       })
     );
+    resetImageHandler();
+  };
 
+  const resetImageHandler = () => {
     setSelectedImg('');
     setPreviewImg(false);
     setText('');
@@ -253,6 +256,7 @@ const Chat = () => {
           setSelectedImg={setSelectedImg}
           previewImg={previewImg}
           setPreviewImg={setPreviewImg}
+          resetImage={resetImageHandler}
         />
       </div>
       <Notification play={notificationState} audio={notificationAudio} />
