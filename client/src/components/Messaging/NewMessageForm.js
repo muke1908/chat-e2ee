@@ -2,8 +2,10 @@ import React, { useRef, useContext } from 'react';
 import styles from './styles/NewMessageForm.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
 import ImagePicker from './ImagePicker';
+import RemoveButton from './RemoveButton';
 import EmojiRow from './EmojiRow';
 import detectMobile from '../../utils/detectMobile.js';
+
 export const NewMessageForm = ({
   handleSubmit,
   text,
@@ -11,7 +13,8 @@ export const NewMessageForm = ({
   selectedImg,
   setSelectedImg,
   previewImg,
-  setPreviewImg
+  setPreviewImg,
+  resetImage
 }) => {
   const inputRef = useRef(null);
   const [darkMode] = useContext(ThemeContext);
@@ -39,6 +42,7 @@ export const NewMessageForm = ({
             value={text}
             autoComplete="off"
           />
+          {selectedImg === '' ? null : <RemoveButton onClick={resetImage} />}
           <div className={styles.buttonImageContainer}>
             <div className={styles.imagePickerContainer}>
               <ImagePicker
