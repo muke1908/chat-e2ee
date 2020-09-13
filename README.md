@@ -93,7 +93,7 @@ We also provide a Dockerfile to build and run the docker image. More details can
 ### APIs
 ```endpoint: https://chate2ee.fun/api/<path>```
 
-| url                              | method   | paylod                         | filename                  | description                                   |
+| url                              | method   | payload                         | filename                  | description                                   |
 | -------------------------------- | -------- | ------------------------------ | ------------------------- | --------------------------------------------- |
 | `/chat-link`                 | `POST`   | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
 | `/chat-link/status/:channel` | `GET`    |                                | `/api/index.js`           | to check if a channel is valid                |
