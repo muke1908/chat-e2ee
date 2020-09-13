@@ -2,4 +2,11 @@
   overflow: auto;
   flex: 1;
   scroll-behavior: smooth;
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+}
+.scrollWrapper::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
