@@ -23,7 +23,7 @@
     "express": "^4.17.1",
     "form-data": "^3.0.0",
     "mongodb": "^3.5.9",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "pubnub": "^4.28.2",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
