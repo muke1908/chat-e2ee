@@ -11,6 +11,21 @@
   height: auto;
 }
 
+.emojiRowContainer {
+  resize: none;
+  flex: 1;
+  border: 0;
+  height: 50px;
+  box-sizing: border-box;
+  outline: none;
+  background: #000;
+  user-select: none;
+}
+
+.lightEmojiRowContainer {
+  background: #f2f2f2;
+}
+
 .sendMessageForm {
   display: flex;
   align-items: flex-start;

@@ -19,7 +19,7 @@ export const NewMessageForm = ({
 }) => {
   const inputRef = useRef(null);
   const [darkMode] = useContext(ThemeContext);
-  const [emojiRow, showEmojiRow] = React.useState(false);
+  const [emojiVisibility, setEmojiVisibility] = React.useState(false);
 
   const wrapperHandler = (e) => {
     inputRef.current.focus();
@@ -32,7 +32,13 @@ export const NewMessageForm = ({
       className={`${styles.sendMessageForm} ${!darkMode && styles.lightsendMessageForm}`}
     >
       <div className={styles.emojiMessageContainer}>
-        {emojiRow && !detectMobile() && <EmojiRow text={text} setText={setText} />}
+        {emojiVisibility ? (
+          !detectMobile() && <EmojiRow text={text} setText={setText} />
+        ) : (
+          <div
+            className={`${styles.emojiRowContainer} ${!darkMode && styles.lightEmojiRowContainer}`}
+          />
+        )}
         <div className={styles.msgBtnImgContainer}>
           <input
             ref={inputRef}
@@ -60,7 +66,7 @@ export const NewMessageForm = ({
                 className={styles.emojiPickerIcon}
                 src={emojiPickerIcon}
                 alt="emoji-picker"
-                onClick={() => showEmojiRow(!emojiRow)}
+                onClick={() => setEmojiVisibility(!emojiVisibility)}
               />
             </div>
             <div
