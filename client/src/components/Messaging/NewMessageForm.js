@@ -59,6 +59,7 @@ export const NewMessageForm = ({
               <img
                 className={styles.emojiPickerIcon}
                 src={emojiPickerIcon}
+                alt="emoji-picker"
                 onClick={() => showEmojiRow(!emojiRow)}
               />
             </div>
