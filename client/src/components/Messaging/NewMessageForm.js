@@ -32,13 +32,11 @@ export const NewMessageForm = ({
       className={`${styles.sendMessageForm} ${!darkMode && styles.lightsendMessageForm}`}
     >
       <div className={styles.emojiMessageContainer}>
-        {emojiVisibility ? (
-          !detectMobile() && <EmojiRow text={text} setText={setText} />
-        ) : (
-          <div
-            className={`${styles.emojiRowContainer} ${!darkMode && styles.lightEmojiRowContainer}`}
-          />
-        )}
+        <div
+          className={`${styles.emojiRowContainer} ${!darkMode && styles.lightEmojiRowContainer}`}
+        >
+          {emojiVisibility && !detectMobile() && <EmojiRow text={text} setText={setText} />}
+        </div>
         <div className={styles.msgBtnImgContainer}>
           <input
             ref={inputRef}

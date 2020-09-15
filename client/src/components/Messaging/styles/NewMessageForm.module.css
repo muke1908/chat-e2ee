@@ -1,5 +1,5 @@
 .emojiPickerContainer {
-  margin: 0 10px;
+  margin: auto 10px;
 }
 
 .emojiPickerContainer:hover {
@@ -7,19 +7,13 @@
 }
 
 .emojiPickerIcon {
-  width: 45px;
+  width: 30px;
   height: auto;
+  display: table;
 }
 
 .emojiRowContainer {
-  resize: none;
-  flex: 1;
-  border: 0;
   height: 50px;
-  box-sizing: border-box;
-  outline: none;
-  background: #000;
-  user-select: none;
 }
 
 .lightEmojiRowContainer {
@@ -29,10 +23,8 @@
 .sendMessageForm {
   display: flex;
   align-items: flex-start;
-  border: 1px solid #000;
-  border-radius: 5px;
   overflow: hidden;
-  margin-top: 20px;
+  margin-top: 10px;
   margin-bottom: 20px;
 }
 
@@ -95,8 +87,6 @@
 }
 @media screen and (max-width: 640px) {
   .sendMessageForm {
-    border-radius: 0px;
-    border: 0px;
     margin-top: 0px;
     margin-bottom: 0px;
   }
@@ -109,6 +99,9 @@
 .msgBtnImgContainer {
   display: flex;
   justify-content: flex-start;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #212121;
 }
 
 .emojiMessageContainer {
