@@ -147,6 +147,7 @@ Example:
     <td align="center"><a href="https://Narasimha1997.github.io"><img src="https://avatars2.githubusercontent.com/u/20423357?v=4" width="80px;" alt=""/><br /><sub><b>Narasimha Prasanna HN</b></sub></a><br /><a href="#infra-Narasimha1997" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
     <td align="center"><a href="https://github.com/loneWarrior581"><img src="https://avatars2.githubusercontent.com/u/67538935?v=4" width="80px;" alt=""/><br /><sub><b>Uttkarsh singh</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=loneWarrior581" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Ryuuko"><img src="https://avatars2.githubusercontent.com/u/25223617?v=4" width="80px;" alt=""/><br /><sub><b>Tat Cheong Chu</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=Ryuuko" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/salonigoyal2309"><img src="https://avatars3.githubusercontent.com/u/48411357?v=4" width="80px;" alt=""/><br /><sub><b>Saloni Goyal</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=salonigoyal2309" title="Code">💻</a></td>
   </tr>
 </table>
 
