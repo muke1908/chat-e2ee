@@ -1,3 +1,16 @@
+.emojiPickerContainer {
+  margin: 0 10px;
+}
+
+.emojiPickerContainer:hover {
+  cursor: pointer;
+}
+
+.emojiPickerIcon {
+  width: 45px;
+  height: auto;
+}
+
 .sendMessageForm {
   display: flex;
   align-items: flex-start;

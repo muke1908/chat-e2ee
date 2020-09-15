@@ -5,6 +5,7 @@ import ImagePicker from './ImagePicker';
 import RemoveButton from './RemoveButton';
 import EmojiRow from './EmojiRow';
 import detectMobile from '../../utils/detectMobile.js';
+import emojiPickerIcon from './assets/emoji-picker.png';
 
 export const NewMessageForm = ({
   handleSubmit,
@@ -18,6 +19,7 @@ export const NewMessageForm = ({
 }) => {
   const inputRef = useRef(null);
   const [darkMode] = useContext(ThemeContext);
+  const [emojiRow, showEmojiRow] = React.useState(false);
 
   const wrapperHandler = (e) => {
     inputRef.current.focus();
@@ -30,7 +32,7 @@ export const NewMessageForm = ({
       className={`${styles.sendMessageForm} ${!darkMode && styles.lightsendMessageForm}`}
     >
       <div className={styles.emojiMessageContainer}>
-        {!detectMobile() && <EmojiRow text={text} setText={setText} />}
+        {emojiRow && !detectMobile() && <EmojiRow text={text} setText={setText} />}
         <div className={styles.msgBtnImgContainer}>
           <input
             ref={inputRef}
@@ -51,6 +53,13 @@ export const NewMessageForm = ({
                 setText={setText}
                 previewImg={previewImg}
                 setPreviewImg={setPreviewImg}
+              />
+            </div>
+            <div className={styles.emojiPickerContainer}>
+              <img
+                className={styles.emojiPickerIcon}
+                src={emojiPickerIcon}
+                onClick={() => showEmojiRow(!emojiRow)}
               />
             </div>
             <div
