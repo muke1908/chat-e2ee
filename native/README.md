@@ -27,6 +27,12 @@ nativefier --help
 nativefier
 ```
 
+#### With npx :
+With npx you can use nativefier for one-time-use. 
+```
+npx nativefier https://chate2ee.fun/ 
+```
+
 #### Build with docker 
 If you don't want to install nativefier directly on your system, you pull its docker image and use it to produce the build. You just have to volume mount the target directory as `/target` into the container. Checkout the command below :
 ```
@@ -36,5 +42,6 @@ The above command will run a docker container which will launch nativefier in it
 
 We have provided shell script to run the above commands on Linux.
 
+Native app running on Ubuntu:
 
-
+![native ubuntu app](./app.png)
