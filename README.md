@@ -14,8 +14,8 @@ This app will allow two mutually agreed users to have a chat in _end-to-end_ enc
 
 ## Features
 
-1. The end users are **not tracable**.
-2. Data is **not** stored on any remote server.
+1. The end users **don't identify** themselves .
+2. Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any 3rd user.  
 3. Secure image sharing. [Read more](https://github.com/muke1908/chat-e2ee/wiki/Idea:-Secure-image-sharing)  
    **IMPORTANT:** The image sharing feature is imcomplete!! Images are stored to [imagebb](https://mukesh-biswas.imgbb.com/) server. (27/08/2020)
 4. **No history** i.e. once chat is closed the data is not recoverable.
@@ -43,7 +43,7 @@ For installation instruction, go to [developer section](https://github.com/muke1
 
 1. Generate unique link.
 2. Share the link with the person you want to chat with.
-3. Both users identify themselves.
+3. Once key exchange is complete, start chatting.
 4. The messages are end-to-end encrypted hence, no one can decrypt your message other than you.
 
 **How the encryption works**
@@ -103,14 +103,6 @@ Native build of the application is also supported, look at `native` directory.
 
 ---
 
-**Messaging flow**:
-
-- Client encrypts message at client-side and sends via REST call.
-- Client receives message in realtime via websocket and decrypt locally at client side.
-- Your messages can not be recovered if you lose encryption keys.
-
----
-
 Please follow the convention for commit message.  
 https://github.com/conventional-changelog/commitlint/#what-is-commitlint
 
@@ -159,7 +151,7 @@ Example:
 > This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ---
-**Cryptographic notice**. 
+**Cryptographic notice**  
 This distribution includes cryptographic software. The country in which you currently reside may have restrictions on the import, possession, use, and/or re-export to another country, of encryption software. BEFORE using any encryption software, please check your country's laws, regulations and policies concerning the import, possession, or use, and re-export of encryption software, to see if this is permitted. See http://www.wassenaar.org/ for more information.
 
 The U.S. Government Department of Commerce, Bureau of Industry and Security (BIS), has classified this software as Export Commodity Control Number (ECCN) 5D002.C.1, which includes information security software using or performing cryptographic functions with asymmetric algorithms. The form and manner of this distribution makes it eligible for export under the License Exception ENC Technology Software Unrestricted (TSU) exception (see the BIS Export Administration Regulations, Section 740.13) for both object code and source code.
