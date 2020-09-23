@@ -30,11 +30,13 @@ router.post(
       return res.status(401).send({ error: 'Limit reached' });
     }
     const id = new Date().valueOf();
+    const timestamp = new Date().valueOf();
     const dataToPublish = {
       channel,
       sender,
       message,
-      id
+      id,
+      timestamp
     };
 
     if (image) {
@@ -45,7 +47,7 @@ router.post(
     const { sid } = clients.getReceiverByChannel(channel, sender);
     socketEmit('chat-message', sid, dataToPublish);
 
-    return res.send({ message: 'message sent', id });
+    return res.send({ message: 'message sent', id, timestamp });
   })
 );
 

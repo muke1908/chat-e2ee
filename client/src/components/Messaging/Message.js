@@ -8,7 +8,7 @@ import { ThemeContext } from '../../ThemeContext.js';
 export const Message = ({
   handleSend,
   index,
-  message: { owner, body, image, local, id },
+  message: { owner, body, image, local, id, timestamp },
   deliveredID
 }) => {
   const [sending, setSending] = useState(false);
@@ -42,6 +42,14 @@ export const Message = ({
         <div className={`${styles.messageContainer} ${!darkMode && styles.lightModeContainer}`}>
           {image && <Image src={image} maxWidth="300px" maxHeight="300px" />}
           {body}
+          {timestamp && (
+            <span className={styles.timestamp}>
+              {(owner === true ? 'sent at ' : 'received at ') +
+                new Date(timestamp).getHours() +
+                ':' +
+                new Date(timestamp).getMinutes()}
+            </span>
+          )}
         </div>
         {failed && !sending && (
           <div className={styles.messageError}>

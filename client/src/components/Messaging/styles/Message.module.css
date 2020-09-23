@@ -40,6 +40,15 @@
   min-height: 50px;
   word-break: break-word;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.messageContainer .timestamp {
+  text-align: right;
+  font-size: 13px;
+  color: grey;
 }
 
 .sentReceived {

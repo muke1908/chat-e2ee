@@ -113,7 +113,7 @@ const Chat = () => {
         alicePublicKey: publicKeyRef.current
       });
 
-      const { id } = await sendMessage({
+      const { id, timestamp } = await sendMessage({
         channelID,
         userId,
         image,
@@ -127,6 +127,7 @@ const Chat = () => {
         const { ...message } = prevMsg[index];
         message.local = false;
         message.id = id;
+        message.timestamp = timestamp;
         prevMsg[index] = message;
         return [...prevMsg];
       });
@@ -208,7 +209,8 @@ const Chat = () => {
             image: msg.image,
             body: _msg,
             sender: msg.sender,
-            id: msg.id
+            id: msg.id,
+            timestamp: msg.timestamp
           })
         );
         socket.emit('received', { channel: msg.channel, sender: msg.sender, id: msg.id });
@@ -226,13 +228,14 @@ const Chat = () => {
 
   const alice = usersInChannel.find((u) => u.uuid !== userId);
   console.log(messages);
-  const messagesFormatted = messages.map(({ body, sender, image, local, id }, i) => {
+  const messagesFormatted = messages.map(({ body, sender, image, local, id, timestamp }, i) => {
     return {
       owner: sender === userId,
       body,
       image,
       local,
-      id
+      id,
+      timestamp
     };
   });
 
