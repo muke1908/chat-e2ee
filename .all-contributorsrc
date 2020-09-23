@@ -176,6 +176,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "abhishek-aa",
+      "name": "Abhishek Agarwal",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/25225850?v=4",
+      "profile": "http://celestialco.wordpress.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
