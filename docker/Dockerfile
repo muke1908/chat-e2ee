@@ -10,7 +10,6 @@ COPY . /chat-e2ee
 WORKDIR /chat-e2ee 
 
 RUN npm install --unsafe-perm
-RUN echo ${MONGO_URI}
 
 ENV REACT_APP_CAPTCHA_KEY=$recaptcha_client_key
 RUN npm run build 
