@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  db:
+    image: mongo:latest
+    container_name: db
+    hostname: chatapp-db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD
+    volumes:     
+      - dbdata:$HOME/db
+    networks:
+      - app-network
+    command: mongod --auth
+
+
+  chatapp:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    image: chatapp
+    container_name: chat-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MONGO_URI=mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@db:$MONGO_PORT/admin?authSource=admin
+    ports:
+      - "3001:3001"
+    networks:
+      - app-network  
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata: 
