@@ -60,7 +60,7 @@ More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
 ---
 
-### Proposed flow
+### Flow
 
 ![flow](https://i.imgur.com/2GrBQMz.jpg)
 
@@ -81,8 +81,8 @@ NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The 
 
 **Important:** Check `.env.sample` to configure your `.env` file.
 
-We also provide a Dockerfile to build and run the docker image. Look at `docker` directory.
-Native build of the application is also supported, look at `native` directory.
+To start with docker read the [instructions](https://github.com/muke1908/chat-e2ee/tree/master/docker).   
+For native build read the [instructions](https://github.com/muke1908/chat-e2ee/tree/master/native).
 
 ### Folder structure
 
