@@ -6,6 +6,7 @@ import RemoveButton from './RemoveButton';
 import EmojiRow from './EmojiRow';
 import detectMobile from '../../utils/detectMobile.js';
 import emojiPickerIcon from './assets/emoji-picker.png';
+import emojiPickerIconDark from './assets/emoji-picker-black.png';
 
 export const NewMessageForm = ({
   handleSubmit,
@@ -62,7 +63,7 @@ export const NewMessageForm = ({
             <div className={styles.emojiPickerContainer}>
               <img
                 className={styles.emojiPickerIcon}
-                src={emojiPickerIcon}
+                src={darkMode ? emojiPickerIcon : emojiPickerIconDark}
                 alt="emoji-picker"
                 onClick={() => setEmojiVisibility(!emojiVisibility)}
               />
