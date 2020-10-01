@@ -4,7 +4,7 @@ const asyncHandler = require('../../middleware/asyncHandler');
 const generateLink = require('./utils/link');
 const channelValid = require('./utils/validateChannel');
 
-const { insertInDb, updateOneFromDb } = require('../../db');
+const { insertInDb, updateOneFromDb, findOneFromDB } = require('../../db');
 const { LINK_COLLECTION } = require('../../db/const');
 
 const router = express.Router({ mergeParams: true });

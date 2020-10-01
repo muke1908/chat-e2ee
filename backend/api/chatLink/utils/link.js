@@ -1,5 +1,5 @@
 const uuidv4 = require('uuid').v4;
-const generatePin = require('./pin').generatePIN
+const { generatePIN } = require('./pin');
 
 const chatLinkDomain = process.env.CHAT_LINK_DOMAIN;
 
@@ -11,7 +11,7 @@ const generateLink = () => {
     absoluteLink: `${chatLinkDomain}/chat/${hash}`,
     expired: false,
     deleted: false,
-    pin : generatePin(hash, pinLength = 4),
+    pin : generatePIN(hash, pinLength = 4),
     pinCreatedAt : new Date()
   };
 };
