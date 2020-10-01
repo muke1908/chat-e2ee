@@ -4,7 +4,7 @@ const asyncHandler = require('../../middleware/asyncHandler');
 const generateLink = require('./utils/link');
 const channelValid = require('./utils/validateChannel');
 
-const { insertInDb, updateOneFromDb } = require('../../db');
+const { insertInDb, updateOneFromDb, findOneFromDB } = require('../../db');
 const { LINK_COLLECTION } = require('../../db/const');
 
 const router = express.Router({ mergeParams: true });
@@ -25,7 +25,13 @@ router.post(
       }
     }
 
-    const link = generateLink();
+    let link = generateLink();
+    //This ensures, PINs won't clash each other
+    //Best case loop is not even executed
+    //worst case, loop can take 2 or more iterations
+    while(await findOneFromDB({pin : link.pin}, LINK_COLLECTION)) {
+      link = generateLink()
+    }
     await insertInDb(link, LINK_COLLECTION);
     return res.send(link);
   })
