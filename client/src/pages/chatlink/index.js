@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
 import { getLink } from '../../service';
 import Button from '../../components/Button';
 import LinkDisplay from '../../components/LinkDisplay/index.js';
@@ -9,39 +8,29 @@ import ThemeToggle from '../../components/ThemeToggle/index.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
-  const [captchaToken, setCaptchToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [darkMode] = useContext(ThemeContext);
   const [elKey, setElKey] = useState(0);
 
-  const formBusy = !captchaToken || loading;
+  const formBusy = loading; 
 
   const generateLink = async () => {
     // TODO: handle error
-    // TODO: handle captcha expiration
+    
     if (formBusy) {
       return;
     }
 
     setLoading(true);
-    const linkResp = await getLink({ token: captchaToken });
+    const linkResp = await getLink();
     setChatLink(linkResp);
     setLoading(false);
   };
 
-  const resetCaptchToken = () => {
-    setCaptchToken(null);
-  };
 
-  const initCaptcha = async () => {
-    const captchaIns = await getCaptchaInstance();
-    const colorMode = darkMode ? 'dark' : 'light';
-    renderGoogleReCaptcha(captchaIns, 'captcha', setCaptchToken, resetCaptchToken, colorMode);
-  };
 
   useEffect(() => {
     setElKey(elKey + 1);
-    initCaptcha();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [darkMode]);
@@ -72,12 +61,10 @@ const App = () => {
           </div>
           {!chatLink && (
             <>
-              <div id="captcha" className={styles.captchaHeightSetter} key={elKey}></div>
               <br />
               <Button
                 label="Generate link"
                 type="secondary"
-                disabled={formBusy ? true : false}
                 onClick={generateLink}
                 width="200px"
               />

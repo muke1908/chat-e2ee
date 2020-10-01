@@ -1,9 +1,8 @@
 import makeRequest from '../utils/makeRequest';
 
-const getLink = async ({ token }) => {
+const getLink = async () => {
   return makeRequest('/chat-link', {
-    method: 'POST',
-    body: { token }
+    method: 'GET'
   });
 };
 
