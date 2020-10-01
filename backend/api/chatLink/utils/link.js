@@ -1,5 +1,5 @@
 const uuidv4 = require('uuid').v4;
-const { generatePIN } = require('./pin');
+const { generatePIN } = require('./pin')
 
 const chatLinkDomain = process.env.CHAT_LINK_DOMAIN;
 
