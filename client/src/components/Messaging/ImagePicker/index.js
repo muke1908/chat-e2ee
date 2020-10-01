@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import imagePicker from '../../../utils/imagePicker.js';
 import { ThemeContext } from '../../../ThemeContext';
 import imagePickerIcon from './assets/image-picker.png';
