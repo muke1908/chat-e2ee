@@ -142,6 +142,7 @@ Example:
     <td align="center"><a href="https://github.com/Ryuuko"><img src="https://avatars2.githubusercontent.com/u/25223617?v=4" width="80px;" alt=""/><br /><sub><b>Tat Cheong Chu</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=Ryuuko" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/salonigoyal2309"><img src="https://avatars3.githubusercontent.com/u/48411357?v=4" width="80px;" alt=""/><br /><sub><b>Saloni Goyal</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=salonigoyal2309" title="Code">💻</a></td>
     <td align="center"><a href="http://celestialco.wordpress.com"><img src="https://avatars2.githubusercontent.com/u/25225850?v=4" width="80px;" alt=""/><br /><sub><b>Abhishek Agarwal</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=abhishek-aa" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/manny525"><img src="https://avatars1.githubusercontent.com/u/60325174?v=4" width="80px;" alt=""/><br /><sub><b>manny525</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=manny525" title="Code">💻</a></td>
   </tr>
 </table>
 
