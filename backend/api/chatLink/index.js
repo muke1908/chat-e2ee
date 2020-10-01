@@ -1,5 +1,4 @@
 const express = require('express');
-const verifyCaptcha = require('../../external/recaptcha');
 const asyncHandler = require('../../middleware/asyncHandler');
 const generateLink = require('./utils/link');
 const channelValid = require('./utils/validateChannel');
@@ -9,21 +8,9 @@ const { LINK_COLLECTION } = require('../../db/const');
 
 const router = express.Router({ mergeParams: true });
 
-router.post(
+router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const { token } = req.body;
-
-    if (process.env.NODE_ENV === 'production') {
-      if (!token) {
-        return res.sendStatus(400);
-      }
-
-      const captcha = await verifyCaptcha(token);
-      if (!captcha.success) {
-        return res.sendStatus(400);
-      }
-    }
 
     let link = generateLink();
     //This ensures, PINs won't clash each other
