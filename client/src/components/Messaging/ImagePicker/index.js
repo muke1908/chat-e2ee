@@ -1,6 +1,6 @@
 import React from 'react';
 import imagePicker from '../../../utils/imagePicker.js';
-import { ThemeContext } from '../../ThemeContext.js';
+import { ThemeContext } from '../../../ThemeContext';
 import imagePickerIcon from './assets/image-picker.png';
 import imagePickerIconDark from './assets/image-picker-black.png';
 import Image from '../../Image';
