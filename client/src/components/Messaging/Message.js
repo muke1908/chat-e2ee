@@ -34,7 +34,7 @@ export const Message = ({
   }, []);
 
   const [darkMode] = useContext(ThemeContext);
-
+  const time = new Date(timestamp);
   return (
     <div className={owner === true ? styles.messageRight : styles.messageLeft}>
       <div className={styles.messageInfo}>
@@ -45,9 +45,9 @@ export const Message = ({
           {timestamp && (
             <span className={styles.timestamp}>
               {(owner === true ? 'sent at ' : 'received at ') +
-                new Date(timestamp).getHours() +
+                (time.getHours() < 10 ? '0' + time.getHours() : time.getHours()) +
                 ':' +
-                new Date(timestamp).getMinutes()}
+                (time.getMinutes() < 10 ? '0' + time.getMinutes() : time.getMinutes())}
             </span>
           )}
         </div>
