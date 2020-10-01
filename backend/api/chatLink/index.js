@@ -25,7 +25,13 @@ router.post(
       }
     }
 
-    const link = generateLink();
+    let link = generateLink();
+    //This ensures, PINs won't clash each other
+    //Base case loop is not even executed
+    //worst case, loop can take 2 or more iterations
+    while(findOneFromDB({pin : link.pin}, LINK_COLLECTION)) {
+      link = generateLink()
+    }
     await insertInDb(link, LINK_COLLECTION);
     return res.send(link);
   })
