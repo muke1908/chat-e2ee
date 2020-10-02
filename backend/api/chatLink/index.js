@@ -11,19 +11,30 @@ const router = express.Router({ mergeParams: true });
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-
     let link = generateLink();
     //This ensures, PINs won't clash each other
     //Best case loop is not even executed
     //worst case, loop can take 2 or more iterations
-    while(await findOneFromDB({pin : link.pin}, LINK_COLLECTION)) {
-      link = generateLink()
+    while (await findOneFromDB({ pin: link.pin }, LINK_COLLECTION)) {
+      link = generateLink();
     }
     await insertInDb(link, LINK_COLLECTION);
     return res.send(link);
   })
 );
-
+router.get(
+  '/:pin',
+  asyncHandler(async (req, res) => {
+    const { pin } = req.params;
+    const link = await findOneFromDB({ pin }, LINK_COLLECTION);
+    const currentTime = new Date().getTime();
+    const invalidLink = !link || currentTime - link.pinCreatedAt > (30*60*1000);
+    if (invalidLink) {
+      return res.sendStatus(404).send('Invalid pin');
+    }
+    return res.send(link);
+  })
+);
 router.get(
   '/status/:channel',
   asyncHandler(async (req, res) => {
