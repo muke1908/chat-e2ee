@@ -10,14 +10,11 @@ const App = () => {
   const [chatLink, setChatLink] = useState('');
   const [loading, setLoading] = useState(false);
   const [darkMode] = useContext(ThemeContext);
-  const [elKey, setElKey] = useState(0);
-
-  const formBusy = loading;
 
   const generateLink = async () => {
     // TODO: handle error
 
-    if (formBusy) {
+    if (loading) {
       return;
     }
 
@@ -26,12 +23,6 @@ const App = () => {
     setChatLink(linkResp);
     setLoading(false);
   };
-
-  useEffect(() => {
-    setElKey(elKey + 1);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [darkMode]);
 
   return (
     <>
