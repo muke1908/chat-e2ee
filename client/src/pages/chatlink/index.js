@@ -12,11 +12,11 @@ const App = () => {
   const [darkMode] = useContext(ThemeContext);
   const [elKey, setElKey] = useState(0);
 
-  const formBusy = loading; 
+  const formBusy = loading;
 
   const generateLink = async () => {
     // TODO: handle error
-    
+
     if (formBusy) {
       return;
     }
@@ -26,8 +26,6 @@ const App = () => {
     setChatLink(linkResp);
     setLoading(false);
   };
-
-
 
   useEffect(() => {
     setElKey(elKey + 1);
@@ -67,6 +65,7 @@ const App = () => {
                 type="secondary"
                 onClick={generateLink}
                 width="200px"
+                disabled={loading}
               />
             </>
           )}
