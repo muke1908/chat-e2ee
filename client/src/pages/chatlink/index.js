@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { getLink } from '../../service';
 import Button from '../../components/Button';
 import LinkDisplay from '../../components/LinkDisplay/index.js';
