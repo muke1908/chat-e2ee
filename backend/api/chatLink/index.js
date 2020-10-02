@@ -28,7 +28,7 @@ router.get(
     const { pin } = req.params;
     const link = await findOneFromDB({ pin }, LINK_COLLECTION);
     const currentTime = new Date().getTime();
-    const invalidLink = !link || currentTime - link.pinCreatedAt > 30601000;
+    const invalidLink = !link || currentTime - link.pinCreatedAt > (30*60*1000);
     if (invalidLink) {
       return res.sendStatus(404).send('Invalid pin');
     }
