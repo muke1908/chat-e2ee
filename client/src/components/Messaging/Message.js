@@ -34,7 +34,6 @@ export const Message = ({
   }, []);
 
   const [darkMode] = useContext(ThemeContext);
-
   return (
     <div className={owner === true ? styles.messageRight : styles.messageLeft}>
       <div className={styles.messageInfo}>
@@ -45,9 +44,7 @@ export const Message = ({
           {timestamp && (
             <span className={styles.timestamp}>
               {(owner === true ? 'sent at ' : 'received at ') +
-                new Date(timestamp).getHours() +
-                ':' +
-                new Date(timestamp).getMinutes()}
+                new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>

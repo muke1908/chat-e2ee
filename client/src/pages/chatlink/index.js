@@ -13,7 +13,7 @@ const App = () => {
 
   const generateLink = async () => {
     // TODO: handle error
-    
+
     if (loading) {
       return;
     }
@@ -23,7 +23,6 @@ const App = () => {
     setChatLink(linkResp);
     setLoading(false);
   };
-
 
   return (
     <>
