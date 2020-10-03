@@ -11,10 +11,8 @@ const LinkDisplay = () => {
   const [error, setError] = useState('');
   const [darkMode] = useContext(ThemeContext);
   const handlePin = async () => {
-    //TODO Handle the PIN API
     try {
       const data = await getChat(pin);
-      console.log(data);
       setError('');
       history.push(data.link);
     } catch (err) {
