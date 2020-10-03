@@ -12,7 +12,7 @@ const generateLink = () => {
     expired: false,
     deleted: false,
     pin : generatePIN(hash, pinLength = 4),
-    pinCreatedAt : new Date()
+    pinCreatedAt : new Date().getTime()
   };
 };
 

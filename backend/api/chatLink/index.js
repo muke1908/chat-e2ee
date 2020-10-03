@@ -1,5 +1,4 @@
 const express = require('express');
-const verifyCaptcha = require('../../external/recaptcha');
 const asyncHandler = require('../../middleware/asyncHandler');
 const generateLink = require('./utils/link');
 const channelValid = require('./utils/validateChannel');
@@ -9,34 +8,43 @@ const { LINK_COLLECTION } = require('../../db/const');
 
 const router = express.Router({ mergeParams: true });
 
+const generateUniqueLink = async () => {
+  const link = generateLink();
+
+  // This ensures, PINs won't clash each other
+  // Best case loop is not even executed
+  // worst case, loop can take 2 or more iterations
+  const pinExists = await findOneFromDB({ pin: link.pin }, LINK_COLLECTION);
+  if (pinExists) {
+    return generateUniqueLink();
+  }
+  return link;
+};
+
 router.post(
   '/',
   asyncHandler(async (req, res) => {
-    const { token } = req.body;
-
-    if (process.env.NODE_ENV === 'production') {
-      if (!token) {
-        return res.sendStatus(400);
-      }
-
-      const captcha = await verifyCaptcha(token);
-      if (!captcha.success) {
-        return res.sendStatus(400);
-      }
-    }
-
-    let link = generateLink();
-    //This ensures, PINs won't clash each other
-    //Best case loop is not even executed
-    //worst case, loop can take 2 or more iterations
-    while(await findOneFromDB({pin : link.pin}, LINK_COLLECTION)) {
-      link = generateLink()
-    }
+    const link = await generateUniqueLink();
     await insertInDb(link, LINK_COLLECTION);
     return res.send(link);
   })
 );
-
+router.get(
+  '/:pin',
+  asyncHandler(async (req, res) => {
+    const { pin } = req.params;
+    if (!pin) {
+      return res.sendStatus(404).send('Invalid pin');
+    }
+    const link = await findOneFromDB({ pin: pin.toUpperCase() }, LINK_COLLECTION);
+    const currentTime = new Date().getTime();
+    const invalidLink = !link || currentTime - link.pinCreatedAt > 30 * 60 * 1000;
+    if (invalidLink) {
+      return res.sendStatus(404).send('Invalid pin');
+    }
+    return res.send(link);
+  })
+);
 router.get(
   '/status/:channel',
   asyncHandler(async (req, res) => {

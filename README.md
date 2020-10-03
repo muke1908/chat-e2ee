@@ -144,6 +144,9 @@ Example:
     <td align="center"><a href="http://celestialco.wordpress.com"><img src="https://avatars2.githubusercontent.com/u/25225850?v=4" width="80px;" alt=""/><br /><sub><b>Abhishek Agarwal</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=abhishek-aa" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/manny525"><img src="https://avatars1.githubusercontent.com/u/60325174?v=4" width="80px;" alt=""/><br /><sub><b>manny525</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=manny525" title="Code">💻</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/aayushmau5"><img src="https://avatars0.githubusercontent.com/u/54525741?v=4" width="80px;" alt=""/><br /><sub><b>Aayush Kumar Sahu</b></sub></a><br /><a href="https://github.com/muke1908/chat-e2ee/commits?author=aayushmau5" title="Code">💻</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-enable -->

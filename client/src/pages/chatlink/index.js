@@ -1,50 +1,29 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { renderGoogleReCaptcha, getCaptchaInstance } from './captcha';
+import React, { useState, useContext } from 'react';
 import { getLink } from '../../service';
 import Button from '../../components/Button';
 import LinkDisplay from '../../components/LinkDisplay/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
 import styles from './Style.module.css';
 import ThemeToggle from '../../components/ThemeToggle/index.js';
+import PinInput from '../../components/PinInput/index.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
-  const [captchaToken, setCaptchToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [darkMode] = useContext(ThemeContext);
-  const [elKey, setElKey] = useState(0);
-
-  const formBusy = !captchaToken || loading;
 
   const generateLink = async () => {
     // TODO: handle error
-    // TODO: handle captcha expiration
-    if (formBusy) {
+
+    if (loading) {
       return;
     }
 
     setLoading(true);
-    const linkResp = await getLink({ token: captchaToken });
+    const linkResp = await getLink();
     setChatLink(linkResp);
     setLoading(false);
   };
-
-  const resetCaptchToken = () => {
-    setCaptchToken(null);
-  };
-
-  const initCaptcha = async () => {
-    const captchaIns = await getCaptchaInstance();
-    const colorMode = darkMode ? 'dark' : 'light';
-    renderGoogleReCaptcha(captchaIns, 'captcha', setCaptchToken, resetCaptchToken, colorMode);
-  };
-
-  useEffect(() => {
-    setElKey(elKey + 1);
-    initCaptcha();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [darkMode]);
 
   return (
     <>
@@ -72,14 +51,13 @@ const App = () => {
           </div>
           {!chatLink && (
             <>
-              <div id="captcha" className={styles.captchaHeightSetter} key={elKey}></div>
               <br />
               <Button
-                label="Generate link"
+                label="Generate Link"
                 type="secondary"
-                disabled={formBusy ? true : false}
                 onClick={generateLink}
                 width="200px"
+                disabled={loading}
               />
             </>
           )}
@@ -89,6 +67,17 @@ const App = () => {
             </div>
           )}
         </div>
+        <div
+          className={`${styles.sectionContribute} ${
+            darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
+          }`}
+        >
+          <div className={styles.title}>
+            Join with a PIN
+            <PinInput />
+          </div>
+        </div>
+
         <div
           className={`${styles.sectionContribute} ${
             darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
