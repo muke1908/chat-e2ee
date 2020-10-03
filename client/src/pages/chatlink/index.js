@@ -5,7 +5,7 @@ import LinkDisplay from '../../components/LinkDisplay/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
 import styles from './Style.module.css';
 import ThemeToggle from '../../components/ThemeToggle/index.js';
-import TextField from '../../components/TextField/index.js';
+import PinInput from '../../components/PinInput/index.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
@@ -74,7 +74,7 @@ const App = () => {
         >
           <div className={styles.title}>
             Enter Chat by PIN
-            <TextField />
+            <PinInput />
           </div>
         </div>
 
