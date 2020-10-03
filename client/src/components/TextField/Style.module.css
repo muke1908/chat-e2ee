@@ -1,0 +1,79 @@
+.pinContainer {
+  color: #fff;
+  display: flex;
+  flex: 1;
+  border-radius: 5px;
+  margin-top: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 10px;
+  background: #121212;
+  border: 1px solid #121212;
+}
+
+.lightModeContainer {
+  border: 1px solid #f2f2f2;
+  background: #f2f2f2;
+}
+
+.linkTextArea {
+  width: 100%;
+  border-width: 0px;
+  font-size: 22px;
+  letter-spacing: 4px;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  padding-left: 10px;
+  font-family: monospace;
+  background: #121212;
+  color: #fff;
+}
+
+.lightTextArea {
+  background: #f2f2f2;
+  color: #000000;
+}
+
+.lightModeButton {
+  border-color: #e2e2e2;
+  background: #e2e2e2;
+  color: #000000;
+}
+
+.linkIcon {
+  font-size: 20px;
+  color: #aeaeae;
+}
+
+.textAreaContainer {
+  flex: 1;
+}
+
+.openLink {
+  text-align: center;
+  margin-top: 10px;
+}
+.openLink a {
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid #434343;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: 180ms;
+  font-size: 12px;
+}
+.darkOpenLink a:hover {
+  color: #fff !important;
+  border-color: #fff;
+}
+
+.lightOpenLink a:hover {
+  color: #aeaeae !important;
+  border-color: #aeaeae;
+}
+
+.width {
+  width: 30%;
+}

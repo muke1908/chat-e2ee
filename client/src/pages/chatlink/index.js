@@ -5,6 +5,7 @@ import LinkDisplay from '../../components/LinkDisplay/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
 import styles from './Style.module.css';
 import ThemeToggle from '../../components/ThemeToggle/index.js';
+import TextField from '../../components/TextField/index.js';
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
@@ -52,7 +53,7 @@ const App = () => {
             <>
               <br />
               <Button
-                label="Generate link"
+                label="Generate Link"
                 type="secondary"
                 onClick={generateLink}
                 width="200px"
@@ -66,6 +67,17 @@ const App = () => {
             </div>
           )}
         </div>
+        <div
+          className={`${styles.sectionContribute} ${
+            darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
+          }`}
+        >
+          <div className={styles.title}>
+            Enter Chat by PIN
+            <TextField />
+          </div>
+        </div>
+
         <div
           className={`${styles.sectionContribute} ${
             darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
