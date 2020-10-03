@@ -82,3 +82,9 @@
 .error {
   color: #c0392b;
 }
+
+@media screen and (max-width: 640px) {
+  .width {
+    width: 100%;
+  }
+}

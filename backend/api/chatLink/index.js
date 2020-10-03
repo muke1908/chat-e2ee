@@ -36,7 +36,7 @@ router.get(
     if (!pin) {
       return res.sendStatus(404).send('Invalid pin');
     }
-    const link = await findOneFromDB({ pin }, LINK_COLLECTION);
+    const link = await findOneFromDB({ pin: pin.toUpperCase() }, LINK_COLLECTION);
     const currentTime = new Date().getTime();
     const invalidLink = !link || currentTime - link.pinCreatedAt > 30 * 60 * 1000;
     if (invalidLink) {
