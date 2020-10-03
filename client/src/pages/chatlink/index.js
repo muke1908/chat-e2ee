@@ -73,7 +73,7 @@ const App = () => {
           }`}
         >
           <div className={styles.title}>
-            Enter Chat by PIN
+            Join with a PIN
             <PinInput />
           </div>
         </div>

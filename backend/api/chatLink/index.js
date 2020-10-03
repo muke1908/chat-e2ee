@@ -21,7 +21,7 @@ const generateUniqueLink = async () => {
   return link;
 };
 
-router.get(
+router.post(
   '/',
   asyncHandler(async (req, res) => {
     const link = await generateUniqueLink();

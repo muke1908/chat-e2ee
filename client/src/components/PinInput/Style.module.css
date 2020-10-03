@@ -25,10 +25,11 @@
   outline: none;
   resize: none;
   box-sizing: border-box;
-  padding-left: 10px;
+  text-align: center;
   font-family: monospace;
   background: #121212;
   color: #fff;
+  text-transform: uppercase;
 }
 
 .lightTextArea {
@@ -76,4 +77,8 @@
 
 .width {
   width: 30%;
+}
+
+.error {
+  color: #c0392b;
 }

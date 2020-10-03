@@ -14,10 +14,13 @@ const LinkDisplay = () => {
     try {
       setError('');
       const data = await getChatLink(pin);
+      if (!data.link) {
+        setError('Invalid PIN.');
+        return;
+      }
       history.push(data.link);
     } catch (err) {
-      console.log('Error Occured.');
-      console.log(err);
+      console.error(err);
       setError('Invalid PIN.');
     }
   };
@@ -30,6 +33,7 @@ const LinkDisplay = () => {
       >
         <div className={styles.textAreaContainer}>
           <input
+            maxLength={4}
             value={pin}
             onChange={(event) => setPin(event.target.value)}
             onKeyUp={(event) => {
@@ -43,7 +47,7 @@ const LinkDisplay = () => {
           <Button label="Join" type="secondary" onClick={handlePin} width="200px" />
         </div>
       </div>
-      <p>{error}</p>
+      <p className={styles.error}>{error}</p>
     </div>
   );
 };
