@@ -14,12 +14,11 @@ This app will allow two mutually agreed users to have a chat in _end-to-end_ enc
 
 ## Features
 
-1. The end users **don't identify** themselves .
-2. Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any 3rd user.  
+1. No login/signp - the end users **don't identify** themselves .
+2. Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any man in the middle.  
 3. Secure image sharing. [Read more](https://github.com/muke1908/chat-e2ee/wiki/Idea:-Secure-image-sharing)  
    **IMPORTANT:** The image sharing feature is imcomplete!! Images are stored to [imagebb](https://mukesh-biswas.imgbb.com/) server. (27/08/2020)
-4. **No history** i.e. once chat is closed the data is not recoverable.
-5. **Zero** information sharing -- no login/signup.
+4. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
 
 ---
 
@@ -42,8 +41,8 @@ For installation instruction, go to [developer section](https://github.com/muke1
 ### How to initiate chat
 
 1. Generate unique link.
-2. Share the link with the person you want to chat with.
-3. Once key exchange is complete, start chatting.
+2. Share the link or PIN with the person you want to chat with.
+3. Start chatting.
 4. The messages are end-to-end encrypted hence, no one can decrypt your message other than you.
 
 **How the encryption works**
