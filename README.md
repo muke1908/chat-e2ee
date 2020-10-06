@@ -2,7 +2,8 @@
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee) [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-The project is still in **development** phase.
+The project is still in **development** phase.   
+
 
 Working prototype:  
 https://chat-e2ee.herokuapp.com  
@@ -28,9 +29,9 @@ This app will allow two mutually agreed users to have a chat in _end-to-end_ enc
 
 - [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
 - [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)
-- [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)
+- [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  
 
-For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#for-developers).
+For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#for-developers).  [![Gitter](https://badges.gitter.im/chat-e2ee/community.svg)](https://gitter.im/chat-e2ee/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) 
 
 **Contributor highlight:**
 
