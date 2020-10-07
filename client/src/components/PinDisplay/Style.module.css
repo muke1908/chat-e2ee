@@ -1,0 +1,48 @@
+.width {
+  width: 20%;
+  margin: 0 auto;
+}
+
+.pinContainer {
+  color: #fff;
+  display: flex;
+  flex: 1;
+  border-radius: 5px;
+  margin-top: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 10px;
+  background: #121212;
+  border: 1px solid #121212;
+}
+
+.lightModeContainer {
+  border: 1px solid #f2f2f2;
+  background: #f2f2f2;
+}
+
+.textAreaContainer {
+  flex: 1;
+}
+
+.linkTextArea {
+  width: 100%;
+  height: 40px;
+  border-width: 0px;
+  font-size: 22px;
+  letter-spacing: 14px;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: monospace;
+  background: #121212;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.lightTextArea {
+  background: #f2f2f2;
+  color: #000000;
+}

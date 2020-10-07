@@ -63,7 +63,7 @@ const App = () => {
           )}
           {chatLink && (
             <div className={styles.captchaHeightSetter}>
-              <LinkDisplay content={chatLink.absoluteLink} />
+              <LinkDisplay content={chatLink} />
             </div>
           )}
         </div>

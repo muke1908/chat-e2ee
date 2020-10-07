@@ -2,6 +2,7 @@ import React, { useRef, useState, useContext } from 'react';
 import { FiLink, FiCopy, FiExternalLink } from 'react-icons/fi';
 import styles from './Style.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
+import PinDisplay from './../PinDisplay/index.js';
 
 const LinkDisplay = ({ content }) => {
   const textAreaRef = useRef(null);
@@ -28,7 +29,7 @@ const LinkDisplay = ({ content }) => {
         <div className={styles.textAreaContainer}>
           <input
             ref={textAreaRef}
-            value={content}
+            value={content.absoluteLink}
             onClick={selectText}
             className={`${styles.linkTextArea}
             ${!darkMode && styles.lightTextArea}`}
@@ -44,6 +45,13 @@ const LinkDisplay = ({ content }) => {
             <FiCopy className={styles.copyIcon} /> {buttonText}
           </button>
         </div>
+      </div>
+      <div
+        className={`${styles.pinDisplay} ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
+      >
+        <span className={styles.pinDisplayMsg}>Anyone with the PIN also can join the chat</span>
+        <PinDisplay content={content.pin} />
+        <span className={styles.pinValidMsg}>PIN is valid for 30 minutes</span>
       </div>
       <div
         className={`${styles.openLink}
