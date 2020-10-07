@@ -1,0 +1,31 @@
+.deleteButton {
+  height: 30px;
+  display: flex;
+  width: 80px;
+  font-family: inherit;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #e91e63;
+  color: #fff;
+  transition: 180ms;
+}
+
+.lightModeDelete {
+  background: #3cb043;
+  color: #fff;
+}
+
+.lightModeDelete:hover {
+  background: #028a0f !important;
+}
+
+.deleteButton:hover {
+  background: #ab0b42;
+}
+
+.buttonPadding {
+  padding-left: 50%;
+  padding-top: 8px;
+}

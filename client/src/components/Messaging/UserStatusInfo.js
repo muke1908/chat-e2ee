@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import styles from './styles/UserStatusInfo.module.css';
 import ThemeToggle from '../ThemeToggle/index.js';
 import imageRetryIcon from './assets/image-retry.png';
+import DeleteChatLink from '../DeleteChatLink';
 
-export const UserStatusInfo = ({ online, getSetUsers, channelID }) => {
+export const UserStatusInfo = ({ online, getSetUsers, channelID, handleDeleteLink }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchKeyAgain = async () => {
@@ -33,6 +34,7 @@ export const UserStatusInfo = ({ online, getSetUsers, channelID }) => {
           />
         </div>
       )}
+      <DeleteChatLink handleDeleteLink={handleDeleteLink} />
       <ThemeToggle />
     </div>
   );

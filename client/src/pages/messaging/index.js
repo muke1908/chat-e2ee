@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
+import deleteLink from '../../service/deleteLink';
 
 import {
   getUserSessionID,
@@ -33,6 +34,8 @@ const Chat = () => {
   const [notificationState, setNotificationState] = useState(false);
   const [deliveredID, setDeliveredID] = useState([]);
   const [darkMode] = useContext(ThemeContext);
+  const [linkActive, setLinkActive] = useState(true);
+  const history = useHistory();
 
   const myKeyRef = useRef(null);
   const publicKeyRef = useRef(null);
@@ -150,6 +153,12 @@ const Chat = () => {
     }
   };
 
+  const handleDeleteLink = async () => {
+    setLinkActive(false);
+    await deleteLink({ channelID });
+    history.push('/');
+  };
+
   const initChat = async () => {
     // TODO: restore previous messages from local storage
   };
@@ -238,40 +247,54 @@ const Chat = () => {
       timestamp
     };
   });
+  if (linkActive) {
+    return (
+      <>
+        <UserStatusInfo
+          online={alice}
+          getSetUsers={getSetUsers}
+          channelID={channelID}
+          handleDeleteLink={handleDeleteLink}
+        />
 
-  return (
-    <>
-      <UserStatusInfo online={alice} getSetUsers={getSetUsers} channelID={channelID} />
-
+        <div className={styles.messageContainer}>
+          <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
+            <ScrollWrapper messageCount={messagesFormatted.length}>
+              {messagesFormatted.map((message, index) => (
+                <Message
+                  key={index}
+                  handleSend={handleSend}
+                  index={index}
+                  message={message}
+                  deliveredID={deliveredID}
+                />
+              ))}
+              {!alice && <LinkSharingInstruction link={window.location.href} />}
+            </ScrollWrapper>
+          </div>
+          <NewMessageForm
+            handleSubmit={handleSubmit}
+            text={text}
+            setText={setText}
+            selectedImg={selectedImg}
+            setSelectedImg={setSelectedImg}
+            previewImg={previewImg}
+            setPreviewImg={setPreviewImg}
+            resetImage={resetImageHandler}
+          />
+        </div>
+        <Notification play={notificationState} audio={notificationAudio} />
+      </>
+    );
+  } else {
+    return (
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
-          <ScrollWrapper messageCount={messagesFormatted.length}>
-            {messagesFormatted.map((message, index) => (
-              <Message
-                key={index}
-                handleSend={handleSend}
-                index={index}
-                message={message}
-                deliveredID={deliveredID}
-              />
-            ))}
-            {!alice && <LinkSharingInstruction link={window.location.href} />}
-          </ScrollWrapper>
+          <p>This link is no longer active</p>
         </div>
-        <NewMessageForm
-          handleSubmit={handleSubmit}
-          text={text}
-          setText={setText}
-          selectedImg={selectedImg}
-          setSelectedImg={setSelectedImg}
-          previewImg={previewImg}
-          setPreviewImg={setPreviewImg}
-          resetImage={resetImageHandler}
-        />
       </div>
-      <Notification play={notificationState} audio={notificationAudio} />
-    </>
-  );
+    );
+  }
 };
 
 export default Chat;
