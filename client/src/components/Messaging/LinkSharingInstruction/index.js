@@ -1,11 +1,8 @@
-import React, { useRef, useContext } from 'react';
+import React, { useRef } from 'react';
 import { linkSharingInstruction, linkText } from './Style.module.css';
-import styles from '../styles/NewMessageForm.module.css';
-import { ThemeContext } from '../../../ThemeContext';
 
 const LinkSharingInstruction = ({ online, link }) => {
   const inputRef = useRef(null);
-  const [darkMode] = useContext(ThemeContext);
 
   const clickHandler = () => {
     inputRef.current.select();

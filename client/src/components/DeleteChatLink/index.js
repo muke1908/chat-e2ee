@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { ThemeContext } from '../../ThemeContext.js';
-import { deleteLinkButton } from './Style.module.css';
-import styles from '../Messaging/styles/NewMessageForm.module.css';
+import styles from './Style.module.css';
 
 const DeleteChatLink = ({ handleDeleteLink }) => {
   const [darkMode] = useContext(ThemeContext);
@@ -11,9 +10,9 @@ const DeleteChatLink = ({ handleDeleteLink }) => {
   };
 
   return (
-    <div className={deleteLinkButton}>
+    <div className={styles.buttonPadding}>
       <div
-        className={`${styles.sendButton} ${!darkMode && styles.lightModeSend}`}
+        className={`${styles.deleteButton} ${!darkMode && styles.lightModeDelete}`}
         type="submit"
         role="button"
         onClick={deleteHandler}
