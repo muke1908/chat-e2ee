@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
 import deleteLink from '../../service/deleteLink';
 
@@ -35,6 +35,7 @@ const Chat = () => {
   const [deliveredID, setDeliveredID] = useState([]);
   const [darkMode] = useContext(ThemeContext);
   const [linkActive, setLinkActive] = useState(true);
+  const history = useHistory();
 
   const myKeyRef = useRef(null);
   const publicKeyRef = useRef(null);
@@ -155,6 +156,7 @@ const Chat = () => {
   const handleDeleteLink = async () => {
     setLinkActive(false);
     await deleteLink({ channelID });
+    history.push('/');
   };
 
   const initChat = async () => {
@@ -248,7 +250,12 @@ const Chat = () => {
   if (linkActive) {
     return (
       <>
-        <UserStatusInfo online={alice} getSetUsers={getSetUsers} channelID={channelID} />
+        <UserStatusInfo
+          online={alice}
+          getSetUsers={getSetUsers}
+          channelID={channelID}
+          handleDeleteLink={handleDeleteLink}
+        />
 
         <div className={styles.messageContainer}>
           <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
@@ -262,12 +269,7 @@ const Chat = () => {
                   deliveredID={deliveredID}
                 />
               ))}
-              {!alice && (
-                <LinkSharingInstruction
-                  handleDeleteLink={handleDeleteLink}
-                  link={window.location.href}
-                />
-              )}
+              {!alice && <LinkSharingInstruction link={window.location.href} />}
             </ScrollWrapper>
           </div>
           <NewMessageForm

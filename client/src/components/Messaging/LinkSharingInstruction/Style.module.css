@@ -23,11 +23,6 @@
   color: #111;
 }
 
-.deleteLinkButton {
-  padding-left: 44%;
-  padding-top: 8px;
-}
-
 @media screen and (max-width: 640px) {
   .linkText {
     padding: 5px 10px;
