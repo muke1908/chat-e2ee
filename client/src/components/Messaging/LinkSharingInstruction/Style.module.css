@@ -23,6 +23,41 @@
   color: #111;
 }
 
+.lightlinkText {
+  color: #111;
+  border: 1px dotted #111;
+}
+
+.linkPin {
+  margin-top: 12px;
+  font-family: monospace;
+  background: transparent;
+  color: #cecece;
+  border: 1px dotted #aeaeae;
+  width: 30%;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  outline: none;
+  font-size: 22px;
+  letter-spacing: 14px;
+  text-align: center;
+}
+
+.linkPin::selection {
+  background-color: #fff;
+  color: #111;
+}
+
+.lightlinkPin {
+  color: #111;
+  border: 1px dotted #111;
+}
+
+.linkPinHdr {
+  margin-top: 25px;
+}
+
 @media screen and (max-width: 640px) {
   .linkText {
     padding: 5px 10px;

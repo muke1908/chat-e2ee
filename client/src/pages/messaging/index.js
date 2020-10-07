@@ -255,7 +255,13 @@ const Chat = () => {
                 deliveredID={deliveredID}
               />
             ))}
-            {!alice && <LinkSharingInstruction link={window.location.href} />}
+            {!alice && (
+              <LinkSharingInstruction
+                link={window.location.href}
+                pin={new URLSearchParams(window.location.search).get('pin')}
+                darkMode={darkMode}
+              />
+            )}
           </ScrollWrapper>
         </div>
         <NewMessageForm
