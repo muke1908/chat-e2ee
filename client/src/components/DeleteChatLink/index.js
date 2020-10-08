@@ -10,7 +10,7 @@ const DeleteChatLink = ({ handleDeleteLink }) => {
   };
 
   return (
-    <div className={styles.buttonPadding}>
+    <div>
       <div
         className={`${styles.deleteButton} ${!darkMode && styles.lightModeDelete}`}
         type="submit"

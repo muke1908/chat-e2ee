@@ -1,8 +1,10 @@
 .userInfo {
   padding: 15px 0px 15px 0px;
   font-weight: 400;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 2fr auto auto;
+  grid-column-gap: 15px;
+  align-content: center;
   align-items: center;
 }
 .userInfoOnline {

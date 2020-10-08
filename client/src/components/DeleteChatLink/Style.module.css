@@ -24,8 +24,3 @@
 .deleteButton:hover {
   background: #ab0b42;
 }
-
-.buttonPadding {
-  padding-left: 50%;
-  padding-top: 8px;
-}
