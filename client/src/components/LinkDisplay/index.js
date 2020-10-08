@@ -57,6 +57,7 @@ const LinkDisplay = ({ content }) => {
         className={`${styles.openLink}
       ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
       >
+{/* todo: this needs to be changed - make an POST endpoint to fetch the PIN of an url */}
         <a
           href={`${content.absoluteLink}?pin=${content.pin}`}
           target="_blank"
