@@ -95,3 +95,18 @@
 .fullWidth {
   width: 100%;
 }
+
+.pinDisplay {
+  margin-top: 50px;
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.pinDisplayMsg {
+  font-size: 12px;
+}
+
+.pinValidMsg {
+  font-size: 11px;
+  margin-bottom: 15px;
+}

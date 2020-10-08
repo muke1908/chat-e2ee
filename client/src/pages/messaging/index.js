@@ -259,18 +259,24 @@ const Chat = () => {
 
         <div className={styles.messageContainer}>
           <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
-            <ScrollWrapper messageCount={messagesFormatted.length}>
-              {messagesFormatted.map((message, index) => (
-                <Message
-                  key={index}
-                  handleSend={handleSend}
-                  index={index}
-                  message={message}
-                  deliveredID={deliveredID}
-                />
-              ))}
-              {!alice && <LinkSharingInstruction link={window.location.href} />}
-            </ScrollWrapper>
+              <ScrollWrapper messageCount={messagesFormatted.length}>
+                {messagesFormatted.map((message, index) => (
+                  <Message
+                    key={index}
+                    handleSend={handleSend}
+                    index={index}
+                    message={message}
+                    deliveredID={deliveredID}
+                  />
+                ))}
+                {!alice && (
+                  <LinkSharingInstruction
+                    link={window.location.href}
+                    pin={new URLSearchParams(window.location.search).get('pin')}
+                    darkMode={darkMode}
+                  />
+                )}
+            </ScrollWrapper>    
           </div>
           <NewMessageForm
             handleSubmit={handleSubmit}
