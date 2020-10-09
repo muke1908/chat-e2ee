@@ -1,4 +1,3 @@
-import uniqueSequece from './uniqueSequece.js';
 import uniqueSequence from './uniqueSequence.js';
 
 const randomizingPixel = ({ height, width }) => {
