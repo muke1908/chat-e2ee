@@ -7,7 +7,7 @@ The project is still in **development** phase.
 
 Working prototype:  
 https://chat-e2ee.herokuapp.com  
-https://chate2ee.fun
+https://mychat.ws
 
 ---
 
