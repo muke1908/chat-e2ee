@@ -21,10 +21,13 @@ const LinkDisplay = ({ content }) => {
 
   return (
     <div className={styles.fullWidth}>
+      <div class={styles.divider} />
+      <span className={styles.pinDisplayMsg}>Anyone with the PIN also can join the chat</span>
       <div
         className={`${styles.copyToClipboardContainer}
-      ${!darkMode && styles.lightModeContainer}`}
+        ${!darkMode && styles.lightModeContainer}`}
       >
+        <span className={styles.labelLinkTextArea}>Unique link: </span>
         <FiLink className={styles.linkIcon} />
         <div className={styles.textAreaContainer}>
           <input
@@ -39,7 +42,7 @@ const LinkDisplay = ({ content }) => {
         <div>
           <button
             className={`${styles.copyButton}
-          ${!darkMode && styles.lightModeButton}`}
+            ${!darkMode && styles.lightModeButton}`}
             onClick={copyCodeToClipboard}
           >
             <FiCopy className={styles.copyIcon} /> {buttonText}
@@ -49,15 +52,15 @@ const LinkDisplay = ({ content }) => {
       <div
         className={`${styles.pinDisplay} ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
       >
-        <span className={styles.pinDisplayMsg}>Anyone with the PIN also can join the chat</span>
+        <span className={styles.pinValidMsg}>PIN (valid for 30 minutes)</span>
         <PinDisplay content={content.pin} />
-        <span className={styles.pinValidMsg}>PIN is valid for 30 minutes</span>
       </div>
+      <div class={styles.divider} />
       <div
         className={`${styles.openLink}
       ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
       >
-{/* todo: this needs to be changed - make an POST endpoint to fetch the PIN of an url */}
+        {/* todo: this needs to be changed - make an POST endpoint to fetch the PIN of an url */}
         <a
           href={`${content.absoluteLink}?pin=${content.pin}`}
           target="_blank"

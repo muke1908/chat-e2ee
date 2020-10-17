@@ -11,6 +11,7 @@
   padding-left: 10px;
   border: 1px solid #121212;
   background: #121212;
+  position: relative;
 }
 
 .lightModeContainer {
@@ -109,4 +110,42 @@
 .pinValidMsg {
   font-size: 11px;
   margin-bottom: 15px;
+}
+
+.labelLinkTextArea {
+  display: block;
+  position: absolute;
+  top: -20px;
+  left: 0px;
+  font-size: small;
+  color: #aeaeae;
+}
+
+@media screen and (min-width: 640px) {
+  .fullWidth {
+    display: flex;
+    flex-flow: wrap;
+  }
+  .fullWidth > div {
+    flex: 1 auto;
+  }
+  .pinDisplay {
+    margin: 0;
+  }
+  .pinDisplayMsg {
+    width: 100%;
+    font-size: 18px;
+    padding-bottom: 20px;
+  }
+
+  .openLink {
+    width: 100%;
+    flex: 1 auto;
+  }
+
+  .divider {
+    margin: 30px 0;
+    border-top: 1px solid #434343;
+    width: 100%;
+  }
 }

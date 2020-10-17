@@ -67,16 +67,18 @@ const App = () => {
             </div>
           )}
         </div>
-        <div
-          className={`${styles.sectionContribute} ${
-            darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
-          }`}
-        >
-          <div className={styles.title}>
-            Join with a PIN
-            <PinInput />
+        {!chatLink && (
+          <div
+            className={`${styles.sectionContribute} ${
+              darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
+            }`}
+          >
+            <div className={styles.title}>
+              Join with a PIN
+              <PinInput />
+            </div>
           </div>
-        </div>
+        )}
 
         <div
           className={`${styles.sectionContribute} ${
