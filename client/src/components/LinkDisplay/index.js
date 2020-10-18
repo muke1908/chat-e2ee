@@ -22,7 +22,7 @@ const LinkDisplay = ({ content }) => {
   return (
     <div className={styles.fullWidth}>
       <div class={styles.divider} />
-      <span className={styles.pinDisplayMsg}>Anyone with the PIN also can join the chat</span>
+      <span className={styles.pinDisplayMsg}>Anyone with the PIN or the Link can join your chat</span>
       <div
         className={`${styles.copyToClipboardContainer}
         ${!darkMode && styles.lightModeContainer}`}
