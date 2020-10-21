@@ -52,7 +52,7 @@ const ImagePicker = (props) => {
               open
               onClick={handleShowDialog}
               >
-              <img className={styles.dialogContent} src={selectedImg} alt="zoomed-image"/>
+              <img className={styles.dialogContent} src={selectedImg} alt="file-zoom"/>
               </dialog>
             )}
           </div>
