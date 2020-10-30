@@ -6,7 +6,7 @@ const chatController = require('./messaging');
 const chatLinkController = require('./chatLink');
 
 router.get('/', async (req, res) => {
-  res.send({ message: '/api -- working!' });
+  res.send({ message: '/api is working!' });
 });
 
 router.use('/chat', chatController);
