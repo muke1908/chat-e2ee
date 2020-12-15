@@ -1,0 +1,12 @@
+.toggleLock {
+    font-size: 24px;
+    padding-top: 5px;
+}
+
+.BsLock {
+    color: #e91e63;;
+}
+
+.BsUnlock {
+    color: #4bb2f9;
+}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './styles/UserStatusInfo.module.css';
 import ThemeToggle from '../ThemeToggle/index.js';
+import LockToggle from '../LockToggle/index.js';
 import imageRetryIcon from './assets/image-retry.png';
 import DeleteChatLink from '../DeleteChatLink';
 
@@ -35,6 +36,7 @@ export const UserStatusInfo = ({ online, getSetUsers, channelID, handleDeleteLin
         </div>
       )}
       <DeleteChatLink handleDeleteLink={handleDeleteLink} />
+      <LockToggle />
       <ThemeToggle />
     </div>
   );
