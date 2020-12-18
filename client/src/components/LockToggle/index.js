@@ -1,5 +1,4 @@
-import React, { useContext, useState } from 'react';
-import { ThemeContext } from '../../ThemeContext.js';
+import React, { useState } from 'react';
 import { BsLock, BsUnlock } from 'react-icons/bs';
 import styles from './Style.module.css';
 import storage from '../../utils/storage';
