@@ -3,7 +3,6 @@ import { ThemeContext } from '../../ThemeContext.js';
 import { BsLock, BsUnlock } from 'react-icons/bs';
 import styles from './Style.module.css';
 import storage from '../../utils/storage';
-import { LockContext } from '../../LockContext.js';
 
 const extraPin = (pinLength) => {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -16,8 +15,6 @@ const extraPin = (pinLength) => {
 };
 
 const LockToggle = ({ content }) => {
-  const [darkMode] = useContext(ThemeContext);
-
   const [lockMode, setLockMode] = useState(false);
 
   const toggleLock = () => {
@@ -28,7 +25,7 @@ const LockToggle = ({ content }) => {
       { locked: lockMode },
       '',
       `?pin=${url.get('pin')}&?locked=${!lockMode}` +
-        (!lockMode == true ? `&?extrapin=${extraPin(8)}` : '')
+        (!lockMode === true ? `&?extrapin=${extraPin(8)}` : '')
     );
   };
 

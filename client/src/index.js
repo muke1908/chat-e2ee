@@ -6,7 +6,7 @@ import ChatLink from './pages/chatlink';
 import Messaging from './pages/messaging';
 import { ThemeProvider, ThemeContext } from './ThemeContext.js';
 
-import { BrowserRouter as Router, Route, Switch, Link, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 const App = () => {
   const [darkMode] = useContext(ThemeContext);

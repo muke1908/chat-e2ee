@@ -26,7 +26,3 @@ export const storeUserSessionID = (channelID, userId) => {
     userId
   });
 };
-
-export const getLockedStatus = (channelId) => {
-  const lockedStatus_storage = storage.get('locked') || {};
-}
