@@ -6,7 +6,7 @@ const PIN_LENGTH = 4;
 
 const generateLink = () => {
   const hash = uuidv4();
-  
+
   return {
     hash,
     link: `/chat/${hash}`,
@@ -14,7 +14,8 @@ const generateLink = () => {
     expired: false,
     deleted: false,
     pin: generatePIN(hash, PIN_LENGTH),
-    pinCreatedAt: new Date().getTime()
+    pinCreatedAt: new Date().getTime(),
+    locked: false
   };
 };
 

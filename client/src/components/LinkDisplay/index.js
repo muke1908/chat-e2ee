@@ -22,7 +22,9 @@ const LinkDisplay = ({ content }) => {
   return (
     <div className={styles.fullWidth}>
       <div class={styles.divider} />
-      <span className={styles.pinDisplayMsg}>Anyone with the PIN or the Link can join your chat</span>
+      <span className={styles.pinDisplayMsg}>
+        Anyone with the PIN or the Link can join your chat
+      </span>
       <div
         className={`${styles.copyToClipboardContainer}
         ${!darkMode && styles.lightModeContainer}`}
@@ -62,7 +64,7 @@ const LinkDisplay = ({ content }) => {
       >
         {/* todo: this needs to be changed - make an POST endpoint to fetch the PIN of an url */}
         <a
-          href={`${content.absoluteLink}?pin=${content.pin}`}
+          href={`${content.absoluteLink}?pin=${content.pin}&?locked=${content.locked}`}
           target="_blank"
           rel="noopener noreferrer"
         >
