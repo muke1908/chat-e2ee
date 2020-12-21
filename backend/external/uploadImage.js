@@ -12,10 +12,8 @@ const uploadImage = async (base64) => {
   switch (IMAGE_HOSTING_PROVIDER){
     case 'imgbb':
       return await imgbb(base64)
-      break;
     case 'imgur':
       return await imgur(base64)
-      break; 
   }
 
 }
