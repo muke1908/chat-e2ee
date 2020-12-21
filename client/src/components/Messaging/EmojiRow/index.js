@@ -3,7 +3,8 @@ import styles from './Style.module.css';
 import Emoji from '../Emoji';
 import '../Emoji/index.js';
 import { ThemeContext } from '../../../ThemeContext.js';
-const emojis = ['🙂', '😀', '😂', '😍', '😘', '😜', '🧐', '😎', '🤩', '😏', '😒', '😔', '😩', '😭'];
+import { emojiArray } from './emoji'
+const emojis = [...emojiArray];
 
 const EmojiRow = ({ text, setText }) => {
   const [darkMode] = useContext(ThemeContext);
