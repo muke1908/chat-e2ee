@@ -7,10 +7,7 @@ const uploadImage = async (base64) => {
     throw new Error('base64 - required arg');
   }
   
-  const IMGUR = 'imgur'
-  const IMGBB = 'imgbb'
-
-  const IMAGE_HOSTING_PROVIDER = IMGBB
+  const IMAGE_HOSTING_PROVIDER = 'imgbb'
 
   switch (IMAGE_HOSTING_PROVIDER){
     case 'imgbb':
