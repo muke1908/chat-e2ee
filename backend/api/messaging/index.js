@@ -1,5 +1,5 @@
 const express = require('express');
-const uploadImage = require('../../external/imagebb');
+const uploadImage = require('../../external/uploadImage');
 const { insertInDb, findOneFromDB } = require('../../db');
 const channelValid = require('../chatLink/utils/validateChannel');
 const { socketEmit } = require('../../socket.io');
