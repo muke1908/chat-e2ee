@@ -16,6 +16,11 @@
   height: 50px;
 }
 
+.emojiRowContainerOpen {
+  height: 100%;
+  scroll-behavior: smooth;
+}
+
 .lightEmojiRowContainer {
   background: #f2f2f2;
 }

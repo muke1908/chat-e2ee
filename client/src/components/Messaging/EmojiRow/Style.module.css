@@ -3,11 +3,14 @@
   resize: none;
   flex: 1;
   border: 0;
-  height: 50px;
+  height: 200px;
   box-sizing: border-box;
   outline: none;
   padding: 5px 5px;
   user-select: none;
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .lightEmojiRow {
