@@ -16,7 +16,7 @@ body {
 .bodyContent {
   max-width: 800px;
   margin: auto;
-  height: 100%;
+  height: 98%;
 }
 
 code {
@@ -44,4 +44,28 @@ a {
 
 html {
   height: 100%;
+}
+
+@media only screen and (max-width: 900px) {
+
+  .bodyContent {
+    max-width: 700px;
+  }
+
+}
+
+@media only screen and (max-width: 800px) {
+
+  .bodyContent {
+    max-width: 600px;
+  }
+
+}
+
+@media only screen and (max-width: 640px) {
+  
+  .bodyContent {
+    max-width: 80%;
+  }
+
 }
