@@ -13,6 +13,7 @@
 .imagePickerIcon {
   width: 45px;
   height: auto;
+  background-color: rgba(250, 245, 245, 0);
 }
 
 .dialog {
@@ -37,3 +38,14 @@
   max-width: 700px;
 }
 
+
+
+@media only screen and (max-width: 600px) {
+
+  .imagePickerIcon {
+    width: 40px;
+    height: auto;
+    background-color: rgba(250, 245, 245, 0);
+  }
+
+}
