@@ -1,30 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 
 const Image = ({ src, maxHeight, maxWidth }) => {
+  const [modalState, setModalState] = useState('none');
+
   const style = {
     objectFit: 'contain',
     maxHeight,
     maxWidth
   };
 
-return (
+  return (
     <div>
       <img
         src={src}
         style={style}
         alt=""
         onClick={() => {
-          document.getElementById(src).style.display = 'block';
+          setModalState('block');
         }}
       />
-      <Modal id={src} style={{ height: '100%', width: '100%', display: 'none' }} centered>
+      <Modal style={{ height: '100%', width: '100%', display: modalState }} centered>
         <img
           src={src}
-          style={{ height: '100%', width: '100%' }}
+          style={style}
           alt=""
           onClick={() => {
-            document.getElementById(src).style.display = 'none';
+            setModalState('none');
           }}
         />
       </Modal>
