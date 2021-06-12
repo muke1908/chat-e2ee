@@ -91,6 +91,7 @@
   align-items: center;
   height: 100%;
 }
+
 @media screen and (max-width: 640px) {
   .sendMessageForm {
     margin-top: 0px;
@@ -112,4 +113,99 @@
 
 .emojiMessageContainer {
   width: 100%;
+}
+
+
+
+@media only screen and (max-width: 600px) {
+
+  .sendMessageForm {
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .msgBtnImgContainer {
+    height: 40px;
+  }
+
+  .emojiPickerIcon {
+  width: 25px;
+  height: auto;
+  display: table;
+  }
+
+  .sendMessageInput {
+    max-width: 80%;
+    height: 40px;
+  }
+ 
+ .sendButton {
+  height: 40px;
+  width: 70px;
+  }
+
+  .imagePickerContainer {
+    margin-top: 2px;
+  }
+
+
+}
+
+
+
+@media only screen and (max-width: 496px) {
+
+  .sendMessageInput {
+    max-width: 55%;
+    height: 40px;
+  }
+
+ .sendButton {
+  height: 40px;
+  width: 70px;
+  }
+  
+}
+
+
+@media only screen and (max-width: 460px) {
+
+  .sendMessageInput {
+    max-width: 52%;
+    height: 40px;
+  }
+
+ .sendButton {
+  height: 40px;
+  width: 70px;
+  }
+  
+}
+
+@media only screen and (max-width: 425px) {
+
+  .sendMessageInput {
+    max-width: 47%;
+    height: 40px;
+  }
+
+ .sendButton {
+  height: 40px;
+  width: 70px;
+  }
+  
+}
+
+@media only screen and (max-width: 380px) {
+
+  .sendMessageInput {
+    max-width: 40%;
+    height: 40px;
+  }
+
+ .sendButton {
+  height: 40px;
+  width: 70px;
+  }
+  
 }

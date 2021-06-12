@@ -22,7 +22,7 @@
 
 .lightMode {
   color: #231709;
-  background: #e2e2e2;
+  background: rgba(0,0,0,0);
 }
 
 @keyframes growIn {
