@@ -34,7 +34,9 @@ export const NewMessageForm = ({
     >
       <div className={styles.emojiMessageContainer}>
         <div
-          className={`${emojiVisibility? styles.emojiRowContainerOpen : styles.emojiRowContainer} ${!darkMode && styles.lightEmojiRowContainer}`}
+          className={`${
+            emojiVisibility ? styles.emojiRowContainerOpen : styles.emojiRowContainer
+          } ${!darkMode && styles.lightEmojiRowContainer}`}
         >
           {emojiVisibility && !detectMobile() && <EmojiRow text={text} setText={setText} />}
         </div>
@@ -60,14 +62,16 @@ export const NewMessageForm = ({
                 setPreviewImg={setPreviewImg}
               />
             </div>
-            <div className={styles.emojiPickerContainer}>
-              <img
-                className={styles.emojiPickerIcon}
-                src={darkMode ? emojiPickerIcon : emojiPickerIconDark}
-                alt="emoji-picker"
-                onClick={() => setEmojiVisibility(!emojiVisibility)}
-              />
-            </div>
+            {!detectMobile() && (
+              <div className={styles.emojiPickerContainer}>
+                <img
+                  className={styles.emojiPickerIcon}
+                  src={darkMode ? emojiPickerIcon : emojiPickerIconDark}
+                  alt="emoji-picker"
+                  onClick={() => setEmojiVisibility(!emojiVisibility)}
+                />
+              </div>
+            )}
             <div
               className={`${styles.sendButton} ${!darkMode && styles.lightModeSend}`}
               type="submit"
