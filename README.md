@@ -72,9 +72,12 @@ BE: The backend runs on express/nodejs. In production mode, express server expos
 
 ### Installation
 
-1. Fork the repo.
-2. Run `npm install` in root dir.
-3. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
+1. Fork this repository by clicking on the fork button on the top of this page. This will create a copy of this repository in your account.
+2. Now clone the forked repository to your machine. Go to your GitHub account, open the forked repository, click on the code button and copy the HTTPS code.
+3. Open terminal and run the following command : git clone "url you just copied" (The content of this repo would be copied to your local machine)
+4. Now run the command : cd chat-e2ee (To get into the required directory)
+5. Run `npm install` in root dir.
+6. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
 
