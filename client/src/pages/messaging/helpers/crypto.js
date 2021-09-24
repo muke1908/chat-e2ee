@@ -56,12 +56,10 @@ export const typedArrayToStr = (typedArray) => {
     ? Array.from(typedArray) // use Array#from
     : typedArray.map((v) => v); // otherwise map()
 
-  const str = JSON.stringify(arr);
-  return str;
+  return JSON.stringify(arr);
 };
 
 export const strToTypedArr = (str) => {
   const arr = JSON.parse(str);
-  const typedArray = new Uint8Array(arr);
-  return typedArray;
+  return new Uint8Array(arr);;
 };
