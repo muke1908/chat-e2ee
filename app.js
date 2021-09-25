@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
+app.disable("x-powered-by");
 const apiController = require('./backend/api');
 
 app.use(cors());
