@@ -21,14 +21,11 @@ const insertInDb = async (data, collectionName) => {
   return data;
 };
 
-const findOneFromDB = (findCondition, collectionName) => {
-  return db.collection(collectionName).findOne(findCondition);
-};
+const findOneFromDB = (findCondition, collectionName) =>
+  db.collection(collectionName).findOne(findCondition);
 
-const updateOneFromDb = async (condition, data, collectionName) => {
-  const res = await db.collection(collectionName).updateOne(condition, { $set: data });
-  return res;
-};
+const updateOneFromDb = (condition, data, collectionName) =>
+  db.collection(collectionName).updateOne(condition, { $set: data });
 
 module.exports = {
   db,
