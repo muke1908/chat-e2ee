@@ -15,9 +15,7 @@ export const getUserSessionID = (channelID) => {
   return userID_storage.channelID === channelID ? userID_storage.userId : null;
 };
 
-export const createUserSessionID = (channelID) => {
-  return `${channelID}-${new Date().getTime()}`;
-};
+export const createUserSessionID = (channelID) => `${channelID}-${new Date().getTime()}`;
 
 export const storeUserSessionID = (channelID, userId) => {
   storage.set('session-user-uuid', {
