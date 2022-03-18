@@ -139,17 +139,25 @@ const Chat = () => {
   );
 
   const getSetUsers = async (channelID) => {
-    const usersInChannel = await getUsersInChannel({ channel: channelID });
+    try {
+      const usersInChannel = await getUsersInChannel({ channel: channelID });
 
-    setUsers(usersInChannel);
-    const alice = usersInChannel.find((user) => user.uuid !== userId);
+      setUsers(usersInChannel);
+      const alice = usersInChannel.find((user) => user.uuid !== userId);
 
-    // if alice is already connected,
-    // get alice's publicKey
-    if (alice) {
-      const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
-      publicKeyRef.current = strToTypedArr(key.publicKey);
-      playNotification();
+      // if alice is already connected,
+      // get alice's publicKey
+      if (alice) {
+        const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
+        publicKeyRef.current = strToTypedArr(key.publicKey);
+        playNotification();
+      }
+    } catch (err) {
+      if (err.status === 404) {
+        setUsers([]);
+      } else {
+        console.error(err);
+      }
     }
   };
 
@@ -259,24 +267,24 @@ const Chat = () => {
 
         <div className={styles.messageContainer}>
           <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
-              <ScrollWrapper messageCount={messagesFormatted.length}>
-                {messagesFormatted.map((message, index) => (
-                  <Message
-                    key={index}
-                    handleSend={handleSend}
-                    index={index}
-                    message={message}
-                    deliveredID={deliveredID}
-                  />
-                ))}
-                {!alice && (
-                  <LinkSharingInstruction
-                    link={window.location.href}
-                    pin={new URLSearchParams(window.location.search).get('pin')}
-                    darkMode={darkMode}
-                  />
-                )}
-            </ScrollWrapper>    
+            <ScrollWrapper messageCount={messagesFormatted.length}>
+              {messagesFormatted.map((message, index) => (
+                <Message
+                  key={index}
+                  handleSend={handleSend}
+                  index={index}
+                  message={message}
+                  deliveredID={deliveredID}
+                />
+              ))}
+              {!alice && (
+                <LinkSharingInstruction
+                  link={window.location.href}
+                  pin={new URLSearchParams(window.location.search).get('pin')}
+                  darkMode={darkMode}
+                />
+              )}
+            </ScrollWrapper>
           </div>
           <NewMessageForm
             handleSubmit={handleSubmit}

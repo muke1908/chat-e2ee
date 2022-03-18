@@ -8,11 +8,13 @@ const makeRequest = async (url, { method = 'GET', body }) => {
   });
 
   if (!res.ok) {
-    const json = await res.json();
-    throw new Error({
-      status: res.status,
-      message: json.message
-    });
+    const json =
+      res.headers.get('Content-Type') === 'application/json' ? await res.json() : await res.text();
+
+    const err = new Error(json.message ?? json);
+    err.status = res.status;
+
+    throw err;
   }
 
   return await res.json();
