@@ -139,7 +139,14 @@ const Chat = () => {
   );
 
   const getSetUsers = async (channelID) => {
-    const usersInChannel = await getUsersInChannel({ channel: channelID });
+    const usersInChannel = [];
+
+    try {
+      const users = await getUsersInChannel({ channel: channelID });
+      usersInChannel.push(...users);
+    } catch (err) {
+      console.error(err);
+    }
 
     setUsers(usersInChannel);
     const alice = usersInChannel.find((user) => user.uuid !== userId);
@@ -259,24 +266,24 @@ const Chat = () => {
 
         <div className={styles.messageContainer}>
           <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
-              <ScrollWrapper messageCount={messagesFormatted.length}>
-                {messagesFormatted.map((message, index) => (
-                  <Message
-                    key={index}
-                    handleSend={handleSend}
-                    index={index}
-                    message={message}
-                    deliveredID={deliveredID}
-                  />
-                ))}
-                {!alice && (
-                  <LinkSharingInstruction
-                    link={window.location.href}
-                    pin={new URLSearchParams(window.location.search).get('pin')}
-                    darkMode={darkMode}
-                  />
-                )}
-            </ScrollWrapper>    
+            <ScrollWrapper messageCount={messagesFormatted.length}>
+              {messagesFormatted.map((message, index) => (
+                <Message
+                  key={index}
+                  handleSend={handleSend}
+                  index={index}
+                  message={message}
+                  deliveredID={deliveredID}
+                />
+              ))}
+              {!alice && (
+                <LinkSharingInstruction
+                  link={window.location.href}
+                  pin={new URLSearchParams(window.location.search).get('pin')}
+                  darkMode={darkMode}
+                />
+              )}
+            </ScrollWrapper>
           </div>
           <NewMessageForm
             handleSubmit={handleSubmit}
