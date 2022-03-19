@@ -139,25 +139,23 @@ const Chat = () => {
   );
 
   const getSetUsers = async (channelID) => {
+    const usersInChannel = [];
+
     try {
-      const usersInChannel = await getUsersInChannel({ channel: channelID });
-
-      setUsers(usersInChannel);
-      const alice = usersInChannel.find((user) => user.uuid !== userId);
-
-      // if alice is already connected,
-      // get alice's publicKey
-      if (alice) {
-        const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
-        publicKeyRef.current = strToTypedArr(key.publicKey);
-        playNotification();
-      }
+      usersInChannel.push(...(await getUsersInChannel({ channel: channelID })));
     } catch (err) {
-      if (err.status === 404) {
-        setUsers([]);
-      } else {
-        console.error(err);
-      }
+      console.error(err);
+    }
+
+    setUsers(usersInChannel);
+    const alice = usersInChannel.find((user) => user.uuid !== userId);
+
+    // if alice is already connected,
+    // get alice's publicKey
+    if (alice) {
+      const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
+      publicKeyRef.current = strToTypedArr(key.publicKey);
+      playNotification();
     }
   };
 
