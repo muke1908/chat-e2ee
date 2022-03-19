@@ -142,7 +142,8 @@ const Chat = () => {
     const usersInChannel = [];
 
     try {
-      usersInChannel.push(...(await getUsersInChannel({ channel: channelID })));
+      const users = await getUsersInChannel({ channel: channelID });
+      usersInChannel.push(...users);
     } catch (err) {
       console.error(err);
     }
