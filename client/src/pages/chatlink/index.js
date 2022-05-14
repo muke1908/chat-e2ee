@@ -13,16 +13,21 @@ const App = () => {
   const [darkMode] = useContext(ThemeContext);
 
   const generateLink = async () => {
-    // TODO: handle error
-
     if (loading) {
       return;
     }
 
     setLoading(true);
-    const linkResp = await getLink();
-    setChatLink(linkResp);
-    setLoading(false);
+    try {
+      const linkResp = await getLink();
+      setChatLink(linkResp);
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+      return;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,7 +37,7 @@ const App = () => {
           className={`${styles.header}
           ${darkMode === true ? styles.darkModeHeader : styles.lightModeHeader}`}
         >
-          Because privacy matters!
+          Disposable chat session
           <ThemeToggle />
         </div>
         <div className={`${styles.sectionDefault} ${!darkMode && styles.sectionDefaultLight}`}>
@@ -42,7 +47,7 @@ const App = () => {
           <div className={styles.description}>
             <ul>
               <li>No login/signup required.</li>
-              <li>We don't track you.</li>
+              <li>No tracker</li>
               <li>
                 Your messages are <b>end-to-end</b> encrypted - technically impossible to read your
                 messages by someone else.

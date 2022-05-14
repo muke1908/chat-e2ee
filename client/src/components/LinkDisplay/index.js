@@ -5,6 +5,9 @@ import { ThemeContext } from '../../ThemeContext.js';
 import PinDisplay from './../PinDisplay';
 
 const LinkDisplay = ({ content }) => {
+  const chatLink = content.absoluteLink
+    ? content.absoluteLink
+    : `${window.location.protocol}//${window.location.host}${content.link}`;
   const textAreaRef = useRef(null);
   const [buttonText, setButtonText] = useState('Copy');
   const [darkMode] = useContext(ThemeContext);
@@ -21,8 +24,10 @@ const LinkDisplay = ({ content }) => {
 
   return (
     <div className={styles.fullWidth}>
-      <div class={styles.divider} />
-      <span className={styles.pinDisplayMsg}>Anyone with the PIN or the Link can join your chat</span>
+      <div className={styles.divider} />
+      <span className={styles.pinDisplayMsg}>
+        Anyone with the PIN or the Link can join your chat
+      </span>
       <div
         className={`${styles.copyToClipboardContainer}
         ${!darkMode && styles.lightModeContainer}`}
@@ -32,7 +37,7 @@ const LinkDisplay = ({ content }) => {
         <div className={styles.textAreaContainer}>
           <input
             ref={textAreaRef}
-            value={content.absoluteLink}
+            value={chatLink}
             onClick={selectText}
             className={`${styles.linkTextArea}
             ${!darkMode && styles.lightTextArea}`}
@@ -55,17 +60,12 @@ const LinkDisplay = ({ content }) => {
         <span className={styles.pinValidMsg}>PIN (valid for 30 minutes)</span>
         <PinDisplay content={content.pin} />
       </div>
-      <div class={styles.divider} />
+      <div className={styles.divider} />
       <div
         className={`${styles.openLink}
       ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
       >
-        {/* todo: this needs to be changed - make an POST endpoint to fetch the PIN of an url */}
-        <a
-          href={`${content.absoluteLink}?pin=${content.pin}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a href={`${chatLink}`} target="_blank" rel="noopener noreferrer">
           Open chat <FiExternalLink />
         </a>
       </div>
