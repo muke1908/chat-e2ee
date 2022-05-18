@@ -44,7 +44,7 @@ const LinkDisplay = () => {
           />
         </div>
         <div>
-          <Button label="Join" type="secondary" onClick={handlePin} width="200px" />
+          <Button label="Join" type="secondary" onClick={handlePin} />
         </div>
       </div>
       <p className={styles.error}>{error}</p>

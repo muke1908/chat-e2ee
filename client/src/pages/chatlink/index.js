@@ -55,16 +55,15 @@ const App = () => {
             </ul>
           </div>
           {!chatLink && (
-            <>
+            <div className={styles.linkGenerationBtnContainer}>
               <br />
               <Button
-                label="Generate Link"
-                type="secondary"
+                label="Create new chat link"
+                type="primary"
                 onClick={generateLink}
-                width="200px"
                 disabled={loading}
               />
-            </>
+            </div>
           )}
           {chatLink && (
             <div className={styles.captchaHeightSetter}>

@@ -32,7 +32,7 @@ const LinkDisplay = ({ content }) => {
         className={`${styles.copyToClipboardContainer}
         ${!darkMode && styles.lightModeContainer}`}
       >
-        <span className={styles.labelLinkTextArea}>Unique link: </span>
+        <span className={styles.labelLinkTextArea}>Share chat link: </span>
         <FiLink className={styles.linkIcon} />
         <div className={styles.textAreaContainer}>
           <input
