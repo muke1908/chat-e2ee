@@ -7,15 +7,13 @@ We have provided a Dockerfile which can be used to set-up the entire system with
     1. Docker compatible operating System.
     2. Docker CE 18.0 +
     3. MongoDB
-    4. Recaptcha 2.0 account with client and server keys
 
 ##### Building the docker image
 
 From the project root directory, issue the following command :
-You need to provide the client side recaptcha-key as a build time argument.
 
 ```
-docker build . -f docker/Dockerfile --build-arg recaptcha_client_key=<your_client_recaptcha_key> -t chat-e2e:latest
+docker build . -f docker/Dockerfile -t chat-e2e:latest
 ```
 
 ##### Running the docker container
@@ -24,7 +22,6 @@ docker build . -f docker/Dockerfile --build-arg recaptcha_client_key=<your_clien
    Create a new .env file which exports Mongo DB URI and secret keys, it will contain following ENV variables.
 
 ```
-GOOGLE_RECAPTCHA_SECRET=''
 MONGO_URI=mongodb+srv://<username>:<password>@cluster0-zbsik.mongodb.net
 MONGO_DB_NAME=''
 CHAT_LINK_DOMAIN=''
@@ -49,15 +46,14 @@ To run the app using docker-compose, first create a .env file with following var
 MONGO_USERNAME=
 MONGO_PASSWORD=
 MONGO_PORT=27017
-GOOGLE_RECAPTCHA_SECRET=
 MONGO_DB_NAME=
 CHAT_LINK_DOMAIN=
 IMAGE_BB_API_KEY=
 ```
-Here `GOOGLE_RECAPTCHA_SECRET` is the server key. You can also edit `.env.docker.sample` and rename it as `.env`.
+You can also edit `.env.docker.sample` and rename it as `.env`.
 Now, run the docker-compose build
 ```
-docker-compose build --build-arg recaptcha_client_key=<client_recaptcha_key>
+docker-compose build
 ```
 
 Once the build completes, run the docker-compose file :
