@@ -1,6 +1,7 @@
 .toggleIcon {
   font-size: 24px;
   padding-top: 5px;
+  cursor: pointer;
 }
 
 .FiMoon {
