@@ -1,10 +1,5 @@
 import React, { useRef } from 'react';
-import linkSharingInstruction from './Style.module.css';
-import linkText from './Style.module.css';
-import lightlinkText from './Style.module.css';
-//import lightlinkPin from './Style.module.css';
-//import linkPin from './Style.module.css';
-//import  linkPinHdr from './Style.module.css';
+import style from './Style.module.css';
 
 const LinkSharingInstruction = ({ online, link, pin, darkMode }) => {
   const inputRef = useRef(null);
@@ -19,12 +14,12 @@ const LinkSharingInstruction = ({ online, link, pin, darkMode }) => {
   // };
 
   return (
-    <div className={linkSharingInstruction}>
+    <div className={style.linkSharingInstruction}>
       <div>Send this link to who you want to chat with</div>
       <input
         ref={inputRef}
         onClick={clickHandler}
-        className={`${linkText} ${!darkMode && lightlinkText}`}
+        className={`${style.linkText} ${!darkMode && style.lightlinkText}`}
         value={link}
         readOnly
       />
