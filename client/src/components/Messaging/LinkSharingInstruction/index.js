@@ -1,12 +1,10 @@
 import React, { useRef } from 'react';
-import {
-  linkSharingInstruction,
-  linkText,
-  // linkPin,
-  // linkPinHdr,
-  lightlinkText
-  // lightlinkPin
-} from './Style.module.css';
+import linkSharingInstruction from './Style.module.css';
+import linkText from './Style.module.css';
+import lightlinkText from './Style.module.css';
+//import lightlinkPin from './Style.module.css';
+//import linkPin from './Style.module.css';
+//import  linkPinHdr from './Style.module.css';
 
 const LinkSharingInstruction = ({ online, link, pin, darkMode }) => {
   const inputRef = useRef(null);
