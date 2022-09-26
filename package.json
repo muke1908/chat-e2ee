@@ -24,7 +24,7 @@
     "form-data": "^3.0.0",
     "mongodb": "^3.5.9",
     "node-fetch": "^2.6.7",
-    "pubnub": "^4.28.2",
+    "pubnub": "^4.37.0",
     "react-bootstrap": "^1.5.2",
     "socket.io": "^2.5.0",
     "socket.io-client": "^2.3.0",
