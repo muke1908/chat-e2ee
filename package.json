@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run client\" \"npm run server\"",
     "build": "cd client && npm run build",
     "client": "cd client && npm start",
-    "server": "cross-env NODE_ENV=development nodemon index",
+    "server": "cross-env NODE_ENV=development nodemon --watch \"./**\" --ext \"ts,json\" --exec \"ts-node index.ts\"",
     "test": "cross-env NODE_ENV=test jest",
     "start": "cross-env NODE_ENV=production node index",
     "postinstall": "cd client && npm install",

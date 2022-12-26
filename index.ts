@@ -1,8 +1,8 @@
-require('dotenv').config();
-const app = require('./app');
-const { initSocket } = require('./backend/socket.io');
+require("dotenv").config();
+const app = require("./app");
+const { initSocket } = require("./backend/socket.io");
 
-const { connectDb } = require('./backend/db');
+const { connectDb } = require("./backend/db");
 
 const PORT = process.env.PORT || 3001;
 
