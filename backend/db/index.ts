@@ -1,9 +1,9 @@
-const { MongoClient } = require('mongodb');
-const inMemDB = require('./inMemDB');
+import { MongoClient } from "mongodb";
+import { insertInDb } from "./inMemDB";
 
 const uri = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB_NAME;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(uri);
 
 let db = null;
 let inMem = false;
@@ -15,7 +15,7 @@ const connectDb = async () => {
   } catch (err) {
     inMem = true;
     // eslint-disable-next-line no-console
-    console.error('MONGO DB ERROR!', 'Using in-memory DB - Not reliable!!');
+    console.error("MONGO DB ERROR!", "Using in-memory DB - Not reliable!!");
   }
 };
 
@@ -32,14 +32,13 @@ const updateOneFromDb = (condition, data, collectionName) =>
 
 const opsAdapter = () => {
   return {
-    insertInDb: (...args) => (inMem ? inMemDB.insertInDb(...args) : insertInDb(...args)),
-    findOneFromDB: (...args) => (inMem ? inMemDB.findOneFromDB(...args) : findOneFromDB(...args)),
-    updateOneFromDb: (...args) =>
-      inMem ? inMemDB.updateOneFromDb(...args) : updateOneFromDb(...args)
+    insertInDb: (...args) => (inMem ? _insertInDb(...args) : insertInDb(...args)),
+    findOneFromDB: (...args) => (inMem ? _findOneFromDB(...args) : findOneFromDB(...args)),
+    updateOneFromDb: (...args) => (inMem ? _updateOneFromDb(...args) : updateOneFromDb(...args))
   };
 };
 
-module.exports = {
+export default {
   db,
   connectDb,
   ...opsAdapter()

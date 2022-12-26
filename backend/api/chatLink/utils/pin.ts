@@ -1,9 +1,9 @@
-const crypto = require('crypto')
+import { createHash } from 'crypto';
 
 
 const base36map = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-module.exports.generatePIN = (uuid, pinLength = 4) => {
+export const generatePIN = (uuid, pinLength = 4) => {
 
     /*
         This function generates a unique PIN given the UUID. The parameters are:
@@ -13,7 +13,7 @@ module.exports.generatePIN = (uuid, pinLength = 4) => {
     
     //generate MD5 hash in hex representation
     const md5HashInt = parseInt(
-        crypto.createHash('md5').update(uuid).digest('hex'), 16
+        createHash('md5').update(uuid).digest('hex'), 16
     );
 
     //get mod 36 values
