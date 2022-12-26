@@ -1,17 +1,17 @@
-const express = require('express');
-const uploadImage = require('../../external/uploadImage');
-const { insertInDb, findOneFromDB } = require('../../db');
-const channelValid = require('../chatLink/utils/validateChannel');
-const { socketEmit } = require('../../socket.io');
-const clients = require('../../socket.io/clients');
-const asyncHandler = require('../../middleware/asyncHandler');
+const express = require("express");
+const uploadImage = require("../../external/uploadImage");
+const { insertInDb, findOneFromDB } = require("../../db");
+const channelValid = require("../chatLink/utils/validateChannel");
+import { socketEmit } from "../../socket.io";
+const clients = require("../../socket.io/clients");
+const asyncHandler = require("../../middleware/asyncHandler");
 
-const { PUBLIC_KEY_COLLECTION } = require('../../db/const');
+const { PUBLIC_KEY_COLLECTION } = require("../../db/const");
 
 const router = express.Router({ mergeParams: true });
 
 router.post(
-  '/message',
+  "/message",
   asyncHandler(async (req, res) => {
     const { message, sender, channel, image } = req.body;
 
@@ -27,11 +27,11 @@ router.post(
     const ifSenderIsInChannel = usersInChannel.find((u) => u === sender);
 
     if (!ifSenderIsInChannel) {
-      return res.status(401).send({ error: 'Limit reached' });
+      return res.status(401).send({ error: "Limit reached" });
     }
     const id = new Date().valueOf();
     const timestamp = new Date().valueOf();
-    const dataToPublish = {
+    const dataToPublish: any = {
       channel,
       sender,
       message,
@@ -45,14 +45,14 @@ router.post(
     }
 
     const { sid } = clients.getReceiverByChannel(channel, sender);
-    socketEmit('chat-message', sid, dataToPublish);
+    socketEmit("chat-message", sid, dataToPublish);
 
-    return res.send({ message: 'message sent', id, timestamp });
+    return res.send({ message: "message sent", id, timestamp });
   })
 );
 
 router.post(
-  '/share-public-key',
+  "/share-public-key",
   asyncHandler(async (req, res) => {
     const { publicKey, sender, channel } = req.body;
 
@@ -62,12 +62,12 @@ router.post(
     }
     // TODO: do not store if already exists
     await insertInDb({ publicKey, sender, channel }, PUBLIC_KEY_COLLECTION);
-    return res.send({ status: 'ok' });
+    return res.send({ status: "ok" });
   })
 );
 
 router.get(
-  '/get-public-key',
+  "/get-public-key",
   asyncHandler(async (req, res) => {
     const { userId, channel } = req.query;
 
@@ -83,7 +83,7 @@ router.get(
 );
 
 router.get(
-  '/get-users-in-channel',
+  "/get-users-in-channel",
   asyncHandler(async (req, res) => {
     const { channel } = req.query;
 
@@ -99,4 +99,4 @@ router.get(
   })
 );
 
-module.exports = router;
+export default router;
