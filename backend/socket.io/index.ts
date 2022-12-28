@@ -1,5 +1,5 @@
-const socketIO = require("socket.io");
-const { connectionListener } = require("./listeners");
+import socketIO from "socket.io-client";
+import connectionListener from "./listeners";
 
 let io = null;
 
