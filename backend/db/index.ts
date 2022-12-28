@@ -1,5 +1,9 @@
 import { MongoClient } from "mongodb";
-import { insertInDb } from "./inMemDB";
+import {
+  insertInDb as _insertInDb,
+  findOneFromDB as _findOneFromDB,
+  updateOneFromDb as _updateOneFromDb
+} from "./inMemDB";
 
 const uri = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB_NAME;
@@ -32,9 +36,16 @@ const updateOneFromDb = (condition, data, collectionName) =>
 
 const opsAdapter = () => {
   return {
-    insertInDb: (...args) => (inMem ? _insertInDb(...args) : insertInDb(...args)),
-    findOneFromDB: (...args) => (inMem ? _findOneFromDB(...args) : findOneFromDB(...args)),
-    updateOneFromDb: (...args) => (inMem ? _updateOneFromDb(...args) : updateOneFromDb(...args))
+    insertInDb: (data, collectionName) =>
+      inMem ? _insertInDb(data, collectionName) : insertInDb(data, collectionName),
+    findOneFromDB: (findCondition, collectionName) =>
+      inMem
+        ? _findOneFromDB(findCondition, collectionName)
+        : findOneFromDB(findCondition, collectionName),
+    updateOneFromDb: (condition, data, collectionName) =>
+      inMem
+        ? _updateOneFromDb(condition, data, collectionName)
+        : updateOneFromDb(condition, data, collectionName)
   };
 };
 
