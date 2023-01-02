@@ -10,7 +10,7 @@ export const generatePIN = (uuid, pinLength = 4) => {
     */
 
   //generate MD5 hash in hex representation
-  const md5HashInt = parseInt(createHash("md5").update(uuid).digest("hex"), 16);
+  const md5HashInt = parseInt(createHash("sha256").update(uuid).digest("hex"), 16);
 
   //get mod 36 values
   const rems = [];
@@ -23,7 +23,7 @@ export const generatePIN = (uuid, pinLength = 4) => {
   //randomly map K indexes to characters in base36map
   const randomChars = [];
   for (let i = 0; i < pinLength; i++) {
-    randomChars.push(base36map[rems[(randomInt(0, 10000) * rems.length) | 0]]);
+    randomChars.push(base36map[rems[randomInt(0, 37)]]);
   }
 
   return randomChars.join("");
