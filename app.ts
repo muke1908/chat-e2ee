@@ -3,13 +3,12 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import path from "path";
 require("dotenv").config();
-import db from "./backend/db";
 
 const app = express();
 app.disable("x-powered-by");
 import apiController from "./backend/api";
 const corsOptions = {
-  origin: "*" // Sensitive
+  origin: process.env.CHAT_LINK_DOMAIN || "localhost:3001"
 };
 app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: "10mb" }));
