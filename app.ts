@@ -8,8 +8,10 @@ import db from "./backend/db";
 const app = express();
 app.disable("x-powered-by");
 import apiController from "./backend/api";
-
-app.use(cors());
+const corsOptions = {
+  origin: "*" // Sensitive
+};
+app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: "10mb" }));
 
 // add routes
