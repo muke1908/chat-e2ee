@@ -1,17 +1,16 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const path = require("path");
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import path from "path";
 require("dotenv").config();
-const { connectDb } = require("./backend/db");
+import db from "./backend/db";
 
-connectDb();
 const app = express();
 app.disable("x-powered-by");
-const apiController = require("./backend/api");
+import apiController from "./backend/api";
 
 app.use(cors());
-app.use(bodyParser.json({ limit: "10mb", extended: true }));
+app.use(bodyParser.json({ limit: "10mb" }));
 
 // add routes
 app.use("/api", apiController);

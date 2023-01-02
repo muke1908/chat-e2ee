@@ -1,11 +1,11 @@
 import { LINK_COLLECTION } from "../../../db/const";
-import { findOneFromDB } from "../../../db";
+import db from "../../../db";
 
 const channelValid = async (channel) => {
   if (!channel) {
     throw new Error("channel - required param");
   }
-  const ifExists = await findOneFromDB({ hash: channel }, LINK_COLLECTION);
+  const ifExists = await db.findOneFromDB({ hash: channel }, LINK_COLLECTION);
   if (!ifExists) {
     return {
       valid: false,

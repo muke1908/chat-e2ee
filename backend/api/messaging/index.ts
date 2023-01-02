@@ -1,12 +1,12 @@
-const express = require("express");
-const uploadImage = require("../../external/uploadImage");
-const { insertInDb, findOneFromDB } = require("../../db");
-const channelValid = require("../chatLink/utils/validateChannel");
+import express from "express";
+import uploadImage from "../../external/uploadImage";
+import db from "../../db";
+import channelValid from "../chatLink/utils/validateChannel";
 import { socketEmit } from "../../socket.io";
-const clients = require("../../socket.io/clients");
-const asyncHandler = require("../../middleware/asyncHandler");
+import clients from "../../socket.io/clients";
+import asyncHandler from "../../middleware/asyncHandler";
 
-const { PUBLIC_KEY_COLLECTION } = require("../../db/const");
+import { PUBLIC_KEY_COLLECTION } from "../../db/const";
 
 const router = express.Router({ mergeParams: true });
 
@@ -61,7 +61,7 @@ router.post(
       return res.sendStatus(404);
     }
     // TODO: do not store if already exists
-    await insertInDb({ publicKey, sender, channel }, PUBLIC_KEY_COLLECTION);
+    await db.insertInDb({ publicKey, sender, channel }, PUBLIC_KEY_COLLECTION);
     return res.send({ status: "ok" });
   })
 );
@@ -77,7 +77,7 @@ router.get(
       return res.sendStatus(404);
     }
 
-    const data = await findOneFromDB({ channel, sender: userId }, PUBLIC_KEY_COLLECTION);
+    const data = await db.findOneFromDB({ channel, sender: userId }, PUBLIC_KEY_COLLECTION);
     return res.send(data);
   })
 );

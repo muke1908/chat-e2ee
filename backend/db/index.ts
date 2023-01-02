@@ -7,13 +7,15 @@ import {
 
 const uri = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB_NAME;
-const client = new MongoClient(uri);
+const client = uri ? new MongoClient(uri) : null;
+// const client = new MongoClient(uri);
 
 let db = null;
-let inMem = false;
+let inMem = uri ? false : true;
 
 const connectDb = async () => {
   try {
+    if (!client) throw new Error("No client");
     await client.connect();
     db = client.db(dbName);
   } catch (err) {
@@ -35,18 +37,33 @@ const updateOneFromDb = (condition, data, collectionName) =>
   db.collection(collectionName).updateOne(condition, { $set: data });
 
 const opsAdapter = () => {
-  return {
-    insertInDb: (data, collectionName) =>
-      inMem ? _insertInDb(data, collectionName) : insertInDb(data, collectionName),
-    findOneFromDB: (findCondition, collectionName) =>
-      inMem
-        ? _findOneFromDB(findCondition, collectionName)
-        : findOneFromDB(findCondition, collectionName),
-    updateOneFromDb: (condition, data, collectionName) =>
-      inMem
-        ? _updateOneFromDb(condition, data, collectionName)
-        : updateOneFromDb(condition, data, collectionName)
-  };
+  if (inMem) {
+    console.log("in memory database");
+    return {
+      insertInDb: _insertInDb,
+      findOneFromDB: _findOneFromDB,
+      updateOneFromDb: _updateOneFromDb
+    };
+  } else {
+    console.log("mongodb database");
+    return {
+      insertInDb,
+      findOneFromDB,
+      updateOneFromDb
+    };
+  }
+  // return {
+  //   insertInDb: (data, collectionName) =>
+  //     inMem ? _insertInDb(data, collectionName) : insertInDb(data, collectionName),
+  //   findOneFromDB: (findCondition, collectionName) =>
+  //     inMem
+  //       ? _findOneFromDB(findCondition, collectionName)
+  //       : findOneFromDB(findCondition, collectionName),
+  //   updateOneFromDb: (condition, data, collectionName) =>
+  //     inMem
+  //       ? _updateOneFromDb(condition, data, collectionName)
+  //       : updateOneFromDb(condition, data, collectionName)
+  // };
 };
 
 export default {

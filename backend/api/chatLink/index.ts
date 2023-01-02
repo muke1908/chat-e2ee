@@ -1,10 +1,10 @@
-const express = require("express");
-const asyncHandler = require("../../middleware/asyncHandler");
-const generateLink = require("./utils/link");
-const channelValid = require("./utils/validateChannel");
+import express from "express";
+import asyncHandler from "../../middleware/asyncHandler";
+import generateLink from "./utils/link";
+import channelValid from "./utils/validateChannel";
 
-const { insertInDb, updateOneFromDb, findOneFromDB } = require("../../db");
-const { LINK_COLLECTION } = require("../../db/const");
+import db from "../../db";
+import { LINK_COLLECTION } from "../../db/const";
 
 const router = express.Router({ mergeParams: true });
 
@@ -14,7 +14,7 @@ const generateUniqueLink = async () => {
   // This ensures, PINs won't clash each other
   // Best case loop is not even executed
   // worst case, loop can take 2 or more iterations
-  const pinExists = await findOneFromDB({ pin: link.pin }, LINK_COLLECTION);
+  const pinExists = await db.findOneFromDB({ pin: link.pin }, LINK_COLLECTION);
   if (pinExists) {
     return generateUniqueLink();
   }
@@ -25,7 +25,7 @@ router.post(
   "/",
   asyncHandler(async (req, res) => {
     const link = await generateUniqueLink();
-    await insertInDb(link, LINK_COLLECTION);
+    await db.insertInDb(link, LINK_COLLECTION);
     return res.send(link);
   })
 );
@@ -36,7 +36,7 @@ router.get(
     if (!pin) {
       return res.sendStatus(404).send("Invalid pin");
     }
-    const link = await findOneFromDB({ pin: pin.toUpperCase() }, LINK_COLLECTION);
+    const link = await db.findOneFromDB({ pin: pin.toUpperCase() }, LINK_COLLECTION);
     const currentTime = new Date().getTime();
     const invalidLink = !link || currentTime - link.pinCreatedAt > 30 * 60 * 1000;
     if (invalidLink) {
@@ -69,7 +69,7 @@ router.delete(
       return res.sendStatus(404).send("Invalid channel");
     }
 
-    await updateOneFromDb({ hash: channel }, { deleted: true }, LINK_COLLECTION);
+    await db.updateOneFromDb({ hash: channel }, { deleted: true }, LINK_COLLECTION);
     return res.send({ status: "ok" });
   })
 );

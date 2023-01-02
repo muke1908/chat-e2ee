@@ -1,4 +1,4 @@
-import socketIO from "socket.io-client";
+import { Server } from "socket.io";
 import connectionListener from "./listeners";
 
 let io = null;
@@ -8,7 +8,7 @@ export const initSocket = (server) => {
     return io;
   }
 
-  io = socketIO.listen(server);
+  io = new Server(server, { allowEIO3: true });
   // eslint-disable-next-line no-console
   console.log("Websocket is up!");
 
@@ -20,5 +20,8 @@ export const initSocket = (server) => {
 
 export const socketEmit = (topic, sid, data) => {
   const socket = io.sockets.sockets[sid];
+  console.log(sid);
+  var keys = Object.keys(io.sockets.sockets);
+  console.log(keys);
   socket.emit(topic, data);
 };
