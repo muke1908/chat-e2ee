@@ -37,7 +37,7 @@ const connectionListener = (socket, io) => {
 
   socket.on("received", ({ channel, sender, id }) => {
     const { sid } = clients.getSenderByChannel(channel, sender);
-    const senderSocket = io.sockets.sockets[sid];
+    const senderSocket = io.sockets.sockets.get(sid);
     senderSocket.emit("delivered", id);
   });
 
