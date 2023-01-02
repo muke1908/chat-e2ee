@@ -20,8 +20,5 @@ export const initSocket = (server) => {
 
 export const socketEmit = (topic, sid, data) => {
   const socket = io.sockets.sockets.get(sid);
-  console.log(sid);
-  var keys = Object.keys(io.sockets.sockets);
-  console.log(keys);
   socket.emit(topic, data);
 };
