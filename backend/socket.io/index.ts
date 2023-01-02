@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import connectionListener from "./listeners";
 
-let io = null;
+let io: Server = null;
 
 export const initSocket = (server) => {
   if (io) {
