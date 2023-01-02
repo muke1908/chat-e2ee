@@ -15,13 +15,13 @@ const clients = {
   getClients: () => clientRecord,
   getClientsByChannel: (channelID) => {
     if (!channelID) {
-      throw new Error('channelID - required param');
+      throw new Error("channelID - required param");
     }
     return clientRecord[channelID];
   },
   getSenderByChannel: (channelID, userID) => {
     if (!(channelID && userID)) {
-      throw new Error('channelID, userID - required param');
+      throw new Error("channelID, userID - required param");
     }
     const users = Object.keys(clientRecord[channelID]);
 
@@ -30,7 +30,7 @@ const clients = {
   },
   getReceiverByChannel: (channelID, userID) => {
     if (!(channelID && userID)) {
-      throw new Error('channelID, userID - required param');
+      throw new Error("channelID, userID - required param");
     }
     const users = Object.keys(clientRecord[channelID]);
 
@@ -51,4 +51,4 @@ const clients = {
   }
 };
 
-module.exports = clients;
+export default clients;

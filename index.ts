@@ -1,15 +1,14 @@
-require('dotenv').config();
-const app = require('./app');
-const { initSocket } = require('./backend/socket.io');
-
-const { connectDb } = require('./backend/db');
+require("dotenv").config();
+import { initSocket } from "./backend/socket.io";
+import db from "./backend/db";
+import app from "./app";
 
 const PORT = process.env.PORT || 3001;
 
 const server = app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Server running at ${PORT}`);
-  connectDb();
+  db.connectDb();
 });
 
 initSocket(server);
