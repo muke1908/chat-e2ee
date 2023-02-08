@@ -252,6 +252,29 @@ const Chat = () => {
     console.log(messages);
     /* loading data if page refresh */
 
+    /* loading session data if page refresh */
+    const sessionStorageMessage = JSON.parse(sessionStorage.getItem('message')) ?
+        Array.from(JSON.parse(sessionStorage.getItem('message'))) : [];
+    let tempMessages = messages.length ? messages : sessionStorageMessage;
+
+    if ((tempMessages.length === sessionStorageMessage.length) ||
+        (tempMessages.length === sessionStorageMessage.length + 1)) {
+        sessionStorage.setItem('message', JSON.stringify(tempMessages));
+
+
+    } else {
+        const concatArray = sessionStorageMessage.concat(tempMessages);
+        sessionStorage.setItem('message', JSON.stringify(concatArray));
+        tempMessages = concatArray;
+
+    }
+
+
+
+
+
+
+
     const messagesFormatted = messages.map(({body, sender, image, local, id, timestamp}, i) => {
         return {
             owner: sender === userId,
