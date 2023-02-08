@@ -72,7 +72,7 @@ router.get(
     const { userId, channel } = req.query;
 
     const { valid } = await channelValid(channel);
-
+      console.log( { userId, channel });
     if (!valid) {
       return res.sendStatus(404);
     }

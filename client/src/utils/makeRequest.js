@@ -1,4 +1,5 @@
 const makeRequest = async (url, { method = 'GET', body }) => {
+
   const res = await fetch(`/api/${url}`, {
     method,
     headers: {
@@ -8,7 +9,8 @@ const makeRequest = async (url, { method = 'GET', body }) => {
   });
 
   if (!res.ok) {
-    const json = res.headers.get('Content-Type').includes('application/json')
+
+    const json = res.headers.get('Content-Type')?.includes('application/json')
       ? await res.json()
       : await res.text();
 
