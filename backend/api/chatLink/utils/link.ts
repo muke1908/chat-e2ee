@@ -13,6 +13,7 @@ const generateLink = () => {
   }
 
   return {
+    lock: false,
     hash,
     link: `/chat/${hash}`,
     absoluteLink: CHAT_LINK_DOMAIN && `${CHAT_LINK_DOMAIN}/chat/${hash}`,

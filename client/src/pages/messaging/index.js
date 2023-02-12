@@ -18,12 +18,15 @@ import {
 } from './helpers';
 import {ThemeContext} from '../../ThemeContext.js';
 
-import {sendMessage, sharePublicKey, getPublicKey, getUsersInChannel} from '../../service';
+import {sendMessage, sharePublicKey, getPublicKey, getUsersInChannel, isLockChannel} from '../../service';
 import styles from './Style.module.css';
 import {Message, UserStatusInfo, NewMessageForm, ScrollWrapper} from '../../components/Messaging';
 import Notification from '../../components/Notification';
 import LinkSharingInstruction from '../../components/Messaging/LinkSharingInstruction';
 import notificationAudio from '../../components/Notification/audio.mp3';
+import {ErrorContext} from "../../ErrorContext";
+import {useDispatch} from "react-redux";
+import {roomLock, roomUnlock} from "../../utils/lockRoomActions";
 
 const Chat = () => {
     const [text, setText] = useState('');
@@ -36,16 +39,14 @@ const Chat = () => {
     const [darkMode] = useContext(ThemeContext);
     const [linkActive, setLinkActive] = useState(true);
     const history = useHistory();
-
+    const [errorMessage, setErrorMessage] = useContext(ErrorContext)
     const myKeyRef = useRef(null);
     const publicKeyRef = useRef(null);
-
     const notificationTimer = useRef(null);
-
     const {channelID} = useParams();
+    const dispatch = useDispatch();
 
     let userId = getUserSessionID(channelID);
-
     // if not in session, lets create one and store.
     if (!userId) {
         userId = createUserSessionID(channelID);
@@ -65,14 +66,14 @@ const Chat = () => {
         if (!_keyPair) {
             _keyPair = createKeyPair();
             storeKeyPair(channelID, _keyPair);
-
             //this will send the public key
             console.log('%cSharing public key.', 'color:red; font-size:16px');
+
             sharePublicKey({
                 channel: channelID,
                 publicKey: typedArrayToStr(_keyPair.publicKey),
                 sender: userId
-            });
+            }).then();
         }
 
         myKeyRef.current = _keyPair;
@@ -175,6 +176,21 @@ const Chat = () => {
     };
 
     useEffect(() => {
+
+        (async function () {
+            try {
+
+                const isLock = await isLockChannel(channelID);
+
+                if (isLock.channelLock === true) {
+                    setErrorMessage("rom is lock you can not enter to room");
+                    history.push('/error');
+                }
+            } catch (e) {
+            }
+
+        })();
+
         // this is update the public key ref
         initPublicKey(channelID);
 
@@ -212,8 +228,14 @@ const Chat = () => {
 
             getSetUsers(channelID);
         });
+        socket.on('chat-lock', (msg) => {
+            if (msg.channelLock) {
+                dispatch(roomLock());
+            } else {
+                dispatch(roomUnlock());
+            }
 
-
+        });
         //handle incoming message
         socket.on('chat-message', (msg) => {
             try {
@@ -270,12 +292,7 @@ const Chat = () => {
     }
 
 
-
-
-
-
-
-    const messagesFormatted = messages.map(({body, sender, image, local, id, timestamp}, i) => {
+    const messagesFormatted = tempMessages.map(({body, sender, image, local, id, timestamp}, i) => {
         return {
             owner: sender === userId,
             body,
@@ -292,6 +309,7 @@ const Chat = () => {
                     online={alice}
                     getSetUsers={getSetUsers}
                     channelID={channelID}
+                    sender={userId}
                     handleDeleteLink={handleDeleteLink}
                 />
 
