@@ -6,13 +6,13 @@
   "scripts": {
     "dev": "concurrently \"npm run client\" \"npm run server\"",
     "build-client": "cd client && npm run build",
-    "build": "tsc",
+    "build": "tsc && npm run build-client",
     "client": "cd client && npm start",
     "server": "cross-env NODE_ENV=development nodemon --watch \"./**\" --ext \"ts,json\" --exec \"ts-node index.ts\"",
-    "serve": "ts-node ./dist/index",
+    "serve": "node ./dist/index",
     "test": "cross-env NODE_ENV=test jest",
-    "start": "cross-env NODE_ENV=production ts-node index",
-    "postinstall": "cd client && npm install",
+    "start": "cross-env NODE_ENV=production npm run serve",
+    "postinstall": "npm run build-client",
     "docker_start": "cross-env NODE_ENV=production node index"
   },
   "author": "",
