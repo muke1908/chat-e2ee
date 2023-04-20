@@ -1,5 +1,6 @@
 import { LINK_COLLECTION } from "../../../db/const";
 import db from "../../../db";
+import { LinkType } from "./link";
 
 export enum CHANNEL_STATE {
   "NOT_FOUND" = "NOT_FOUND",
@@ -17,7 +18,7 @@ const channelValid = async (channel: string): Promise<ValidationStatus> => {
   if (!channel) {
     throw new Error("channel - required param");
   }
-  const ifExists = await db.findOneFromDB({ hash: channel }, LINK_COLLECTION);
+  const ifExists = await db.findOneFromDB<LinkType>({ hash: channel }, LINK_COLLECTION);
   if (!ifExists) {
     return {
       valid: false,

@@ -14,7 +14,7 @@ const generateUniqueLink = async (): Promise<LinkType> => {
   // This ensures, PINs won't clash each other
   // Best case loop is not even executed
   // worst case, loop can take 2 or more iterations
-  const pinExists = await db.findOneFromDB({ pin: link.pin }, LINK_COLLECTION);
+  const pinExists = await db.findOneFromDB<LinkType>({ pin: link.pin }, LINK_COLLECTION);
   if (pinExists) {
     return generateUniqueLink();
   }
@@ -36,7 +36,7 @@ router.get(
     if (!pin) {
       return res.sendStatus(404).send("Invalid pin");
     }
-    const link = await db.findOneFromDB({ pin: pin.toUpperCase() }, LINK_COLLECTION);
+    const link = await db.findOneFromDB<LinkType>({ pin: pin.toUpperCase() }, LINK_COLLECTION);
     const currentTime = new Date().getTime();
     const invalidLink = !link || currentTime - link.pinCreatedAt > 30 * 60 * 1000;
     if (invalidLink) {

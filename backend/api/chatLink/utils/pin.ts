@@ -1,7 +1,7 @@
 import crypto from "crypto";
 const base36map = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-export const generatePIN = (uuid, pinLength = 4) => {
+export const generatePIN = (uuid, pinLength = 4): string => {
   /*
         This function generates a unique PIN given the UUID. The parameters are:
         uuid => A string which can be uuid (the chat-hash in this case)
