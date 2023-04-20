@@ -12,7 +12,7 @@
     "serve": "node ./dist/index",
     "test": "cross-env NODE_ENV=test jest",
     "start": "cross-env NODE_ENV=production npm run serve",
-    "postinstall": "npm run build-client",
+    "postinstall": "cd client && npm install",
     "docker_start": "cross-env NODE_ENV=production node index"
   },
   "author": "",
