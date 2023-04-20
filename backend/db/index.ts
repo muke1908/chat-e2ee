@@ -8,7 +8,6 @@ import {
 const uri = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB_NAME;
 const client = uri ? new MongoClient(uri) : null;
-// const client = new MongoClient(uri);
 
 let db = null;
 let inMem = uri ? false : true;
@@ -25,7 +24,7 @@ const connectDb = async () => {
   }
 };
 
-const insertInDb = async (data, collectionName) => {
+const insertInDb = async<T>(data: T, collectionName): Promise<T> => {
   await db.collection(collectionName).insertOne(data);
   return data;
 };
@@ -52,18 +51,6 @@ const opsAdapter = () => {
       updateOneFromDb
     };
   }
-  // return {
-  //   insertInDb: (data, collectionName) =>
-  //     inMem ? _insertInDb(data, collectionName) : insertInDb(data, collectionName),
-  //   findOneFromDB: (findCondition, collectionName) =>
-  //     inMem
-  //       ? _findOneFromDB(findCondition, collectionName)
-  //       : findOneFromDB(findCondition, collectionName),
-  //   updateOneFromDb: (condition, data, collectionName) =>
-  //     inMem
-  //       ? _updateOneFromDb(condition, data, collectionName)
-  //       : updateOneFromDb(condition, data, collectionName)
-  // };
 };
 
 export default {

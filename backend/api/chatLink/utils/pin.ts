@@ -1,5 +1,5 @@
-import { createHash, randomInt } from "crypto";
-
+import crypto from "crypto";
+console.log(crypto.randomInt);
 const base36map = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 export const generatePIN = (uuid, pinLength = 4) => {
@@ -10,7 +10,7 @@ export const generatePIN = (uuid, pinLength = 4) => {
     */
 
   //generate MD5 hash in hex representation
-  const md5HashInt = parseInt(createHash("sha256").update(uuid).digest("hex"), 16);
+  const md5HashInt = parseInt(crypto.createHash("sha256").update(uuid).digest("hex"), 16);
 
   //get mod 36 values
   const rems = [];
@@ -23,7 +23,7 @@ export const generatePIN = (uuid, pinLength = 4) => {
   //randomly map K indexes to characters in base36map
   const randomChars = [];
   for (let i = 0; i < pinLength; i++) {
-    randomChars.push(base36map[rems[randomInt(0, 37)]]);
+    randomChars.push(base36map[rems[crypto.randomInt(0, 37)]]);
   }
 
   return randomChars.join("");

@@ -4,7 +4,17 @@ import { generatePIN } from './pin';
 const { CHAT_LINK_DOMAIN } = process.env;
 const PIN_LENGTH = 4;
 
-const generateLink = () => {
+export type LinkType = {
+  hash: string,
+  link: string,
+  absoluteLink: string,
+  expired: boolean,
+  deleted: boolean,
+  pin: number,
+  pinCreatedAt: number,
+}
+
+const generateLink = (): LinkType => {
   const hash = uuidv4();
 
   if (!CHAT_LINK_DOMAIN) {
@@ -18,7 +28,7 @@ const generateLink = () => {
     absoluteLink: CHAT_LINK_DOMAIN && `${CHAT_LINK_DOMAIN}/chat/${hash}`,
     expired: false,
     deleted: false,
-    pin: generatePIN(hash, PIN_LENGTH),
+    pin: Number(generatePIN(hash, PIN_LENGTH)),
     pinCreatedAt: new Date().getTime()
   };
 };

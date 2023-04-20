@@ -1,14 +1,14 @@
 import express from "express";
 import asyncHandler from "../../middleware/asyncHandler";
-import generateLink from "./utils/link";
-import channelValid from "./utils/validateChannel";
+import generateLink, { LinkType } from "./utils/link";
+import channelValid, { CHANNLE_STATE } from "./utils/validateChannel";
 
 import db from "../../db";
 import { LINK_COLLECTION } from "../../db/const";
 
 const router = express.Router({ mergeParams: true });
 
-const generateUniqueLink = async () => {
+const generateUniqueLink = async (): Promise<LinkType> => {
   const link = generateLink();
 
   // This ensures, PINs won't clash each other
@@ -64,7 +64,7 @@ router.delete(
     const { channel } = req.params;
     const { state } = await channelValid(channel);
 
-    const invalidstates = ["DELETED", "NOT_FOUND"];
+    const invalidstates = [ CHANNLE_STATE.DELETED, CHANNLE_STATE.NOT_FOUND ];
     if (invalidstates.includes(state)) {
       return res.sendStatus(404).send("Invalid channel");
     }
