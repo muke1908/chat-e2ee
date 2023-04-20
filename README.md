@@ -5,8 +5,7 @@
 The project is still in **development** phase.   
 
 
-Working prototype:  
-https://chat-e2ee.herokuapp.com  
+Working prototype:   https://chat-e2ee-2.azurewebsites.net/
 
 ---
 
