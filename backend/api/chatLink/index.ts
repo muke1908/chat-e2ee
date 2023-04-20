@@ -1,7 +1,7 @@
 import express from "express";
 import asyncHandler from "../../middleware/asyncHandler";
 import generateLink, { LinkType } from "./utils/link";
-import channelValid, { CHANNLE_STATE } from "./utils/validateChannel";
+import channelValid, { CHANNEL_STATE } from "./utils/validateChannel";
 
 import db from "../../db";
 import { LINK_COLLECTION } from "../../db/const";
@@ -64,7 +64,7 @@ router.delete(
     const { channel } = req.params;
     const { state } = await channelValid(channel);
 
-    const invalidstates = [ CHANNLE_STATE.DELETED, CHANNLE_STATE.NOT_FOUND ];
+    const invalidstates = [ CHANNEL_STATE.DELETED, CHANNEL_STATE.NOT_FOUND ];
     if (invalidstates.includes(state)) {
       return res.sendStatus(404).send("Invalid channel");
     }

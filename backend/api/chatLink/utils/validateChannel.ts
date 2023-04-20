@@ -1,7 +1,7 @@
 import { LINK_COLLECTION } from "../../../db/const";
 import db from "../../../db";
 
-export enum CHANNLE_STATE {
+export enum CHANNEL_STATE {
   "NOT_FOUND" = "NOT_FOUND",
   "ACTIVE" = "ACTIVE",
   "DELETED" = "DELETED",
@@ -10,7 +10,7 @@ export enum CHANNLE_STATE {
 
 type ValidationStatus = {
   valid: boolean,
-  state: CHANNLE_STATE
+  state: CHANNEL_STATE
 }
 
 const channelValid = async (channel: string): Promise<ValidationStatus> => {
@@ -21,14 +21,14 @@ const channelValid = async (channel: string): Promise<ValidationStatus> => {
   if (!ifExists) {
     return {
       valid: false,
-      state: CHANNLE_STATE.NOT_FOUND
+      state: CHANNEL_STATE.NOT_FOUND
     };
   }
   const { expired, deleted } = ifExists;
   const inValid = expired || deleted;
 
-  const validState = CHANNLE_STATE.ACTIVE;
-  const invalidState = (deleted && CHANNLE_STATE.DELETED) || (expired && CHANNLE_STATE.EXPIRED);
+  const validState = CHANNEL_STATE.ACTIVE;
+  const invalidState = (deleted && CHANNEL_STATE.DELETED) || (expired && CHANNEL_STATE.EXPIRED);
 
   const state = inValid ? invalidState : validState;
   return {
