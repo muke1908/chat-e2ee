@@ -9,9 +9,9 @@
     "build": "tsc",
     "client": "cd client && npm start",
     "server": "cross-env NODE_ENV=development nodemon --watch \"./**\" --ext \"ts,json\" --exec \"ts-node index.ts\"",
-    "serve": "node ./dist/index",
+    "serve": "ts-node ./dist/index",
     "test": "cross-env NODE_ENV=test jest",
-    "start": "cross-env NODE_ENV=production node index",
+    "start": "cross-env NODE_ENV=production ts-node index",
     "postinstall": "cd client && npm install",
     "docker_start": "cross-env NODE_ENV=production node index"
   },
