@@ -10,7 +10,7 @@ export type LinkType = {
   absoluteLink: string,
   expired: boolean,
   deleted: boolean,
-  pin: number,
+  pin: string,
   pinCreatedAt: number,
 }
 
@@ -28,7 +28,7 @@ const generateLink = (): LinkType => {
     absoluteLink: CHAT_LINK_DOMAIN && `${CHAT_LINK_DOMAIN}/chat/${hash}`,
     expired: false,
     deleted: false,
-    pin: Number(generatePIN(hash, PIN_LENGTH)),
+    pin: generatePIN(hash, PIN_LENGTH),
     pinCreatedAt: new Date().getTime()
   };
 };
