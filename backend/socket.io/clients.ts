@@ -1,5 +1,9 @@
-const clientRecord = {
-  /*
+type UserSidTypes = Record<'sid', string>;
+type UserRecordType = Record<string, UserSidTypes>;
+type ClientRecordType = Record<string, UserRecordType>;
+
+/*
+const clientRecord: ClientRecordType = {
     channelID: {
         userID1: {
             sid: <sid>
@@ -8,47 +12,55 @@ const clientRecord = {
             sid: <sid>
         }
     }
-    */
 };
+*/
 
-const clients = {
-  getClients: () => clientRecord,
-  getClientsByChannel: (channelID) => {
+class Clients {
+  private clientRecord: ClientRecordType = {}
+
+  getClients(): ClientRecordType { return this.clientRecord }
+
+  getClientsByChannel(channelID: string): UserRecordType {
     if (!channelID) {
       throw new Error("channelID - required param");
     }
-    return clientRecord[channelID];
-  },
-  getSenderByChannel: (channelID, userID) => {
+    return this.clientRecord[channelID];
+  }
+
+  getSenderByChannel(channelID: string, userID: string): UserSidTypes {
     if (!(channelID && userID)) {
       throw new Error("channelID, userID - required param");
     }
-    const users = Object.keys(clientRecord[channelID]);
+    const users = Object.keys(this.clientRecord[channelID]);
 
     const sender = users.find((u) => u === userID);
-    return clientRecord[channelID][sender];
-  },
-  getReceiverByChannel: (channelID, userID) => {
+    return this.clientRecord[channelID][sender];
+  }
+
+  getReceiverByChannel(channelID: string, userID: string): UserSidTypes {
     if (!(channelID && userID)) {
       throw new Error("channelID, userID - required param");
     }
-    const users = Object.keys(clientRecord[channelID]);
+    const users = Object.keys(this.clientRecord[channelID]);
 
     const receiver = users.find((u) => u !== userID);
-    return clientRecord[channelID][receiver];
-  },
-  setClientToChannel: (userID, channelID, sid) => {
-    if (clientRecord[channelID]) {
-      clientRecord[channelID][userID] = { sid };
+    return this.clientRecord[channelID][receiver];
+  }
+
+  setClientToChannel(userID: string, channelID: string, sid: string): void {
+    if (this.clientRecord[channelID]) {
+      this.clientRecord[channelID][userID] = { sid };
     } else {
-      clientRecord[channelID] = {
+      this.clientRecord[channelID] = {
         [userID]: { sid }
       };
     }
-  },
-  deleteClient: (userID, channelID) => {
-    delete clientRecord[channelID][userID];
   }
-};
 
-export default clients;
+  deleteClient(userID: string, channelID: string): void {
+    delete this.clientRecord[channelID][userID];
+  }
+
+}
+
+export default Clients;
