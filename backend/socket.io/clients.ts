@@ -2,6 +2,13 @@ type UserSidTypes = Record<'sid', string>;
 type UserRecordType = Record<string, UserSidTypes>;
 type ClientRecordType = Record<string, UserRecordType>;
 
+function singleton(target: any) {
+  const instance = new target();
+  target.prototype.getInstance = function() {
+    return instance;
+  };
+}
+
 /*
 const clientRecord: ClientRecordType = {
     channelID: {
@@ -14,7 +21,7 @@ const clientRecord: ClientRecordType = {
     }
 };
 */
-
+@singleton
 class Clients {
   private clientRecord: ClientRecordType = {}
 

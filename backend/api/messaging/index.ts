@@ -3,13 +3,13 @@ import uploadImage from "../../external/uploadImage";
 import db from "../../db";
 import channelValid from "../chatLink/utils/validateChannel";
 import { socketEmit } from "../../socket.io";
-import clients from "../../socket.io/clients";
+import Clients from "../../socket.io/clients";
 import asyncHandler from "../../middleware/asyncHandler";
 
 import { PUBLIC_KEY_COLLECTION } from "../../db/const";
 
 const router = express.Router({ mergeParams: true });
-
+const clients = new Clients();
 router.post(
   "/message",
   asyncHandler(async (req, res) => {
