@@ -46,7 +46,7 @@ const App = () => {
           </div>
           <div className={styles.description}>
             <ul>
-              <li>No login/signup required.</li>
+              <li>No login/ signup required.</li>
               <li>No tracker</li>
               <li>
                 Your messages are <b>end-to-end</b> encrypted - technically impossible to read your
