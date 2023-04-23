@@ -11,6 +11,19 @@ export enum SOCKET_TOPIC {
   ON_ALICE_DISCONNECTED = 'on-alice-disconnect',
   MESSAGE = 'message',
 }
+
+type emitDataTypes = {
+  [SOCKET_TOPIC.CHAT_MESSAGE]: ChatMessageType,
+  [SOCKET_TOPIC.LIMIT_REACHED]: null,
+  [SOCKET_TOPIC.DELIVERED]: null,
+  [SOCKET_TOPIC.ON_ALICE_DISCONNECTED]: null,
+  [SOCKET_TOPIC.ON_ALICE_JOIN]: {
+    publicKey: string
+  },
+  [SOCKET_TOPIC.MESSAGE]: string,
+  [key: string]: unknown,
+}
+
 export const initSocket = (server) => {
   if (io) {
     return io;
@@ -25,10 +38,12 @@ export const initSocket = (server) => {
 
   return io;
 };
-//todo: improve emitDataTypes selection
-type emitDataTypes<T> = T extends SOCKET_TOPIC.CHAT_MESSAGE ? ChatMessageType : unknown;
 
-export const socketEmit = <T>(topic: T, sid: string, data: emitDataTypes<T>): void => {
+export const socketEmit = <T extends keyof emitDataTypes>(topic: T, sid: string, data: emitDataTypes[T]): void => {
   const socket = io.sockets.sockets.get(sid);
+  if(!socket) {
+    console.warn("SKIPPING. No socket found.");
+    return;
+  }
   socket.emit(topic as string, data);
 };

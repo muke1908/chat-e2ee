@@ -53,7 +53,7 @@ router.post(
       dataToPublish.image = imageurl;
     }
 
-    const { sid } = clients.getReceiverByChannel(channel, sender);
+    const { sid } = clients.getSIDByIDs(sender, channel);
     socketEmit<SOCKET_TOPIC.CHAT_MESSAGE>(SOCKET_TOPIC.CHAT_MESSAGE, sid, dataToPublish);
 
     return res.send({ message: "message sent", id, timestamp });

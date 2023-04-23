@@ -1,6 +1,6 @@
 import Clients from "./clients";
 import channelValid from "../api/chatLink/utils/validateChannel";
-import { SOCKET_TOPIC } from "./index";
+import { socketEmit, SOCKET_TOPIC } from "./index";
 
 const clients = new Clients();
 const connectionListener = (socket, io) => {
@@ -17,7 +17,7 @@ const connectionListener = (socket, io) => {
 
     if (userCount === 2) {
       const receiverSocket = io.sockets.sockets[socket.id];
-      receiverSocket.emit(SOCKET_TOPIC.LIMIT_REACHED);
+      socketEmit<SOCKET_TOPIC.LIMIT_REACHED>(SOCKET_TOPIC.LIMIT_REACHED, socket.id, null);
       receiverSocket.disconnect();
       return;
     }
@@ -26,21 +26,16 @@ const connectionListener = (socket, io) => {
     socket.channelID = channelID;
     socket.userID = userID;
     // share the public key to the receiver if present
-    const receiver = clients.getReceiverByChannel(channelID, userID);
+    const receiver = clients.getSIDByIDs(userID, channelID);
 
     if (receiver) {
-      const receiverSocket = io.sockets.sockets[receiver.sid];
-      if (!receiverSocket) {
-        return;
-      }
-      receiverSocket.emit(SOCKET_TOPIC.ON_ALICE_JOIN, { publicKey });
+      socketEmit<SOCKET_TOPIC.ON_ALICE_JOIN>(SOCKET_TOPIC.ON_ALICE_JOIN, receiver.sid, { publicKey });
     }
   });
 
   socket.on("received", ({ channel, sender, id }) => {
-    const { sid } = clients.getSenderByChannel(channel, sender);
-    const senderSocket = io.sockets.sockets.get(sid);
-    senderSocket.emit(SOCKET_TOPIC.DELIVERED, id);
+    const { sid } = clients.getSIDByIDs(sender, channel);
+    socketEmit<SOCKET_TOPIC.DELIVERED>(SOCKET_TOPIC.DELIVERED, sid, null);
   });
 
   socket.on("disconnect", () => {
@@ -49,16 +44,10 @@ const connectionListener = (socket, io) => {
       return;
     }
     try {
-      const receiver = clients.getReceiverByChannel(channelID, userID);
+      const receiver = clients.getSIDByIDs(userID, channelID);
       if (receiver) {
-        const receiverSocket = io.sockets.sockets[receiver.sid];
-        if (!receiverSocket) {
-          // eslint-disable-next-line no-console
-          console.log("socket not found!");
-          return;
-        }
         clients.deleteClient(userID, channelID);
-        receiverSocket.emit(SOCKET_TOPIC.ON_ALICE_DISCONNECTED);
+        socketEmit<SOCKET_TOPIC.ON_ALICE_DISCONNECTED>(SOCKET_TOPIC.ON_ALICE_DISCONNECTED, receiver.sid, null);
       }
     } catch (err) {
       // eslint-disable-next-line no-console

@@ -34,24 +34,18 @@ class Clients {
     return this.clientRecord[channelID];
   }
 
-  getSenderByChannel(channelID: string, userID: string): UserSidTypes {
+  getSIDByIDs(userID: string, channelID: string): UserSidTypes {
     if (!(channelID && userID)) {
       throw new Error("channelID, userID - required param");
     }
-    const users = Object.keys(this.clientRecord[channelID]);
 
-    const sender = users.find((u) => u === userID);
-    return this.clientRecord[channelID][sender];
-  }
-
-  getReceiverByChannel(channelID: string, userID: string): UserSidTypes {
-    if (!(channelID && userID)) {
-      throw new Error("channelID, userID - required param");
+    if(!this.clientRecord[channelID]) {
+      return null;
     }
     const users = Object.keys(this.clientRecord[channelID]);
 
-    const receiver = users.find((u) => u !== userID);
-    return this.clientRecord[channelID][receiver];
+    const user = users.find((u) => u === userID);
+    return this.clientRecord[channelID][user];
   }
 
   setClientToChannel(userID: string, channelID: string, sid: string): void {

@@ -29,3 +29,4 @@ client/yarn-error.log*
 #dis
 dist
 pass
+coverage
