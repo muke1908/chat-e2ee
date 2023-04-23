@@ -2,7 +2,7 @@ import express from "express";
 import uploadImage from "../../external/uploadImage";
 import db from "../../db";
 import channelValid from "../chatLink/utils/validateChannel";
-import { socketEmit } from "../../socket.io";
+import { socketEmit, SOCKET_TOPIC } from "../../socket.io";
 import Clients from "../../socket.io/clients";
 import asyncHandler from "../../middleware/asyncHandler";
 
@@ -10,6 +10,15 @@ import { PUBLIC_KEY_COLLECTION } from "../../db/const";
 
 const router = express.Router({ mergeParams: true });
 const clients = new Clients();
+
+export type ChatMessageType = {
+  channel: string,
+  sender: string,
+  message: string,
+  id: number,
+  timestamp: number,
+  image?: string
+}
 router.post(
   "/message",
   asyncHandler(async (req, res) => {
@@ -31,7 +40,7 @@ router.post(
     }
     const id = new Date().valueOf();
     const timestamp = new Date().valueOf();
-    const dataToPublish: any = {
+    const dataToPublish: ChatMessageType = {
       channel,
       sender,
       message,
@@ -45,7 +54,7 @@ router.post(
     }
 
     const { sid } = clients.getReceiverByChannel(channel, sender);
-    socketEmit("chat-message", sid, dataToPublish);
+    socketEmit<SOCKET_TOPIC.CHAT_MESSAGE>(SOCKET_TOPIC.CHAT_MESSAGE, sid, dataToPublish);
 
     return res.send({ message: "message sent", id, timestamp });
   })

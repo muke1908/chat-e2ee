@@ -7,7 +7,7 @@ const PIN_LENGTH = 4;
 export type LinkType = {
   hash: string,
   link: string,
-  absoluteLink: string,
+  absoluteLink: string | undefined,
   expired: boolean,
   deleted: boolean,
   pin: string,
@@ -19,7 +19,7 @@ const generateLink = (): LinkType => {
 
   if (!CHAT_LINK_DOMAIN) {
     // eslint-disable-next-line no-console
-    console.error('CHAT_LINK_DOMAIN not found in env');
+    console.warn('CHAT_LINK_DOMAIN not found in env');
   }
 
   return {

@@ -1,5 +1,6 @@
 import Clients from "./clients";
 import channelValid from "../api/chatLink/utils/validateChannel";
+import { SOCKET_TOPIC } from "./index";
 
 const clients = new Clients();
 const connectionListener = (socket, io) => {
@@ -16,7 +17,7 @@ const connectionListener = (socket, io) => {
 
     if (userCount === 2) {
       const receiverSocket = io.sockets.sockets[socket.id];
-      receiverSocket.emit("limit-reached");
+      receiverSocket.emit(SOCKET_TOPIC.LIMIT_REACHED);
       receiverSocket.disconnect();
       return;
     }
@@ -32,14 +33,14 @@ const connectionListener = (socket, io) => {
       if (!receiverSocket) {
         return;
       }
-      receiverSocket.emit("on-alice-join", { publicKey });
+      receiverSocket.emit(SOCKET_TOPIC.ON_ALICE_JOIN, { publicKey });
     }
   });
 
   socket.on("received", ({ channel, sender, id }) => {
     const { sid } = clients.getSenderByChannel(channel, sender);
     const senderSocket = io.sockets.sockets.get(sid);
-    senderSocket.emit("delivered", id);
+    senderSocket.emit(SOCKET_TOPIC.DELIVERED, id);
   });
 
   socket.on("disconnect", () => {
@@ -57,7 +58,7 @@ const connectionListener = (socket, io) => {
           return;
         }
         clients.deleteClient(userID, channelID);
-        receiverSocket.emit("on-alice-disconnect");
+        receiverSocket.emit(SOCKET_TOPIC.ON_ALICE_DISCONNECTED);
       }
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -65,7 +66,7 @@ const connectionListener = (socket, io) => {
     }
   });
 
-  socket.emit("message", "ping!");
+  socket.emit(SOCKET_TOPIC.MESSAGE, "ping!");
 };
 
 export default connectionListener;
