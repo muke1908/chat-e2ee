@@ -11,7 +11,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 const App = () => {
   const [darkMode] = useContext(ThemeContext);
   return (
-    <div className={`${styles.defaultMode} ${!darkMode && styles.lightMode} `}>
+    <div style={{background : darkMode ? '#212121' : '#f2f2f2' , paddingBottom : '10px'}} className={`${styles.defaultMode} ${!darkMode && styles.lightMode} `}>
       <Router>
         <div className={styles.bodyContent}>
           <Switch>
