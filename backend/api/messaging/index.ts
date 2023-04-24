@@ -3,13 +3,13 @@ import uploadImage from "../../external/uploadImage";
 import db from "../../db";
 import channelValid from "../chatLink/utils/validateChannel";
 import { socketEmit, SOCKET_TOPIC } from "../../socket.io";
-import Clients from "../../socket.io/clients";
+import getClientInstance from "../../socket.io/clients";
 import asyncHandler from "../../middleware/asyncHandler";
 
 import { PUBLIC_KEY_COLLECTION } from "../../db/const";
 
 const router = express.Router({ mergeParams: true });
-const clients = new Clients();
+const clients = getClientInstance();
 
 export type ChatMessageType = {
   channel: string,
@@ -32,12 +32,21 @@ router.post(
     if (!valid) {
       return res.sendStatus(404);
     }
-    const usersInChannel = Object.keys(clients.getClientsByChannel(channel) || {});
-    const ifSenderIsInChannel = usersInChannel.find((u) => u === sender);
+    const usersInChannel = clients.getClientsByChannel(channel);
+    const usersInChannelArr = Object.keys(usersInChannel);
+    const ifSenderIsInChannel = usersInChannelArr.find((u) => u === sender);
 
     if (!ifSenderIsInChannel) {
-      return res.status(401).send({ error: "Limit reached" });
+      console.error('Sender is not in channel');
+      return res.status(401).send({ error: "Permission denied" });
     }
+
+    const receiver = usersInChannelArr.find((u) => u !== sender);
+    if(!receiver) {
+      console.error('No receiver is in the channel');
+      return;
+    }
+
     const id = new Date().valueOf();
     const timestamp = new Date().valueOf();
     const dataToPublish: ChatMessageType = {
@@ -52,10 +61,8 @@ router.post(
       const { imageurl } = await uploadImage(image);
       dataToPublish.image = imageurl;
     }
-
-    const { sid } = clients.getSIDByIDs(sender, channel);
-    socketEmit<SOCKET_TOPIC.CHAT_MESSAGE>(SOCKET_TOPIC.CHAT_MESSAGE, sid, dataToPublish);
-
+    const receiverSid = usersInChannel[receiver].sid;
+    socketEmit<SOCKET_TOPIC.CHAT_MESSAGE>(SOCKET_TOPIC.CHAT_MESSAGE, receiverSid, dataToPublish);
     return res.send({ message: "message sent", id, timestamp });
   })
 );
