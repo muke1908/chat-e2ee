@@ -2,13 +2,6 @@ type UserSidTypes = Record<'sid', string>;
 type UserRecordType = Record<string, UserSidTypes>;
 type ClientRecordType = Record<string, UserRecordType>;
 
-function singleton(target: any) {
-  const instance = new target();
-  target.prototype.getInstance = function() {
-    return instance;
-  };
-}
-
 /*
 const clientRecord: ClientRecordType = {
     channelID: {
@@ -21,8 +14,15 @@ const clientRecord: ClientRecordType = {
     }
 };
 */
-@singleton
-class Clients {
+export interface ClientRecordInterface {
+  getClients(): ClientRecordType,
+  getClientsByChannel(channelID: string): UserRecordType,
+  getSIDByIDs(userID: string, channelID: string): UserSidTypes,
+  setClientToChannel(userID: string, channelID: string, sid: string): void,
+  deleteClient(userID: string, channelID: string): void,
+}
+
+class Clients implements ClientRecordInterface{
   private clientRecord: ClientRecordType = {}
 
   getClients(): ClientRecordType { return this.clientRecord }
@@ -31,7 +31,7 @@ class Clients {
     if (!channelID) {
       throw new Error("channelID - required param");
     }
-    return this.clientRecord[channelID];
+    return this.clientRecord[channelID] || {};
   }
 
   getSIDByIDs(userID: string, channelID: string): UserSidTypes {
@@ -64,4 +64,7 @@ class Clients {
 
 }
 
-export default Clients;
+const clientInstance = new Clients();
+const getClientInstance = () => clientInstance;
+
+export default getClientInstance;

@@ -1,14 +1,15 @@
-import Clients from './clients';
+import getClientInstance, { ClientRecordInterface } from './clients';
 
 describe('clients store', () => {
-    let clients: Clients;
+    let clients: ClientRecordInterface;
 
     beforeEach(() => {
-        clients = new Clients();
+        clients = getClientInstance();
     })
 
-    it('should generate a PIN of length 4 given a UUID', () => {
+    it('should return empty obj', () => {
         expect(clients.getClients()).toMatchObject({});
+        expect(clients.getClientsByChannel('non-existant-channel')).toMatchObject({});
     });
 
     it('set new client to same channel', () => {
