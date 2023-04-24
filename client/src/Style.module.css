@@ -1,10 +1,25 @@
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+body {
   font-family: 'Montserrat', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
     'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
+  overflow: auto;
+}
+
+body {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+body::-webkit-scrollbar { 
+  display: none;  /* Safari and Chrome */
 }
 
 .defaultMode {
@@ -40,10 +55,6 @@ a {
 .lightMode {
   background: #f2f2f2;
   color: #000000;
-}
-
-html {
-  height: 100%;
 }
 
 @media only screen and (max-width: 900px) {
