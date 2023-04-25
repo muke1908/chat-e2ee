@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import uploadImage from "../../external/uploadImage";
 import db from "../../db";
 import channelValid from "../chatLink/utils/validateChannel";
@@ -7,21 +7,14 @@ import getClientInstance from "../../socket.io/clients";
 import asyncHandler from "../../middleware/asyncHandler";
 
 import { PUBLIC_KEY_COLLECTION } from "../../db/const";
+import { ChatMessageType, GetPublicKeyResponse, MessageResponse, SharePublicKeyResponse, UsersInChannelResponse } from "./types";
 
 const router = express.Router({ mergeParams: true });
 const clients = getClientInstance();
 
-export type ChatMessageType = {
-  channel: string,
-  sender: string,
-  message: string,
-  id: number,
-  timestamp: number,
-  image?: string
-}
 router.post(
   "/message",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response): Promise<Response<MessageResponse>> => {
     const { message, sender, channel, image } = req.body;
 
     if (!message) {
@@ -69,7 +62,7 @@ router.post(
 
 router.post(
   "/share-public-key",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response): Promise<Response<SharePublicKeyResponse>> => {
     const { publicKey, sender, channel } = req.body;
 
     const { valid } = await channelValid(channel);
@@ -84,32 +77,32 @@ router.post(
 
 router.get(
   "/get-public-key",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response): Promise<Response<GetPublicKeyResponse>> => {
     const { userId, channel } = req.query;
 
-    const { valid } = await channelValid(channel);
+    const { valid } = await channelValid(channel as string);
 
     if (!valid) {
       return res.sendStatus(404);
     }
 
-    const data = await db.findOneFromDB({ channel, sender: userId }, PUBLIC_KEY_COLLECTION);
+    const data = await db.findOneFromDB<GetPublicKeyResponse>({ channel, sender: userId }, PUBLIC_KEY_COLLECTION);
     return res.send(data);
   })
 );
 
 router.get(
   "/get-users-in-channel",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response): Promise<Response<UsersInChannelResponse>> => {
     const { channel } = req.query;
 
-    const { valid } = await channelValid(channel);
+    const { valid } = await channelValid(channel as string);
 
     if (!valid) {
       return res.sendStatus(404);
     }
 
-    const data = clients.getClientsByChannel(channel);
+    const data = clients.getClientsByChannel(channel as string);
     const usersInChannel = data ? Object.keys(data).map((userId) => ({ uuid: userId })) : [];
     return res.send(usersInChannel);
   })

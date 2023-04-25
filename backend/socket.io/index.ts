@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { ChatMessageType } from "../api/messaging";
+import { ChatMessageType } from "../api/messaging/types";
 import connectionListener from "./listeners";
 
 let io: Server = null;

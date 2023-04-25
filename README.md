@@ -72,7 +72,9 @@ BE: The backend runs on express/nodejs. In production mode, express server expos
 
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
 
-**Important:** Check `.env.sample` to configure your `.env` file.
+**Important:**  
+Check `.env.sample` to configure your `.env` file.  
+Please use node 16 or above.   
 
 To start with docker read the [instructions](https://github.com/muke1908/chat-e2ee/tree/master/docker).   
 For native build read the [instructions](https://github.com/muke1908/chat-e2ee/tree/master/native).
