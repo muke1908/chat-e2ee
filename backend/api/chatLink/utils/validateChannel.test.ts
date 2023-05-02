@@ -1,5 +1,6 @@
 import channelValid, { CHANNEL_STATE } from './validateChannel';
 import db from "../../../db";
+import { LINK_COLLECTION } from '../../../db/const';
 
 jest.mock('../../../db');
 
@@ -8,16 +9,14 @@ describe('channelValid', () => {
         jest.clearAllMocks();
     });
 
-    // test if channel is provided otherwise throw new Error("channel - required param");
     it('should throw an error is the channel is not provided', async () => {
         await expect(channelValid('')).rejects.toThrow("channel - required param");
     });
 
     it('should return NOT_FOUND if the channel does not exist in the db', async () => {
-        const findOneFromDBMock = db.findOneFromDB as jest.MockedFunction<typeof db.findOneFromDB>;
-        findOneFromDBMock.mockResolvedValueOnce(null);
-        // WHere is the above being used?
+        db.findOneFromDB = jest.fn().mockResolvedValueOnce(null);
         const result = await channelValid('nonexistent_channel');
+        expect(db.findOneFromDB).toBeCalledWith({ hash: 'nonexistent_channel' }, LINK_COLLECTION);
         expect(result.valid).toBe(false);
         expect(result.state).toBe(CHANNEL_STATE.NOT_FOUND);
     });
@@ -28,9 +27,9 @@ describe('channelValid', () => {
             expired: false,
             deleted: false
         }
-        const findOneFromDBMock = db.findOneFromDB as jest.MockedFunction<typeof db.findOneFromDB>;
-        findOneFromDBMock.mockResolvedValueOnce(channel);
+        db.findOneFromDB = jest.fn().mockResolvedValueOnce(channel);
         const result = await channelValid(channel.hash);
+        expect(db.findOneFromDB).toBeCalledWith({ hash: 'active_channel' }, LINK_COLLECTION);
         expect(result.valid).toBe(true);
         expect(result.state).toBe(CHANNEL_STATE.ACTIVE);
     });
@@ -41,9 +40,9 @@ describe('channelValid', () => {
             expired: false,
             deleted: true
         }
-        const findOneFromDbMock = db.findOneFromDB as jest.MockedFunction<typeof db.findOneFromDB>;
-        findOneFromDbMock.mockResolvedValueOnce(channel);
+        db.findOneFromDB = jest.fn().mockResolvedValueOnce(channel);
         const result = await channelValid(channel.hash);
+        expect(db.findOneFromDB).toBeCalledWith({ hash: 'deleted_channel' }, LINK_COLLECTION);
         expect(result.valid).toBe(false);
         expect(result.state).toBe(CHANNEL_STATE.DELETED);
     });
@@ -54,9 +53,9 @@ describe('channelValid', () => {
             expired: true,
             deleted: false
         }
-        const findOneFromDbMock = db.findOneFromDB as jest.MockedFunction<typeof db.findOneFromDB>;
-        findOneFromDbMock.mockResolvedValueOnce(channel);
+        db.findOneFromDB = jest.fn().mockResolvedValueOnce(channel);
         const result = await channelValid(channel.hash);
+        expect(db.findOneFromDB).toBeCalledWith({ hash: 'expired_channel' }, LINK_COLLECTION);
         expect(result.valid).toBe(false);
         expect(result.state).toBe(CHANNEL_STATE.EXPIRED);
     });
