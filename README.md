@@ -79,7 +79,7 @@ For native build read the [instructions](https://github.com/muke1908/chat-e2ee/t
 - Entry point is `./index.js`
 
 ### APIs
-```endpoint: https://chate2ee.fun/api/<path>```
+```endpoint: /api/<path>```
 
 | url                              | method   | payload                         | filename                  | description                                   |
 | -------------------------------- | -------- | ------------------------------ | ------------------------- | --------------------------------------------- |
