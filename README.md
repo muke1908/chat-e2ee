@@ -1,11 +1,11 @@
 ## chat-e2ee
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee) [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)
 
-The project is still in **development** phase.   
+The project is still in **development** phase and open for contribution.
 
 
-Working prototype:   https://chat-e2ee-2.azurewebsites.net/
+Demo: https://chat-e2ee-2.azurewebsites.net
 
 ---
 
