@@ -5,28 +5,22 @@ import sendMessage from './sendMessage';
 import { sharePublicKey, getPublicKey} from './publicKey';
 import { IChatE2EE, LinkObjType } from './public/types';
 
-export const getChatInstance = (): IChatE2EE => {
+export const createChatInstance = (): IChatE2EE => {
     return new ChatE2EE();
 } 
 
 
 
 class ChatE2EE implements IChatE2EE{
-    private linkObj: LinkObjType = null;
+    private linkObjPromise: Promise<LinkObjType> = null;
     private channelId?: string;
 
     constructor() {
-
+        this.init();
     }
 
-    public get linkDescription(): LinkObjType | undefined{
-        return this.linkObj;
-    }
-
-    public async createLink(): Promise<LinkObjType> {
-        const linkObj = await getLink();
-        this.linkObj = linkObj;
-        return linkObj;    
+    public async getLink(): Promise<LinkObjType> {
+        return this.linkObjPromise;
     }
 
     public setChannel(channelId: string): void {
@@ -53,4 +47,7 @@ class ChatE2EE implements IChatE2EE{
         return getPublicKey({ userId, channelId: this.channelId });
     }
 
+    private init() {
+        this.linkObjPromise = getLink();
+    }
 }

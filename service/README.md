@@ -7,8 +7,8 @@ This is a client-side SDK to interact with chat-e2ee service. It allows dev to b
 **1. Import SDK:**  
 > Both users needs to import the sdk.
 ```
-import { getChatInstance } from '@chat-e2ee/service';
-const chatInstance = getChatInstance()
+import { createChatInstance } from '@chat-e2ee/service';
+const chatInstance = createChatInstance()
 ```
 
 **2. Create a link:**  

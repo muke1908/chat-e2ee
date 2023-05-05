@@ -8,8 +8,7 @@ export type LinkObjType = {
 }
 
 export interface IChatE2EE {
-    linkDescription: LinkObjType;
-    createLink(): Promise<LinkObjType>;
+    getLink(): Promise<LinkObjType>;
     setChannel(channelId: string): void;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<any>; //fix: return type

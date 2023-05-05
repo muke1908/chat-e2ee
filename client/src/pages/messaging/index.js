@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useRef, useContext } from 'rea
 import { useParams, useHistory } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
 
-import { getChatInstance } from '@chat-e2ee/service';
+import { createChatInstance } from '@chat-e2ee/service';
 
 import {
   getUserSessionID,
@@ -25,7 +25,7 @@ import Notification from '../../components/Notification';
 import LinkSharingInstruction from '../../components/Messaging/LinkSharingInstruction';
 import notificationAudio from '../../components/Notification/audio.mp3';
 
-const chate2ee = getChatInstance();
+const chate2ee = createChatInstance();
 
 const Chat = () => {
   const [text, setText] = useState('');
@@ -200,7 +200,7 @@ const Chat = () => {
         publicKeyRef.current = strToTypedArr(publicKey);
         playNotification();
       }
-      getSetUsers(channelID);
+      getSetUsers();
     });
 
     socket.on('on-alice-disconnect', () => {
@@ -208,7 +208,7 @@ const Chat = () => {
       publicKeyRef.current = null;
       playNotification();
 
-      getSetUsers(channelID);
+      getSetUsers();
     });
 
     //handle incoming message
@@ -237,7 +237,7 @@ const Chat = () => {
       }
     });
 
-    getSetUsers(channelID);
+    getSetUsers();
     initChat();
 
     return () => socket.disconnect();

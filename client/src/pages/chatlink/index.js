@@ -6,9 +6,9 @@ import styles from './Style.module.css';
 import ThemeToggle from '../../components/ThemeToggle/index.js';
 import PinInput from '../../components/PinInput/index.js';
 
-import { getChatInstance } from '@chat-e2ee/service';
+import { createChatInstance } from '@chat-e2ee/service';
 
-const chate2ee = getChatInstance();
+
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
@@ -22,7 +22,8 @@ const App = () => {
 
     setLoading(true);
     try {
-      const linkResp = await chate2ee.createLink();
+      const chate2ee = createChatInstance();
+      const linkResp = await chate2ee.getLink();
       setChatLink(linkResp);
     } catch (error) {
       console.error(error);
