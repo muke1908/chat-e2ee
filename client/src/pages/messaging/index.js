@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState, useRef, useContext } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
-import deleteLink from '../../service/deleteLink';
+
+import { getChatInstance } from '@chat-e2ee/service';
 
 import {
   getUserSessionID,
@@ -16,14 +17,15 @@ import {
   decryptMsg,
   isEmptyMessage
 } from './helpers';
-import { ThemeContext } from '../../ThemeContext.js';
 
-import { sendMessage, sharePublicKey, getPublicKey, getUsersInChannel } from '../../service';
+import { ThemeContext } from '../../ThemeContext.js';
 import styles from './Style.module.css';
 import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from '../../components/Messaging';
 import Notification from '../../components/Notification';
 import LinkSharingInstruction from '../../components/Messaging/LinkSharingInstruction';
 import notificationAudio from '../../components/Notification/audio.mp3';
+
+const chate2ee = getChatInstance();
 
 const Chat = () => {
   const [text, setText] = useState('');
@@ -43,6 +45,8 @@ const Chat = () => {
   const notificationTimer = useRef(null);
 
   const { channelID } = useParams();
+  
+  chate2ee.setChannel(channelID);
 
   let userId = getUserSessionID(channelID);
 
@@ -68,8 +72,7 @@ const Chat = () => {
 
       //this will send the public key
       console.log('%cSharing public key.', 'color:red; font-size:16px');
-      sharePublicKey({
-        channel: channelID,
+      chate2ee.sharePublicKey({
         publicKey: typedArrayToStr(_keyPair.publicKey),
         sender: userId
       });
@@ -116,8 +119,7 @@ const Chat = () => {
         alicePublicKey: publicKeyRef.current
       });
 
-      const { id, timestamp } = await sendMessage({
-        channelID,
+      const { id, timestamp } = await chate2ee.sendMessage({
         userId,
         image,
         text: {
@@ -135,14 +137,14 @@ const Chat = () => {
         return [...prevMsg];
       });
     },
-    [channelID, userId]
+    [userId]
   );
 
-  const getSetUsers = async (channelID) => {
+  const getSetUsers = async () => {
     const usersInChannel = [];
 
     try {
-      const users = await getUsersInChannel({ channel: channelID });
+      const users = await chate2ee.getUsersInChannel();
       usersInChannel.push(...users);
     } catch (err) {
       console.error(err);
@@ -154,7 +156,7 @@ const Chat = () => {
     // if alice is already connected,
     // get alice's publicKey
     if (alice) {
-      const key = await getPublicKey({ userId: alice.uuid, channel: channelID });
+      const key = await chate2ee.getPublicKey({ userId: alice.uuid });
       publicKeyRef.current = strToTypedArr(key.publicKey);
       playNotification();
     }
@@ -162,7 +164,7 @@ const Chat = () => {
 
   const handleDeleteLink = async () => {
     setLinkActive(false);
-    await deleteLink({ channelID });
+    await chate2ee.delete();
     history.push('/');
   };
 

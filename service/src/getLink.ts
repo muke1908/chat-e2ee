@@ -1,4 +1,4 @@
-import makeRequest from '../utils/makeRequest';
+import makeRequest from './makeRequest';
 
 const getLink = async () => {
   return makeRequest('chat-link', {

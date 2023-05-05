@@ -15,8 +15,8 @@ const connectionListener = (socket, io) => {
     const usersInChannel = clients.getClientsByChannel(channelID) || {};
     const userCount = Object.keys(usersInChannel).length;
 
-    if (userCount === 2) {
-      const receiverSocket = io.sockets.sockets[socket.id];
+    const receiverSocket = io.sockets.sockets[socket.id];
+    if (userCount === 2 && receiverSocket) {
       socketEmit<SOCKET_TOPIC.LIMIT_REACHED>(SOCKET_TOPIC.LIMIT_REACHED, socket.id, null);
       receiverSocket.disconnect();
       return;
