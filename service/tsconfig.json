@@ -4,7 +4,7 @@
       "esModuleInterop": true,
       "sourceMap": true,
       "noImplicitAny": false,
-      "declaration": true,
+      "declaration": false, // generating separately, npm run dts
       "strictNullChecks": false
     }
 }
