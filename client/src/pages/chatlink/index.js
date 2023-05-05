@@ -7,7 +7,7 @@ import ThemeToggle from '../../components/ThemeToggle/index.js';
 import PinInput from '../../components/PinInput/index.js';
 
 import { getChatInstance } from '@chat-e2ee/service';
-console.log(getChatInstance)
+
 const chate2ee = getChatInstance();
 
 const App = () => {
