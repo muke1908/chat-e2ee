@@ -11,6 +11,14 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 
 **Disposable chat session**: this app will allow two mutually agreed users to have a chat in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device. This is not a replacement of your usual chat application.
 
+Working prototype: https://chat-e2ee-2.azurewebsites.net
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)
+
+The project is in **development** phase.   
+
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues)
+
 ## Features
 
 1. No login/signp - the end users **don't identify** themselves .
@@ -21,13 +29,6 @@ Demo: https://chat-e2ee-2.azurewebsites.net
  - JS SDK and use chat-e2ee backend as service. [Usage instruction](https://github.com/muke1908/chat-e2ee/tree/service-modularisation/service)
 
 ---
-
-**Contribute:**
-
-- [Frontend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
-- [Backend issues](https://github.com/muke1908/chat-e2ee/issues?q=is%3Aissue+is%3Aopen+label%3ABackend)
-- [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  
-- [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues)
 
 For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#for-developers).  
 
@@ -95,7 +96,7 @@ For native build read the [instructions](https://github.com/muke1908/chat-e2ee/t
 - Entry point is `./index.js`.
 
 ### APIs
-```endpoint: https://chate2ee.fun/api/<path>```
+```endpoint: /api/<path>```
 
 | url                              | method   | payload                         | filename                  | description                                   |
 | -------------------------------- | -------- | ------------------------------ | ------------------------- | --------------------------------------------- |
