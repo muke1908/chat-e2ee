@@ -4,6 +4,7 @@ import getUsersInChannel from './getUsersInChannel';
 import sendMessage from './sendMessage';
 import { sharePublicKey, getPublicKey} from './publicKey';
 import { IChatE2EE, IGetPublicKeyReturn, ISendMessageReturn, LinkObjType } from './public/types';
+import { cryptoUtils } from './crypto';
 
 export { cryptoUtils } from './crypto';
 
@@ -16,6 +17,7 @@ class ChatE2EE implements IChatE2EE{
     private linkObjPromise: Promise<LinkObjType> = null;
     private channelId?: string;
     private userId?: string;
+    private publicKey?: string;
 
     constructor() {
         this.init();
@@ -28,6 +30,14 @@ class ChatE2EE implements IChatE2EE{
     public setChannel(channelId: string, userId: string): void {
         this.channelId = channelId;
         this.userId = userId;
+    }
+
+    public isEncrypted(): boolean {
+        return !!this.publicKey;
+    }
+
+    public setPublicKey(key: string): void {
+        this.publicKey = key;
     }
 
     public async delete(): Promise<void> {
@@ -48,6 +58,20 @@ class ChatE2EE implements IChatE2EE{
 
     public async getPublicKey(): Promise<IGetPublicKeyReturn> {
         return getPublicKey({ userId: this.userId, channelId: this.channelId });
+    }
+
+    public encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> } {
+        if(!this.publicKey) {
+            throw new Error('Public key is not set, call setPublicKey(key)');
+        }
+
+        const encryptedTextPromise = cryptoUtils.encryptMessage(text, this.publicKey);
+        return ({
+            send: async () => {
+                const encryptedText = await encryptedTextPromise;
+                return this.sendMessage({image, text: encryptedText})
+            }
+        })
     }
 
     private init() {

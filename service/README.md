@@ -46,15 +46,33 @@ userId should be unique, you can `generateUUID()` to generate UUID
 const { publicKey, privateKey } = cryptoUtils.generateKeypairs();
 chatInstance.sharePublicKey({ publicKey });
 const receiverPublicKey = chatInstance.getPublicKey();
+chatInstance.setPublicKey(receiverPublicKey);
 ```
 
-**4. Send message:**  
+**5. Send message:**  
+1 - Custom encryption / No encryption:  
+> Simply call .sendMessage() with encrypted or plain text. 
+```
+chatInstance.sendMessage({ image, message: <message> });
+```
+
+2 - Using cryptoUtils from @chat-e2ee/service  
+> To get keys follow previous step
 ```
 const encryptedMessage = cryptoUtils.encryptMessage(message, publicKey);
-chatInstance.sendMessage({ userId, image, message: encryptedMessage });
+chatInstance.sendMessage({ image, message: encryptedMessage });
 ```
 
-**4. Read message:**  
+3 - Auto encryption by @chat-e2ee/service  
+> @chat-e2ee/service will encrypt message with publicKey before sending to network. To use this, you have to call `.setPublicKey` once you receive the public key at step 2.  
+It will throw if public key is not set.
+
+```
+chatInstance.encrypt({ image, text }).send();
+```
+
+**6. Read message:**  
+> The private key you have received at step 4
 ```
 cryptoUtils.decryptMessage(message, privateKey);
 ```

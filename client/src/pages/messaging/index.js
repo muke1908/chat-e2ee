@@ -46,8 +46,6 @@ const Chat = () => {
 
   
   const myKeyRef = useRef(null);
-  const publicKeyRef = useRef(null);
-
   const notificationTimer = useRef(null);
 
   const { channelID } = useParams();
@@ -87,7 +85,7 @@ const Chat = () => {
       return;
     }
 
-    if (!publicKeyRef.current) {
+    if (!chate2ee.isEncrypted()) {
       alert('No one is in chat!');
       return;
     }
@@ -111,15 +109,12 @@ const Chat = () => {
 
   const handleSend = useCallback(
     async (body, image, index) => {      
-      if(!publicKeyRef.current) {
-        alert('Key not received.')
+      if(!chate2ee.isEncrypted()) {
+        alert('Key not received / No one in chat')
       }
 
-      const { id, timestamp } = await chate2ee.sendMessage({
-        userId,
-        image,
-        text: await cryptoUtils.encryptMessage(body, publicKeyRef.current)
-      });
+      const { id, timestamp } = await chate2ee.encrypt({ image, text: body }).send();
+      
 
       setMessages((prevMsg) => {
         const { ...message } = prevMsg[index];
@@ -150,7 +145,7 @@ const Chat = () => {
     // get alice's publicKey
     if (alice) {
       const key = await chate2ee.getPublicKey();
-      publicKeyRef.current = key.publicKey;
+      chate2ee.setPublicKey(key.publicKey);
       playNotification();
     }
   };
@@ -190,7 +185,7 @@ const Chat = () => {
       // an event to notify that the other person is joined.
       socket.on('on-alice-join', ({ publicKey }) => {
         if (publicKey) {
-          publicKeyRef.current = publicKey;
+          chate2ee.setPublicKey(publicKey);
           playNotification();
         }
         getSetUsers();
@@ -198,7 +193,7 @@ const Chat = () => {
   
       socket.on('on-alice-disconnect', () => {
         console.log('alice disconnected!!');
-        publicKeyRef.current = null;
+        chate2ee.setPublicKey(null);
         playNotification();
 
         getSetUsers();
