@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "concurrently \"webpack\" \"npm run dts\"",
+    "watch": "concurrently \"webpack --watch\"",
     "dts": "../node_modules/typescript/bin/tsc src/public/types.ts --declaration --emitDeclarationOnly --declarationDir ./dist"
   }
 }

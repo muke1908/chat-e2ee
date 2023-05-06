@@ -2,12 +2,7 @@ import storage from '../../../utils/storage';
 export { isEmptyMessage } from './validator';
 export {
   getKeyPairFromCache,
-  createKeyPair,
   storeKeyPair,
-  typedArrayToStr,
-  strToTypedArr,
-  encryptMsg,
-  decryptMsg
 } from './crypto';
 
 export const getUserSessionID = (channelID) => {

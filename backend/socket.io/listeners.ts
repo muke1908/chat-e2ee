@@ -26,8 +26,8 @@ const connectionListener = (socket, io) => {
     socket.channelID = channelID;
     socket.userID = userID;
     // share the public key to the receiver if present
-    const receiver = clients.getSIDByIDs(userID, channelID);
-
+    const receiverId = Object.keys(usersInChannel).find(user => user !== userID);
+    const receiver = receiverId && clients.getSIDByIDs(receiverId, channelID);
     if (receiver) {
       socketEmit<SOCKET_TOPIC.ON_ALICE_JOIN>(SOCKET_TOPIC.ON_ALICE_JOIN, receiver.sid, { publicKey });
     }

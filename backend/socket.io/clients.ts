@@ -34,6 +34,14 @@ class Clients implements ClientRecordInterface{
     return this.clientRecord[channelID] || {};
   }
 
+  getReceiverIDBySenderID(sender: string, channelID: string): string {
+    const usersInChannel = this.getClientsByChannel(channelID);
+    const usersInChannelArr = Object.keys(usersInChannel);
+
+    const receiver = usersInChannelArr.find((u) => u !== sender);
+    return receiver;
+  }
+
   getSIDByIDs(userID: string, channelID: string): UserSidTypes {
     if (!(channelID && userID)) {
       throw new Error("channelID, userID - required param");

@@ -7,12 +7,15 @@ export type LinkObjType = {
     pinCreatedAt:number
 }
 
+export interface ISendMessageReturn { id: string, timestamp: string };
+export interface IGetPublicKeyReturn { publicKey: string};
+
 export interface IChatE2EE {
     getLink(): Promise<LinkObjType>;
-    setChannel(channelId: string): void;
+    setChannel(channelId: string, userId: string): void;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<any>; //fix: return type
-    sendMessage({ userId, image, text }: { userId: string, image: string, text: string }): Promise<any> //fix: return type
-    sharePublicKey({ publicKey, sender }: { publicKey: string, sender: string }): Promise<void>; //fix: return type
-    getPublicKey({ userId }: { userId: string }): Promise<any>; //fix: return type
+    sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
+    sharePublicKey(args: { publicKey: string }): Promise<void>; //fix: return type
+    getPublicKey(): Promise<any>; //fix: return type
 }
