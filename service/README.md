@@ -4,10 +4,15 @@ This is a client-side SDK to interact with chat-e2ee service. It allows dev to b
 
 ### Usage:
 
+`@chat-e2ee/service` exports following modules:  
+ - createChatInstance - Chat ops  
+ - generateUUID - util func to generate UUID  
+ - cryptoUtils - Encryption util  
+
 **1. Import SDK:**  
 > Both users needs to import the sdk.
 ```
-import { createChatInstance } from '@chat-e2ee/service';
+import { createChatInstance, generateUUID, cryptoUtils } from '@chat-e2ee/service';
 const chatInstance = createChatInstance()
 ```
 
@@ -32,10 +37,24 @@ linkDescription contains basic info:
 **3. Set channel:**  
 > Both user1, and user2 needs to setChannel in order to start a chat session. 
 ```
-chatInstance.setChannel(linkDescription.hash);
+chatInstance.setChannel(linkDescription.hash, userId);
+```
+userId should be unique, you can `generateUUID()` to generate UUID  
+
+**4. Exchange keys:**  
+```
+const { publicKey, privateKey } = cryptoUtils.generateKeypairs();
+chatInstance.sharePublicKey({ publicKey });
+const receiverPublicKey = chatInstance.getPublicKey();
 ```
 
-**4. Send message:** 
+**4. Send message:**  
 ```
-chatInstance.sendMessage({ userId, image, text });
+const encryptedMessage = cryptoUtils.encryptMessage(message, publicKey);
+chatInstance.sendMessage({ userId, image, message: encryptedMessage });
+```
+
+**4. Read message:**  
+```
+cryptoUtils.decryptMessage(message, privateKey);
 ```

@@ -6,6 +6,7 @@
       "sourceMap": true,
       "noImplicitAny": false,
       "declaration": false, // generating separately, npm run dts
-      "strictNullChecks": false
+      "strictNullChecks": false,
+      "downlevelIteration": true,
     }
 }

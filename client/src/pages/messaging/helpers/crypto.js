@@ -5,61 +5,21 @@ export const getKeyPairFromCache = (channelID) => {
 
   if (keyPair) {
     return {
-      publicKey: strToTypedArr(keyPair.publicKey),
-      secretKey: strToTypedArr(keyPair.secretKey)
+      publicKey: keyPair.publicKey,
+      privateKey: keyPair.privateKey,
     };
   }
 
   return null;
 };
 
-export const createKeyPair = () => {
-  return window.nacl.box.keyPair();
-};
-
-export const encryptMsg = ({ text, mySecretKey, alicePublicKey }) => {
-  const nonce = window.nacl.randomBytes(24);
-  const box = window.nacl.box(
-    window.nacl.util.decodeUTF8(text),
-    nonce,
-    alicePublicKey,
-    mySecretKey
-  );
-
-  return {
-    box,
-    nonce
-  };
-};
-
-export const decryptMsg = ({ box, nonce, mySecretKey, alicePublicKey }) => {
-  const payload = window.nacl.box.open(box, nonce, alicePublicKey, mySecretKey);
-  const utf8 = window.nacl.util.encodeUTF8(payload);
-  return {
-    msg: utf8
-  };
-};
-
-export const storeKeyPair = (channelID, { publicKey, secretKey }) => {
+export const storeKeyPair = (channelID, { publicKey, privateKey }) => {
   const _keyPair = {
-    publicKey: typedArrayToStr(publicKey),
-    secretKey: typedArrayToStr(secretKey)
+    publicKey,
+    privateKey
   };
   storage.set('session-keyPair', {
     channelID,
     keyPair: _keyPair
   });
-};
-
-export const typedArrayToStr = (typedArray) => {
-  const arr = Array.from // if available
-    ? Array.from(typedArray) // use Array#from
-    : typedArray.map((v) => v); // otherwise map()
-
-  return JSON.stringify(arr);
-};
-
-export const strToTypedArr = (str) => {
-  const arr = JSON.parse(str);
-  return new Uint8Array(arr);;
 };
