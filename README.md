@@ -1,21 +1,13 @@
 ## chat-e2ee
+**Disposable chat session**: this app will allow two mutually agreed users to have a chat in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device. This is not a replacement of your usual chat application.  
+
+The project is still in **development** phase and open for contribution.  
+Demo: https://chat-e2ee-2.azurewebsites.net  
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)
-
-The project is still in **development** phase and open for contribution.
-
-
-Demo: https://chat-e2ee-2.azurewebsites.net
 
 ---
-
-**Disposable chat session**: this app will allow two mutually agreed users to have a chat in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device. This is not a replacement of your usual chat application.
-
-Working prototype: https://chat-e2ee-2.azurewebsites.net
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/muke1908/chat-e2ee)
-
-The project is in **development** phase.   
+  
 
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues)
 
@@ -26,7 +18,7 @@ The project is in **development** phase.
 4. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
 
 :boom: **Spin up your own frontend**: 
- - JS SDK and use chat-e2ee backend as service. [Usage instruction](https://github.com/muke1908/chat-e2ee/tree/service-modularisation/service)
+ - JS SDK and use chat-e2ee backend as service - `@chate2ee/service` [Read Me](https://github.com/muke1908/chat-e2ee/tree/service-modularisation/service)
 
 ---
 
