@@ -2,6 +2,10 @@
 @chat-e2ee/service  
 This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service.
 
+```
+npm i @chat-e2ee/service
+```
+
 ### Usage:
 
 `@chat-e2ee/service` exports following modules:  
@@ -73,6 +77,25 @@ chatInstance.encrypt({ image, text }).send();
 
 **6. Read message:**  
 > The private key you have received at step 4
+listen to incoming messages: 
 ```
-cryptoUtils.decryptMessage(message, privateKey);
+chate2ee.on('chat-message', (msg) => {
+    const msgInPlainText = cryptoUtils.decryptMessage(msg.message, privateKey);
+    console.log(msgInPlainText)
+})
 ```
+
+---
+### Listeners: 
+
+```
+chate2ee.on(events, callback);
+```
+
+**Events:**  
+`on-alice-join` - reveiver joined the link  
+`chat-message` - new message received
+`on-alice-disconnect` - receiver left/disconnected from the link  
+`limit-reached` - 2 users already join a link  
+`delivered` - a message is delivered to receiver  
+  
