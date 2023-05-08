@@ -70,7 +70,7 @@ router.post(
       return res.sendStatus(404);
     }
     // TODO: do not store if already exists
-    await db.insertInDb({ publicKey, sender, channel }, PUBLIC_KEY_COLLECTION);
+    await db.insertInDb({ publicKey, user: sender, channel }, PUBLIC_KEY_COLLECTION);
     return res.send({ status: "ok" });
   })
 );
@@ -85,8 +85,8 @@ router.get(
     if (!valid) {
       return res.sendStatus(404);
     }
-
-    const data = await db.findOneFromDB<GetPublicKeyResponse>({ channel, sender: userId }, PUBLIC_KEY_COLLECTION);
+    const receiverID = clients.getReceiverIDBySenderID(userId as string, channel as string);
+    const data = await db.findOneFromDB<GetPublicKeyResponse>({ channel, user: receiverID }, PUBLIC_KEY_COLLECTION);
     return res.send(data);
   })
 );

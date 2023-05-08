@@ -1,4 +1,4 @@
-import makeRequest from '../utils/makeRequest';
+import makeRequest from './makeRequest';
 
 const deleteLink = async ({ channelID }) => {
   return makeRequest(`/chat-link/${channelID}`, {

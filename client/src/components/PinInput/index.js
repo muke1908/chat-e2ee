@@ -1,24 +1,17 @@
 import React, { useState, useContext } from 'react';
-import { useHistory } from 'react-router-dom';
 import styles from './Style.module.css';
 import Button from '../Button/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
-import getChatLink from '../../service/getChatLink.js';
 
 const LinkDisplay = () => {
-  const history = useHistory();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [darkMode] = useContext(ThemeContext);
+  
   const handlePin = async () => {
     try {
       setError('');
-      const data = await getChatLink(pin);
-      if (!data.link) {
-        setError('Invalid PIN.');
-        return;
-      }
-      history.push(data.link);
+      throw new Error('LinkDisplay.handlePin, Not implemented');
     } catch (err) {
       console.error(err);
       setError('Invalid PIN.');

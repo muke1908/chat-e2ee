@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {  
+      "target": "ES5",    
+      "strict": true,
+      "esModuleInterop": true,
+      "sourceMap": true,
+      "noImplicitAny": false,
+      "declaration": false, // generating separately, npm run dts
+      "strictNullChecks": false,
+      "downlevelIteration": true,
+    }
+}

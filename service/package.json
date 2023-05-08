@@ -1,0 +1,23 @@
+{
+  "name": "@chat-e2ee/service",
+  "version": "1.0.1",
+  "description": "SDK to create realtime messaging with chat-e2ee",
+  "main": "dist/bundle.js",
+  "author": "Mukesh",
+  "license": "ISC",
+  "types": "dist/types.d.ts",
+  "devDependencies": {
+    "ts-loader": "^9.4.2",
+    "webpack": "^5.82.0",
+    "webpack-cli": "^5.0.2",
+    "webpack-remove-debug": "^0.1.0"
+  },
+  "scripts": {
+    "build": "concurrently \"webpack\" \"npm run dts\"",
+    "watch": "concurrently \"webpack --watch\"",
+    "dts": "../node_modules/typescript/bin/tsc src/public/types.ts --declaration --emitDeclarationOnly --declarationDir ./dist"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.6.1"
+  }
+}

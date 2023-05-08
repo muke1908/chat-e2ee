@@ -1,11 +1,14 @@
 import React, { useState, useContext } from 'react';
-import { getLink } from '../../service';
 import Button from '../../components/Button';
 import LinkDisplay from '../../components/LinkDisplay/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
 import styles from './Style.module.css';
 import ThemeToggle from '../../components/ThemeToggle/index.js';
 import PinInput from '../../components/PinInput/index.js';
+
+import { createChatInstance } from '@chat-e2ee/service';
+
+
 
 const App = () => {
   const [chatLink, setChatLink] = useState('');
@@ -19,7 +22,8 @@ const App = () => {
 
     setLoading(true);
     try {
-      const linkResp = await getLink();
+      const chate2ee = createChatInstance();
+      const linkResp = await chate2ee.getLink();
       setChatLink(linkResp);
     } catch (error) {
       console.error(error);

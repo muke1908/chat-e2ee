@@ -1,4 +1,4 @@
-import makeRequest from '../utils/makeRequest';
+import makeRequest from './makeRequest';
 
 const sendMessage = ({ channelID, userId, image, text }) => {
   return makeRequest('chat/message', {
