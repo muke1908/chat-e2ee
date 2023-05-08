@@ -61,10 +61,10 @@ This project includes a light weight frontend UI - bootstrapped with [create-rea
 The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.   
 
 **JS SDK:**  
-`@chat-e2ee/service` - located in `./service` - A SDK that client uses to interact with backend. More info: [Readme](https://github.com/muke1908/chat-e2ee/tree/service-modularisation/service)
+`@chat-e2ee/service` - located in `./service` - A SDK that client uses to interact with backend. More info: [Readme](https://github.com/muke1908/chat-e2ee/tree/master/service)
 
 **Custom frontend**  
-Import `@chat-e2ee/service` SDK in your client project and build your own chat client. Read [https://github.com/muke1908/chat-e2ee/tree/master/service).
+Import `@chat-e2ee/service` SDK in your client project and build your own chat client.
 
 ### Installation
 
