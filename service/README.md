@@ -94,8 +94,29 @@ chate2ee.on(events, callback);
 
 **Events:**  
 `on-alice-join` - reveiver joined the link  
-`chat-message` - new message received
+`chat-message` - new message received  
+```
+chate2ee.on('chat-message', (msg) => {
+    console.log('message received',msg)
+})
+```
+msg object: 
+```
+{
+    channel: string,
+    sender: string,
+    message: string,
+    id: number,
+    timestamp: number,
+    image?: string
+}
+```
 `on-alice-disconnect` - receiver left/disconnected from the link  
 `limit-reached` - 2 users already join a link  
-`delivered` - a message is delivered to receiver  
+`delivered` - a message is delivered to receiver  callback returns the ID of the message that's delivered.  
+```
+chate2ee.on('delivered', (id) => {
+    console.log('delivered',id)
+})
+```
   
