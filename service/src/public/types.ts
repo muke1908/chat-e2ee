@@ -13,11 +13,11 @@ export interface IGetPublicKeyReturn { publicKey: string};
 export interface IChatE2EE {
     isEncrypted(): boolean;
     getLink(): Promise<LinkObjType>;
-    setChannel(channelId: string, userId: string): void;
+    setChannel(channelId: string, userId: string, publicKey: string): void;
     setPublicKey(key: string): void;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<any>; //fix: return type
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
-    sharePublicKey(args: { publicKey: string }): Promise<void>; //fix: return type
     getPublicKey(): Promise<any>; //fix: return type
+    dispose(): void;
 }

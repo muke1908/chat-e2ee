@@ -33,21 +33,21 @@ linkDescription contains basic info:
     pinCreatedAt: number;
 }
 ```
-
-**3. Set channel:**  
-> Both user1, and user2 needs to setChannel in order to start a chat session. 
-```
-chatInstance.setChannel(linkDescription.hash, userId);
-```
-userId should be unique, you can `generateUUID()` to generate UUID  
-
-**4. Exchange keys:**  
+**4. Set encryption key:**  
+> Receiver will use sender's public key to encrypt message. Only sender can decrypt the message using sender's private key.  
 ```
 const { publicKey, privateKey } = cryptoUtils.generateKeypairs();
-chatInstance.sharePublicKey({ publicKey });
+
 const receiverPublicKey = chatInstance.getPublicKey();
 chatInstance.setPublicKey(receiverPublicKey);
 ```
+
+**3. Set channel:**  
+> Both user1, and user2 needs to setChannel in order to start a chat session. Get your publicKey from step 1.  
+```
+chatInstance.setChannel(linkDescription.hash, userId, publickKey);
+```
+userId should be unique, you can `generateUUID()` to generate UUID  
 
 **5. Send message:**  
 1 - Custom encryption / No encryption:  

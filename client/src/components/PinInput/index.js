@@ -1,11 +1,9 @@
 import React, { useState, useContext } from 'react';
-import { useHistory } from 'react-router-dom';
 import styles from './Style.module.css';
 import Button from '../Button/index.js';
 import { ThemeContext } from '../../ThemeContext.js';
 
 const LinkDisplay = () => {
-  const history = useHistory();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [darkMode] = useContext(ThemeContext);

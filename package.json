@@ -4,18 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run client\" \"npm run server\"",
+    "dev": "concurrently \"npm run client\" \"npm run server\"  \"npm run watch-sdk\"",
     "build-client": "cd client && npm run build",
     "build": "tsc && npm run build-client",
     "client": "cd client && npm start",
     "server": "cross-env NODE_ENV=development nodemon --watch \"./**\" --ext \"ts,json\" --ignore \"./client\" --ignore \"./service\" --exec \"ts-node index.ts\"",
-    "watch-sdk":  "cd service && npm run watch",
+    "watch-sdk": "cd service && npm run watch",
     "serve": "node ./dist/index",
     "test": "cross-env NODE_ENV=test jest",
     "start": "cross-env NODE_ENV=production npm run serve",
     "postinstall": "npm run build-service-sdk && cd client && npm install",
     "docker_start": "cross-env NODE_ENV=production node index",
-    "build-service-sdk": "cd service && npm run build"
+    "build-service-sdk": "cd service && npm install && npm run build"
   },
   "author": "",
   "license": "ISC",
@@ -29,7 +29,6 @@
     "node-fetch": "^2.6.7",
     "react-bootstrap": "^1.5.2",
     "socket.io": "^4.5.4",
-    "socket.io-client": "^2.3.0",
     "ts-node": "^10.9.1",
     "typescript": "5.0.4",
     "uuid": "^8.2.0"

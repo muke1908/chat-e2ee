@@ -35,13 +35,13 @@ For installation instruction, go to [developer section](https://github.com/muke1
 
 1. Alice and Bob generate a public and private key pair.
 2. Alice and Bob share their public keys with each other.
-3. Alice encrypts her message with her private key and Bob's public key and sends it to Bob.
-4. Bob receives the encrypted message and decrypts it with his private key and Alice's public key.
+3. Alice encrypts her message with Bob's public key and sends it to Bob.
+4. Bob receives the encrypted message and decrypts it with his private key.
 
-In this way, no one else can decrypt the message because your private key is never exposed to the internet.
+In this way, no one else can decrypt the message because your private key is never exposed/shared to the internet.
 More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 
-> We are using NaCL & [TweetNaCL.js](https://github.com/dchest/tweetnacl-js/) library for asymmetric encryption. The NaCL project is being lead by [Daniel J.Bernstein](http://cr.yp.to/djb.html), one of the most prominent Computer Scientists of our era.
+> We are using browser [window.crypto library](https://developer.mozilla.org/en-US/docs/Web/API/crypto_property)  for encryption.  
 
 ---
 

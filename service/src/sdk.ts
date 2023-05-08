@@ -5,11 +5,18 @@ import sendMessage from './sendMessage';
 import { sharePublicKey, getPublicKey} from './publicKey';
 import { IChatE2EE, IGetPublicKeyReturn, ISendMessageReturn, LinkObjType } from './public/types';
 import { cryptoUtils } from './crypto';
+import { SocketInstance, SOCKET_LISTENERS, SubscriptionContextType } from './socket/socket';
 export { cryptoUtils } from './crypto';
 
 
 export const createChatInstance = (): IChatE2EE => {
     return new ChatE2EE();
+}
+
+export type chatJoinPayloadType = {
+    channelID: string,
+    userID: string,
+    publicKey: string
 }
 
 class ChatE2EE implements IChatE2EE{
@@ -18,17 +25,27 @@ class ChatE2EE implements IChatE2EE{
     private userId?: string;
     private publicKey?: string;
 
+    private subscriptions = new Map();
+    private socket: SocketInstance;
     constructor() {
         this.init();
+        const subscriptionContext: SubscriptionContextType = () => this.subscriptions;
+        this.socket = new SocketInstance(subscriptionContext);
     }
 
     public async getLink(): Promise<LinkObjType> {
         return this.linkObjPromise;
     }
 
-    public setChannel(channelId: string, userId: string): void {
+    public async setChannel(channelId: string, userId: string, publicKey: string): Promise<void> {
         this.channelId = channelId;
         this.userId = userId;
+        if(publicKey !== this.publicKey) {
+            console.log("Public key changed");
+            await sharePublicKey({ publicKey, sender: this.userId, channelId: this.channelId });
+        }
+        this.socket.joinChat({ publicKey, userID: this.userId, channelID: this.channelId })
+        return;
     }
 
     public isEncrypted(): boolean {
@@ -51,10 +68,6 @@ class ChatE2EE implements IChatE2EE{
         return sendMessage({ channelID: this.channelId, userId: this.userId, image, text })
     }
 
-    public async sharePublicKey({ publicKey }) {
-        return sharePublicKey({ publicKey, sender: this.userId, channelId: this.channelId });
-    }
-
     public async getPublicKey(): Promise<IGetPublicKeyReturn> {
         return getPublicKey({ userId: this.userId, channelId: this.channelId });
     }
@@ -71,6 +84,25 @@ class ChatE2EE implements IChatE2EE{
                 return this.sendMessage({image, text: encryptedText})
             }
         })
+    }
+
+    public on(listener: SOCKET_LISTENERS, callback) {
+        const sub = this.subscriptions.get(listener);
+        if(sub) {
+            if(sub.has(callback)) {
+                console.warn('Skpping, sub already exists');
+                return;
+            }
+
+            sub.add(callback);
+        }else {
+            this.subscriptions.set(listener, new Set([callback]));
+        }
+    }
+
+    public dispose(): void {
+        this.socket.dispose();
+        this.subscriptions.clear();
     }
 
     private init() {

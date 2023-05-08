@@ -1,20 +1,13 @@
 import React, { useCallback, useEffect, useState, useRef, useContext } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
-import socketIOClient from 'socket.io-client';
 
 import { createChatInstance, generateUUID, cryptoUtils } from '@chat-e2ee/service';
 
 import {
   getUserSessionID,
-  createUserSessionID,
   storeUserSessionID,
   getKeyPairFromCache,
-  createKeyPair,
   storeKeyPair,
-  typedArrayToStr,
-  strToTypedArr,
-  encryptMsg,
-  decryptMsg,
   isEmptyMessage
 } from './helpers';
 
@@ -44,14 +37,16 @@ const Chat = () => {
   const [linkActive, setLinkActive] = useState(true);
   const history = useHistory();
 
-  
+
   const myKeyRef = useRef(null);
   const notificationTimer = useRef(null);
 
   const { channelID } = useParams();
-  storeUserSessionID(channelID, userId);
 
-  chate2ee.setChannel(channelID, userId);
+  useEffect(() => {
+    storeUserSessionID(channelID, userId);
+  }, [ channelID ]);
+
 
   const playNotification = () => {
     setNotificationState(true);
@@ -68,13 +63,10 @@ const Chat = () => {
       storeKeyPair(channelID, _keyPair);
 
       // share public key
-      console.log('%cSharing public key.', 'color:red; font-size:16px');
-      await chate2ee.sharePublicKey({
-        publicKey: _keyPair.publicKey
-      });
+      console.log('%New public key generated', 'color:red; font-size:16px');
     }
-
     myKeyRef.current = _keyPair;
+    chate2ee.setChannel(channelID, userId, _keyPair.publicKey);
   };
 
   const handleSubmit = (e) => {
@@ -108,13 +100,13 @@ const Chat = () => {
   };
 
   const handleSend = useCallback(
-    async (body, image, index) => {      
-      if(!chate2ee.isEncrypted()) {
-        alert('Key not received / No one in chat')
+    async (body, image, index) => {
+      if (!chate2ee.isEncrypted()) {
+        alert('Key not received / No one in chat');
       }
 
       const { id, timestamp } = await chate2ee.encrypt({ image, text: body }).send();
-      
+
 
       setMessages((prevMsg) => {
         const { ...message } = prevMsg[index];
@@ -125,7 +117,7 @@ const Chat = () => {
         return [...prevMsg];
       });
     },
-    [userId]
+    []
   );
 
   const getSetUsers = async () => {
@@ -161,16 +153,9 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    const socket = socketIOClient(`/`);
     // this is update the public key ref
     initPublicKey(channelID).then(() => {
-
-      socket.emit('chat-join', {
-        channelID,
-        userID: userId,
-        publicKey: myKeyRef.current.publicKey
-      });
-      socket.on('limit-reached', () => {
+      chate2ee.on('limit-reached', () => {
         setMessages((prevMsg) =>
           prevMsg.concat({
             image: '',
@@ -179,29 +164,29 @@ const Chat = () => {
           })
         );
       });
-      socket.on('delivered', (id) => {
+      chate2ee.on('delivered', (id) => {
         setDeliveredID((prev) => [...prev, id]);
       });
       // an event to notify that the other person is joined.
-      socket.on('on-alice-join', ({ publicKey }) => {
+      chate2ee.on('on-alice-join', ({ publicKey }) => {
         if (publicKey) {
           chate2ee.setPublicKey(publicKey);
           playNotification();
         }
         getSetUsers();
       });
-  
-      socket.on('on-alice-disconnect', () => {
+
+      chate2ee.on('on-alice-disconnect', () => {
         console.log('alice disconnected!!');
         chate2ee.setPublicKey(null);
         playNotification();
 
         getSetUsers();
       });
-  
+
 
       //handle incoming message
-      socket.on('chat-message', async (msg) => {
+      chate2ee.on('chat-message', async (msg) => {
         try {
           const message = await cryptoUtils.decryptMessage(msg.message, myKeyRef.current.privateKey);
           setMessages((prevMsg) =>
@@ -213,7 +198,6 @@ const Chat = () => {
               timestamp: msg.timestamp
             })
           );
-          socket.emit('received', { channel: msg.channel, sender: msg.sender, id: msg.id });
         } catch (err) {
           console.error(err);
         }
@@ -222,7 +206,7 @@ const Chat = () => {
       getSetUsers();
       initChat();
     });
-    return () => socket.disconnect();
+    return () => chate2ee.dispose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelID]);
 

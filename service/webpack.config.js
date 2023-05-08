@@ -16,6 +16,10 @@ module.exports = {
         use: 'ts-loader', // use ts-loader to transpile TypeScript to JavaScript
         exclude: /node_modules/,
       },
+      {
+        test: /\.js$/,
+        loader: "webpack-remove-debug", // remove "debug" package
+      }
     ],
   },
   resolve: {
