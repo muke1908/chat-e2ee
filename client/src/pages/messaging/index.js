@@ -63,7 +63,7 @@ const Chat = () => {
       storeKeyPair(channelID, _keyPair);
 
       // share public key
-      console.log('%New public key generated', 'color:red; font-size:16px');
+      console.log('New public key generated');
     }
     myKeyRef.current = _keyPair;
     chate2ee.setChannel(channelID, userId, _keyPair.publicKey);
