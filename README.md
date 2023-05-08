@@ -18,7 +18,7 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 4. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
 
 :boom: **Spin up your own frontend**: 
- - JS SDK and use chat-e2ee backend as service - `@chate2ee/service` [Read Me](https://github.com/muke1908/chat-e2ee/tree/service-modularisation/service)
+ - JS SDK and use chat-e2ee backend as service - `@chate2ee/service` [Read Documentation](https://github.com/muke1908/chat-e2ee/tree/master/service)
 
 ---
 
@@ -54,14 +54,17 @@ More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 ### :computer:	 For developers
 ![Open Source Love](https://img.shields.io/badge/Open%20Source-with%20love-CRIMSON.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/muke1908/chat-e2ee) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=muke1908_chat-e2ee) [![Gitter](https://badges.gitter.im/chat-e2ee/community.svg)](https://gitter.im/chat-e2ee/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-FE: This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
-BE: The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.  
+**Frontend (UI):**  
+This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
+
+**Backend:**  
+The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.   
+
+**JS SDK:**  
 `@chat-e2ee/service` - located in `./service` - A SDK that client uses to interact with backend. More info: [Readme](https://github.com/muke1908/chat-e2ee/tree/service-modularisation/service)
 
-Note: If you make a change in `./service`, in order to reflect changes in client please run `npm run build-service-sdk` in root.  
-
-**Spin up your own client**  
-Import `@chat-e2ee/service` SDK in your client project and build your own chat client. Read [Usage instruction](https://github.com/muke1908/chat-e2ee/tree/service-modularisation/service).
+**Custom frontend**  
+Import `@chat-e2ee/service` SDK in your client project and build your own chat client. Read [https://github.com/muke1908/chat-e2ee/tree/master/service).
 
 ### Installation
 
