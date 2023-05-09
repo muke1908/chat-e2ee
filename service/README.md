@@ -1,7 +1,8 @@
 # SDK
-[![npm version](https://badge.fury.io/js/@chat-e2ee%2Fservice.svg)](https://badge.fury.io/js/@chat-e2ee%2Fservice)  
-This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service.
+This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service.  
 
+[![npm version](https://img.shields.io/npm/v/@chat-e2ee/service.svg)](https://www.npmjs.com/package/@chat-e2ee/service)
+  [![size](https://img.shields.io/bundlephobia/minzip/@chat-e2ee/service.svg)](https://bundlephobia.com/package/@chat-e2ee/service)
 ```
 npm i @chat-e2ee/service
 ```
