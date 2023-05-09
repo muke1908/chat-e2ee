@@ -22,7 +22,7 @@ export class SocketInstance {
         this.socket.on(SOCKET_LISTENERS.ON_ALICE_DISCONNECT, (...args) => this.handler(SOCKET_LISTENERS.ON_ALICE_DISCONNECT, args));
         this.socket.on(SOCKET_LISTENERS.CHAT_MESSAGE, (...args) => {
             this.handler(SOCKET_LISTENERS.CHAT_MESSAGE, args);
-            this.markDelivered(args[0]); 
+            this.markDelivered(args[0]);
         });
         logger.log('Initiialized');
     }
