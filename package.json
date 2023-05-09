@@ -16,7 +16,7 @@
     "postinstall": "npm run build-service-sdk && cd client && npm install",
     "docker_start": "cross-env NODE_ENV=production node index",
     "build-service-sdk": "cd service && npm install && npm run build",
-    "publish-sdk": "cd service && npm run publish"
+    "publish-sdk": "cd service && npm run publish-sdk"
   },
   "author": "",
   "license": "ISC",

@@ -21,3 +21,15 @@ export interface IChatE2EE {
     getPublicKey(): Promise<any>; //fix: return type
     dispose(): void;
 }
+
+export interface ICryptoUtils {
+    generateKeypairs(): Promise<{privateKey: string, publicKey: string}>,
+    encryptMessage(plaintext: string, publicKey: string): Promise<string>,
+    decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
+}
+
+export declare const createChatInstance: () => IChatE2EE;
+export declare const generateUUID: () => string;
+export declare const cryptoUtils: () => IChatE2EE;
+
+
