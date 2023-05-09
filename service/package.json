@@ -1,6 +1,6 @@
 {
   "name": "@chat-e2ee/service",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "SDK to create realtime messaging with chat-e2ee",
   "main": "dist/bundle.js",
   "author": "Mukesh",
@@ -13,7 +13,7 @@
     "webpack-remove-debug": "^0.1.0"
   },
   "scripts": {
-    "build": "concurrently \"webpack\" \"npm run dts\"",
+    "build": "concurrently \"webpack --mode production\" \"npm run dts\"",
     "watch": "webpack --watch",
     "dts": "../node_modules/typescript/bin/tsc src/public/types.ts --declaration --emitDeclarationOnly --declarationDir ./dist",
     "publish-sdk": "npm publish"
