@@ -30,6 +30,6 @@ export interface ICryptoUtils {
 
 export declare const createChatInstance: () => IChatE2EE;
 export declare const generateUUID: () => string;
-export declare const cryptoUtils: () => IChatE2EE;
+export declare const cryptoUtils: () => ICryptoUtils;
 
 
