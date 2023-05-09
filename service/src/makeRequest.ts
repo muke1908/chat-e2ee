@@ -4,7 +4,7 @@ type CustomError = Error & {
 const BASE_URI = process.env.NODE_ENV === "production" ?  'https://chat-e2ee-2.azurewebsites.net' : '';
 
 const makeRequest = async (url: string, { method = 'GET', body }: { method: string, body?: any }) => {
-  const res = await fetch(`${BASE_URI}/api/${url}`, {
+  const res = await window.fetch(`${BASE_URI}/api/${url}`, {
     method,
     headers: {
       'Content-Type': 'application/json'
