@@ -1,5 +1,5 @@
 # SDK
-@chat-e2ee/service  
+[![npm version](https://badge.fury.io/js/@chat-e2ee%2Fservice.svg)](https://badge.fury.io/js/@chat-e2ee%2Fservice)  
 This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service.
 
 ```
