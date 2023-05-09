@@ -8,7 +8,8 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'), // path to the output directory
     libraryTarget: 'umd',
     clean: true,
-    library: 'chatE2E'
+    library: 'chatE2E',
+    globalObject: 'this'
   },
   module: {
     rules: [
