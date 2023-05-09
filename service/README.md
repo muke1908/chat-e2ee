@@ -14,14 +14,52 @@ npm i @chat-e2ee/service
  - generateUUID - util func to generate UUID  
  - cryptoUtils - Encryption util  
 
-**1. Import SDK:**  
-> Both users needs to import the sdk.
+### Example:  
+Import the SDK.
 ```
 import { createChatInstance, generateUUID, cryptoUtils } from '@chat-e2ee/service';
-const chatInstance = createChatInstance()
+const chatInstance = createChatInstance();
 ```
 
-**2. Create a link:**  
+
+First you have to set up a channel. To setup a channel you need to generate a hash, userid, and your publickey. 
+
+```
+cosnt { publicKey, privateKey } = cryptoUtils.generateKeypairs();
+const userId = generateUUID();
+const { hash } = await chatInstance.getLink();
+
+chatInstance.setChannel(hash, userId, publickKey);
+```
+Once you setup channel, user2 can join the channel by passing same hash to setChannel. But different userid and publickey.
+When user2 joins the channel you can request user2's publicKey. 
+
+```
+const receiverPublicKey = await chatInstance.getPublicKey();
+receiverPublicKey && chatInstance.setPublicKey(receiverPublicKey);
+
+// set listener
+chatInstance.on('on-alice-join', async () => {
+    const receiverPublicKey = await chatInstance.getPublicKey();
+    chatInstance.setPublicKey(receiverPublicKey);
+});
+```
+Now you are ready to send message. 
+```
+await chatInstance.encrypt('some message').send();
+```
+
+Setup listener to receive message from user2
+```
+chatInstance.on('chat-message', async () => {
+    const msgInPlainText = await cryptoUtils.decryptMessage(msg.message, privateKey);
+    console.log(msgInPlainText);
+});
+```
+
+---
+
+**chatInstance.getLink():**  
 > One user needs to create a link and share it with other user.  
 Each instance is unique to each link. To create a separate link, another instance needs to be created.
 ```
@@ -38,23 +76,8 @@ linkDescription contains basic info:
     pinCreatedAt: number;
 }
 ```
-**4. Set encryption key:**  
-> Receiver will use sender's public key to encrypt message. Only sender can decrypt the message using sender's private key.  
-```
-const { publicKey, privateKey } = cryptoUtils.generateKeypairs();
 
-const receiverPublicKey = chatInstance.getPublicKey();
-chatInstance.setPublicKey(receiverPublicKey);
-```
-
-**3. Set channel:**  
-> Both user1, and user2 needs to setChannel in order to start a chat session. Get your publicKey from step 1.  
-```
-chatInstance.setChannel(linkDescription.hash, userId, publickKey);
-```
-userId should be unique, you can `generateUUID()` to generate UUID  
-
-**5. Send message:**  
+**Send message:**  
 1 - Custom encryption / No encryption:  
 > Simply call .sendMessage() with encrypted or plain text. 
 ```
@@ -74,16 +97,6 @@ It will throw if public key is not set.
 
 ```
 chatInstance.encrypt({ image, text }).send();
-```
-
-**6. Read message:**  
-> The private key you have received at step 4
-listen to incoming messages: 
-```
-chate2ee.on('chat-message', (msg) => {
-    const msgInPlainText = cryptoUtils.decryptMessage(msg.message, privateKey);
-    console.log(msgInPlainText)
-})
 ```
 
 ---
