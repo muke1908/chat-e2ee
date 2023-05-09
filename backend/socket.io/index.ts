@@ -15,7 +15,7 @@ export enum SOCKET_TOPIC {
 type emitDataTypes = {
   [SOCKET_TOPIC.CHAT_MESSAGE]: ChatMessageType,
   [SOCKET_TOPIC.LIMIT_REACHED]: null,
-  [SOCKET_TOPIC.DELIVERED]: null,
+  [SOCKET_TOPIC.DELIVERED]: string,
   [SOCKET_TOPIC.ON_ALICE_DISCONNECTED]: null,
   [SOCKET_TOPIC.ON_ALICE_JOIN]: {
     publicKey: string

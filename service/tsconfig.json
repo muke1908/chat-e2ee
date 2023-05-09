@@ -8,5 +8,6 @@
       "declaration": false, // generating separately, npm run dts
       "strictNullChecks": false,
       "downlevelIteration": true,
+      "lib": ["es5", "es6", "dom"],
     }
 }

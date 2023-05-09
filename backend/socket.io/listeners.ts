@@ -35,7 +35,7 @@ const connectionListener = (socket, io) => {
 
   socket.on("received", ({ channel, sender, id }) => {
     const { sid } = clients.getSIDByIDs(sender, channel);
-    socketEmit<SOCKET_TOPIC.DELIVERED>(SOCKET_TOPIC.DELIVERED, sid, null);
+    socketEmit<SOCKET_TOPIC.DELIVERED>(SOCKET_TOPIC.DELIVERED, sid, id);
   });
 
   socket.on("disconnect", () => {
