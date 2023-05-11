@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  mode: 'development', // set to 'development' for a development build
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development', // set to 'development' for a development build
   entry: './src/sdk.ts', // entry point of your TypeScript code
   output: {
     filename: 'bundle.js', // name of the output file

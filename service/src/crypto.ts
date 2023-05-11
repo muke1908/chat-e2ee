@@ -1,3 +1,5 @@
+import { ICryptoUtils } from "./public/types";
+
 // Generate an RSA key pair
 async function generateRSAKeyPair(): Promise<CryptoKeyPair> {
     const modulusLength = 2048;
@@ -39,7 +41,7 @@ async function decryptMessage(ciphertext: ArrayBuffer, privateKey: CryptoKey): P
     return plaintext;
 }
 
-export const cryptoUtils = {
+export const cryptoUtils: ICryptoUtils = {
     generateKeypairs: async (): Promise<{privateKey: string, publicKey: string}> => {
         const { privateKey, publicKey } = await generateRSAKeyPair();
         return {
@@ -57,11 +59,12 @@ export const cryptoUtils = {
         return decryptMessage(strToTypedArr(ciphertext), privateCryptoKey)
     },
 }
-export const exportKey = async (key: CryptoKey): Promise<string> => {
+
+const exportKey = async (key: CryptoKey): Promise<string> => {
     return JSON.stringify(await window.crypto.subtle.exportKey('jwk', key));
 }
 
-export const importKey = async (key: string, usage: 'encrypt' | 'decrypt'): Promise<CryptoKey> => {
+const importKey = async (key: string, usage: 'encrypt' | 'decrypt'): Promise<CryptoKey> => {
     return window.crypto.subtle.importKey(
         'jwk',
         JSON.parse(key),
