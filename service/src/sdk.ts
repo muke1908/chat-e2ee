@@ -10,7 +10,10 @@ import { Logger } from './utils/logger';
 
 export { cryptoUtils } from './crypto';
 
-let chate2eeConfig = {};
+let chate2eeConfig: {
+   apiURL: string | null,
+   socketURL: string | null
+} = {};
 export const setConfig = (apiURL, socketURL) => {
      chate2eeConfig = { apiURL, socketURL }
 }
