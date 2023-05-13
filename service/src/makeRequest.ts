@@ -1,9 +1,12 @@
+import { configContext } from "./sdk";
+
 type CustomError = Error & {
   status: number
 }
-const BASE_URI = process.env.NODE_ENV === "production" ?  'https://chat-e2ee-2.azurewebsites.net' : '';
 
 const makeRequest = async (url: string, { method = 'GET', body }: { method: string, body?: any }) => {
+  const { apiURL }  = configContext();
+  const BASE_URI = apiURL || (process.env.NODE_ENV === "production" ?  'https://chat-e2ee-2.azurewebsites.net' : '');
   const res = await window.fetch(`${BASE_URI}/api/${url}`, {
     method,
     headers: {
