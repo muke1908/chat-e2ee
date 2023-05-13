@@ -13,7 +13,10 @@ export { cryptoUtils } from './crypto';
 let chate2eeConfig: {
    apiURL: string | null,
    socketURL: string | null
-} = {};
+} = {
+   apiURL: null,
+   socketURL: null
+};
 export const setConfig = (apiURL, socketURL) => {
      chate2eeConfig = { apiURL, socketURL }
 }
