@@ -5,7 +5,7 @@ type CustomError = Error & {
 }
 
 const makeRequest = async (url: string, { method = 'GET', body }: { method: string, body?: any }) => {
-  const apiURL  = configContext();
+  const { apiURL }  = configContext();
   const BASE_URI = apiURL || (process.env.NODE_ENV === "production" ?  'https://chat-e2ee-2.azurewebsites.net' : '');
   const res = await window.fetch(`${BASE_URI}/api/${url}`, {
     method,
