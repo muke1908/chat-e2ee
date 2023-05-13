@@ -1,13 +1,17 @@
-import { configContext } from "./sdk";
+import { configContext } from "./configContext";
 
 type CustomError = Error & {
   status: number
 }
 
+const getBaseURL = (): string => {
+  const { apiURL } = configContext();
+  const BASE_URI = apiURL || (process.env.NODE_ENV === "production" ? 'https://chat-e2ee-2.azurewebsites.net' : '');
+  return BASE_URI;
+}
+
 const makeRequest = async (url: string, { method = 'GET', body }: { method: string, body?: any }) => {
-  const { apiURL }  = configContext();
-  const BASE_URI = apiURL || (process.env.NODE_ENV === "production" ?  'https://chat-e2ee-2.azurewebsites.net' : '');
-  const res = await window.fetch(`${BASE_URI}/api/${url}`, {
+  const res = await window.fetch(`${getBaseURL()}/api/${url}`, {
     method,
     headers: {
       'Content-Type': 'application/json'

@@ -2,26 +2,14 @@ import getLink from './getLink';
 import deleteLink from './deleteLink';
 import getUsersInChannel from './getUsersInChannel';
 import sendMessage from './sendMessage';
-import { sharePublicKey, getPublicKey} from './publicKey';
+import { sharePublicKey, getPublicKey } from './publicKey';
 import { IChatE2EE, IGetPublicKeyReturn, ISendMessageReturn, LinkObjType } from './public/types';
 import { cryptoUtils } from './crypto';
 import { SocketInstance, SOCKET_LISTENERS, SubscriptionContextType } from './socket/socket';
 import { Logger } from './utils/logger';
 
 export { cryptoUtils } from './crypto';
-
-let chate2eeConfig: {
-   apiURL: string | null,
-   socketURL: string | null
-} = {
-   apiURL: null,
-   socketURL: null
-};
-export const setConfig = (apiURL, socketURL) => {
-     chate2eeConfig = { apiURL, socketURL }
-}
-
-export const configContext = () => chate2eeConfig;
+export { setConfig } from './configContext';
 
 const logger = new Logger();
 export const createChatInstance = (): IChatE2EE => {
@@ -35,7 +23,7 @@ export type chatJoinPayloadType = {
     publicKey: string
 }
 
-class ChatE2EE implements IChatE2EE{
+class ChatE2EE implements IChatE2EE {
     private linkObjPromise: Promise<LinkObjType> = null;
     private channelId?: string;
     private userId?: string;
@@ -56,10 +44,10 @@ class ChatE2EE implements IChatE2EE{
     }
 
     public async setChannel(channelId: string, userId: string, publicKey: string): Promise<void> {
-        logger.log(`setChannel(), ${JSON.stringify({channelId, userId })}, publicKey removed from log`);
+        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId })}, publicKey removed from log`);
         this.channelId = channelId;
         this.userId = userId;
-        if(publicKey !== this.publicKey) {
+        if (publicKey !== this.publicKey) {
             logger.log("Public key changed");
             await sharePublicKey({ publicKey, sender: this.userId, channelId: this.channelId });
         }
@@ -72,7 +60,7 @@ class ChatE2EE implements IChatE2EE{
         return !!this.publicKey;
     }
 
-    public setPublicKey(key: string): void {        
+    public setPublicKey(key: string): void {
         logger.log(`setPublicKey()`);
         this.publicKey = key;
     }
@@ -97,9 +85,9 @@ class ChatE2EE implements IChatE2EE{
         return getPublicKey({ userId: this.userId, channelId: this.channelId });
     }
 
-    public encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> } {        
+    public encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> } {
         logger.log(`encrypt()`);
-        if(!this.publicKey) {
+        if (!this.publicKey) {
             throw new Error('Public key is not set, call setPublicKey(key)');
         }
 
@@ -107,21 +95,21 @@ class ChatE2EE implements IChatE2EE{
         return ({
             send: async () => {
                 const encryptedText = await encryptedTextPromise;
-                return this.sendMessage({image, text: encryptedText})
+                return this.sendMessage({ image, text: encryptedText })
             }
         })
     }
 
     public on(listener: SOCKET_LISTENERS, callback) {
         const sub = this.subscriptions.get(listener);
-        if(sub) {
-            if(sub.has(callback)) {
+        if (sub) {
+            if (sub.has(callback)) {
                 logger.log(`Skpping, subscription: ${listener}`);
                 return;
             }
             logger.log(`Subscription added: ${listener}`);
             sub.add(callback);
-        }else {
+        } else {
             logger.log(`Subscription added: ${listener}`);
             this.subscriptions.set(listener, new Set([callback]));
         }
@@ -140,16 +128,15 @@ class ChatE2EE implements IChatE2EE{
 
 export const generateUUID = () => {
     let uuid = '', i, random;
-  
+
     // generate random hexadecimal digits and concatenate them
     for (i = 0; i < 32; i++) {
-      random = Math.random() * 16 | 0;
-      if (i === 8 || i === 12 || i === 16 || i === 20) {
-        uuid += '-';
-      }
-      uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
+        random = Math.random() * 16 | 0;
+        if (i === 8 || i === 12 || i === 16 || i === 20) {
+            uuid += '-';
+        }
+        uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
     }
-  
+
     return uuid;
 }
-  

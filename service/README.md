@@ -13,11 +13,14 @@ npm i @chat-e2ee/service
  - createChatInstance - Chat ops  
  - generateUUID - util func to generate UUID  
  - cryptoUtils - Encryption util  
+ - setConfig - set URLs i.e. API endpoints
+
+`@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use custom server, use setConfig({ apiURL, socketURL });
 
 ### Example:  
 Import the SDK.
 ```
-import { createChatInstance, generateUUID, cryptoUtils } from '@chat-e2ee/service';
+import { createChatInstance, generateUUID, cryptoUtils, setConfig } from '@chat-e2ee/service';
 const chatInstance = createChatInstance();
 ```
 
