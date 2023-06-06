@@ -24,7 +24,7 @@ export class SocketInstance {
 
     private eventHandlerLogger = this.logger.createChild('eventHandlerLogger');
     constructor(private subscriptionContext: SubscriptionContextType, private logger: Logger) {
-        this.socket = socketIOClient(`${getBaseURL}/`);
+        this.socket = socketIOClient(`${getBaseURL()}/`);
         this.socket.on(SOCKET_LISTENERS.LIMIT_REACHED, (...args) => this.handler(SOCKET_LISTENERS.LIMIT_REACHED, args));
         this.socket.on(SOCKET_LISTENERS.DELIVERED, (...args) => this.handler(SOCKET_LISTENERS.DELIVERED, args));
         this.socket.on(SOCKET_LISTENERS.ON_ALICE_JOIN, (...args) => this.handler(SOCKET_LISTENERS.ON_ALICE_JOIN, args));
