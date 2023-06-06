@@ -1,5 +1,5 @@
 # SDK
-This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service.  
+This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service. It uses [socket.io](https://socket.io/) for websocket connection.    
 
 [![npm version](https://img.shields.io/npm/v/@chat-e2ee/service.svg)](https://www.npmjs.com/package/@chat-e2ee/service)
   [![size](https://img.shields.io/bundlephobia/minzip/@chat-e2ee/service.svg)](https://bundlephobia.com/package/@chat-e2ee/service)
@@ -29,7 +29,7 @@ First you have to set up a channel. To setup a channel you need to generate a ha
 
 ```
 cosnt { publicKey, privateKey } = cryptoUtils.generateKeypairs();
-const userId = generateUUID();
+const userId = generateUUID(); // you can use your own user id.
 const { hash } = await chatInstance.getLink();
 
 chatInstance.setChannel(hash, userId, publickKey);
@@ -38,7 +38,7 @@ Once you setup channel, user2 can join the channel by passing same hash to setCh
 When user2 joins the channel you can request user2's publicKey. 
 
 ```
-const receiverPublicKey = await chatInstance.getPublicKey();
+const receiverPublicKey = await chatInstance.getPublicKey();  
 receiverPublicKey && chatInstance.setPublicKey(receiverPublicKey);
 
 // set listener
@@ -103,7 +103,7 @@ chatInstance.encrypt({ image, text }).send();
 ```
 
 ---
-### Listeners: 
+### Event listeners: 
 
 ```
 chate2ee.on(events, callback);
@@ -137,3 +137,10 @@ chate2ee.on('delivered', (id) => {
 })
 ```
   
+
+---
+### Debugging: 
+Open browser console and filter you logs by @chat-e2ee/service  
+
+<img width="722" alt="Screenshot 2023-06-06 at 10 11 49" src="https://github.com/muke1908/chat-e2ee/assets/20297989/78a6b894-0ffa-45d3-a572-417e92494d93">
+
