@@ -31,6 +31,8 @@ class ChatE2EE implements IChatE2EE {
 
     private subscriptions = new Map();
     private socket: SocketInstance;
+
+    private subscriptionLogger = logger.createChild('Subscription');
     constructor() {
         this.init();
         const subscriptionContext: SubscriptionContextType = () => this.subscriptions;
@@ -101,16 +103,17 @@ class ChatE2EE implements IChatE2EE {
     }
 
     public on(listener: SOCKET_LISTENERS, callback) {
+        const loggerWithCount = this.subscriptionLogger.count();
         const sub = this.subscriptions.get(listener);
         if (sub) {
             if (sub.has(callback)) {
-                logger.log(`Skpping, subscription: ${listener}`);
+                loggerWithCount.log(`Skpping, subscription: ${listener}`);
                 return;
             }
-            logger.log(`Subscription added: ${listener}`);
+            loggerWithCount.log(`Added: ${listener}`);
             sub.add(callback);
         } else {
-            logger.log(`Subscription added: ${listener}`);
+            loggerWithCount.log(`Created: ${listener}`);
             this.subscriptions.set(listener, new Set([callback]));
         }
     }

@@ -21,6 +21,8 @@ const getBaseURL = (): string => {
 
 export class SocketInstance {
     private socket: Socket;
+
+    private eventHandlerLogger = this.logger.createChild('eventHandlerLogger');
     constructor(private subscriptionContext: SubscriptionContextType, private logger: Logger) {
         this.socket = socketIOClient(`${getBaseURL}/`);
         this.socket.on(SOCKET_LISTENERS.LIMIT_REACHED, (...args) => this.handler(SOCKET_LISTENERS.LIMIT_REACHED, args));
@@ -36,7 +38,7 @@ export class SocketInstance {
 
     public joinChat(payload: chatJoinPayloadType): void {
         const { publicKey, ...rest } = payload;
-        this.logger.log(`joinChat, publicKey removed from log, ${JSON.stringify(rest)}`);
+        this.logger.log(`joinChat(), publicKey removed from log, ${JSON.stringify(rest)}`);
         this.socket.emit('chat-join', payload)
     }
 
@@ -46,7 +48,8 @@ export class SocketInstance {
     }
 
     private handler(listener: SOCKET_LISTENERS, args) {
-        this.logger.log(`handler called for ${listener}`);
+        const loggerWithCount = this.eventHandlerLogger.count();
+        loggerWithCount.log(`handler called for ${listener}`);
         const callbacks = this.subscriptionContext().get(listener);
         callbacks?.forEach(fn => fn(...args));
     }
