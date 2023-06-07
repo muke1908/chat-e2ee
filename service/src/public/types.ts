@@ -28,8 +28,18 @@ export interface ICryptoUtils {
     decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
 }
 
+export type configType = {
+    apiURL: string | null,
+    socketURL: string | null,
+    settings: {
+        disableLog: boolean,
+    }
+}
+export type SetConfigType = (config: Partial<configType>) => void;
+
 export declare const createChatInstance: () => IChatE2EE;
 export declare const generateUUID: () => string;
 export declare const cryptoUtils: ICryptoUtils;
+export declare const setConfig: SetConfigType;
 
 
