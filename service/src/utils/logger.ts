@@ -4,20 +4,25 @@ export class Logger {
 
     }
 
-    public createChild(name: string) {
-        return new Logger(`${this.name}`, [...this.childs, name]);
-    }
-
-    public log(...args: any[]) {
+    private get logTitle(): string {
         let logTitle = `\u001b[32m${this.name}`;
         if(this.childs.length) {
             const childStr = `\u001b[36m${this.childs.join(' -> ')}`
             logTitle = `${logTitle} ${childStr}`
         }
+
+        return logTitle;
+    }
+
+    public createChild(name: string) {
+        return new Logger(`${this.name}`, [...this.childs, name]);
+    }
+
+    public log(...args: any[]) {
         if(this.counter) {
-            console.log(`${logTitle}$${this.counter}`, ...args);
+            console.log(`${this.logTitle}$${this.counter}`, ...args);
         }else {
-            console.log(`${logTitle}`, ...args);
+            console.log(`${this.logTitle}`, ...args);
         }
     }
 

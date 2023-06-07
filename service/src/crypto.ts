@@ -55,7 +55,6 @@ export const cryptoUtils: ICryptoUtils = {
     },
     decryptMessage: async (ciphertext: string, privateKey: string): Promise<string> => {
         const privateCryptoKey = await importKey(privateKey, 'decrypt');
-        console.log({privateCryptoKey})
         return decryptMessage(strToTypedArr(ciphertext), privateCryptoKey)
     },
 }
@@ -77,7 +76,6 @@ const importKey = async (key: string, usage: 'encrypt' | 'decrypt'): Promise<Cry
     );
 }
 
-  
 const typedArrayToStr = (arrayBuffer: ArrayBuffer): string => {
     // Convert the ArrayBuffer to a Uint8Array
     const uint8Array = new Uint8Array(arrayBuffer);
