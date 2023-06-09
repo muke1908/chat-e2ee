@@ -2,8 +2,9 @@ import { isJSDocEnumTag } from "typescript";
 import { ICryptoUtils } from "./public/types";
 import { cryptoUtils } from "./crypto";
 
-// Browser dependencies mock
-const mockCrypto = {
+describe('cryptoUtils', () => {
+  // Browser dependencies mock
+  const mockCrypto = {
     subtle: {
         generateKey: jest.fn(),
         encrypt: jest.fn(),
@@ -11,12 +12,19 @@ const mockCrypto = {
         importKey: jest.fn(),
         exportKey: jest.fn()
     }
-};
-(global as any).window = {
-  crypto: mockCrypto,
-};
+  };
 
-describe('cryptoUtils', () => {
+  beforeAll(() => {
+    Object.defineProperty(global.window, 'crypto', {
+      value: mockCrypto,
+      writable: true
+    });
+  });
+
+  afterAll(() => {
+    delete global.window;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
