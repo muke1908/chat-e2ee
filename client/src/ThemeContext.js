@@ -1,9 +1,9 @@
 import React, { useState, createContext } from 'react';
-import storage from './utils/storage.js';
+import { LS } from './utils/storage';
 
 export const ThemeContext = createContext();
 
-let presetDarkMode = storage.get('theme');
+let presetDarkMode = LS.get('theme');
 presetDarkMode = presetDarkMode === null ? true : presetDarkMode;
 
 export const ThemeProvider = (props) => {

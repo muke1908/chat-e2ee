@@ -17,6 +17,7 @@ import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from '../../co
 import Notification from '../../components/Notification';
 import LinkSharingInstruction from '../../components/Messaging/LinkSharingInstruction';
 import notificationAudio from '../../components/Notification/audio.mp3';
+import { LS, SS } from '../../utils/storage';
 
 const chate2ee = createChatInstance();
 let userId = getUserSessionID();
@@ -47,6 +48,11 @@ const Chat = () => {
     storeUserSessionID(channelID, userId);
   }, [ channelID ]);
 
+  useEffect(() => {
+    if (LS.get('store-chat-messages')) {
+      SS.set(`chat#${channelID}`, messages);
+    }
+  }, [channelID, messages]);
 
   const playNotification = () => {
     setNotificationState(true);
@@ -149,7 +155,13 @@ const Chat = () => {
   };
 
   const initChat = async () => {
-    // TODO: restore previous messages from local storage
+    // restore previous messages from session storage
+    const messages = SS.get(`chat#${channelID}`, true)
+    if (!messages) {
+      return;
+    }
+
+    setMessages((prevMsg) => prevMsg.concat(messages));
   };
 
   useEffect(() => {

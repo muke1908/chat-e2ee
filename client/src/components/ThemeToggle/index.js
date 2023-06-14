@@ -2,13 +2,13 @@ import React, { useContext } from 'react';
 import { ThemeContext } from '../../ThemeContext.js';
 import { FiSun, FiMoon } from 'react-icons/fi';
 import styles from './Style.module.css';
-import storage from '../../utils/storage';
+import { LS } from '../../utils/storage.js';
 
 const ThemeToggle = () => {
   const [darkMode, setDarkMode] = useContext(ThemeContext);
 
   const toggleTheme = () => {
-    storage.set('theme', !darkMode);
+    LS.set('theme', !darkMode);
     setDarkMode(!darkMode);
   };
 
