@@ -1,19 +1,21 @@
-const storage = {
+const storageProvider = (provider) => ({
   get: (key) => {
-    const inLS = localStorage.getItem(key);
-
-    if (inLS) {
-      return JSON.parse(inLS);
+    const result = provider.getItem(key);
+    if (!result) {
+      return null;
     }
 
-    return null;
+    return JSON.parse(result);
   },
   set: (key, value) => {
-    localStorage.setItem(key, JSON.stringify(value));
+    provider.setItem(key, JSON.stringify(value))
   },
   remove: (key) => {
-    localStorage.removeItem(key);
-  }
-};
+    provider.removeItem(key);
+  },
+});
 
-export default storage;
+export const SS = storageProvider(window.sessionStorage);
+export const LS = storageProvider(window.localStorage);
+
+
