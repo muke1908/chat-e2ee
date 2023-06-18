@@ -1,33 +1,34 @@
-import { isJSDocEnumTag } from "typescript";
-import { ICryptoUtils } from "./public/types";
 import { cryptoUtils } from "./crypto";
 
 describe('cryptoUtils', () => {
   // Browser dependencies mock
   const subtle = {
-    generateKey: jest.fn().mockResolvedValue('generatedKeyPair'),
+    generateKey: jest.fn().mockResolvedValue({
+      publicKey: 'public-key',
+      privateKey: 'private-key',
+    }),
+    exportKey: jest.fn().mockImplementation((type, str) => str )
   };
+  let window = {} as any;
 
-  globalThis.crypto = {
-      subtle
+  window.crypto = {
+      subtle: subtle
   } as any;
 
   beforeEach(() => {
+    global.window = window;
     jest.clearAllMocks();
   });
-
-  // afterAll(() => {
-  //   delete global.window;
-  // });
 
   describe('generateKeypairs', () => {
     it('should generate an object with a private and a public key', async () => {
       const keyPair = await cryptoUtils.generateKeypairs();
-
-      expect(typeof keyPair.privateKey).toBe('string');
-      expect(typeof keyPair.publicKey).toBe('string');
+      expect(window.crypto.subtle.exportKey).toHaveBeenCalledWith('jwk', expect.any(String));
+      expect(keyPair.privateKey).toBe(JSON.stringify('private-key'));
+      expect(keyPair.publicKey).toBe(JSON.stringify('public-key'));
     });
   });
+
 
   // describe('encryptMessage', () => {
   //   it('should encrypt plaintext using a public key and return a string', async () => {
