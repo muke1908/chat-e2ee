@@ -1,3 +1,4 @@
+import e from "cors";
 import { cryptoUtils } from "./crypto";
 
 describe('cryptoUtils', () => {
@@ -7,13 +8,20 @@ describe('cryptoUtils', () => {
       publicKey: 'public-key',
       privateKey: 'private-key',
     }),
-    exportKey: jest.fn().mockImplementation((type, str) => str )
+    exportKey: jest.fn().mockImplementation((type, str) => str),
+    importKey: jest.fn().mockImplementation((type, str) => str),
+    encrypt: jest.fn().mockResolvedValue({
+      ciphertext: 'encrypted-text'
+    })
   };
-  let window = {} as any;
 
+  const btoa = jest.fn().mockImplementation((str) => str);
+
+  let window = {} as any;
   window.crypto = {
       subtle: subtle
   } as any;
+  window.btoa = btoa;
 
   beforeEach(() => {
     global.window = window;
@@ -23,22 +31,23 @@ describe('cryptoUtils', () => {
   describe('generateKeypairs', () => {
     it('should generate an object with a private and a public key', async () => {
       const keyPair = await cryptoUtils.generateKeypairs();
+
       expect(window.crypto.subtle.exportKey).toHaveBeenCalledWith('jwk', expect.any(String));
       expect(keyPair.privateKey).toBe(JSON.stringify('private-key'));
       expect(keyPair.publicKey).toBe(JSON.stringify('public-key'));
     });
   });
 
+  describe('encryptMessage', () => {
+    it('should encrypt plaintext using a public key and return a string', async () => {
+      const plaintext = 'This is a message';
 
-  // describe('encryptMessage', () => {
-  //   it('should encrypt plaintext using a public key and return a string', async () => {
-  //     const plaintext = 'This is a message';
+      const { publicKey } = await cryptoUtils.generateKeypairs();
+      const ciphertext = await cryptoUtils.encryptMessage(plaintext, publicKey);
 
-  //     const { publicKey } = await cryptoUtils.generateKeypairs();
-  //     const ciphertext = await cryptoUtils.encryptMessage(plaintext, publicKey);
-
-  //     expect(typeof ciphertext).toBe('string');
-  //   });
+      expect(window.crypto.subtle.importKey).toHaveBeenCalledWith('jwk', expect.any(String), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']);
+      expect(ciphertext).toBe('encrypted-text');
+    });
 
     // it('should produce different ciphertexts for different plaintexts', async () => {
     //   const plaintext1 = 'First message';
@@ -50,7 +59,7 @@ describe('cryptoUtils', () => {
 
     //   expect(ciphertext1).not.toBe(ciphertext2);
     // });
-  // });
+  });
 
   // describe('decryptMessage', () => {
   //   it('should decrypt a ciphertext using a private key', async () => {
