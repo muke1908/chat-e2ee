@@ -46,7 +46,7 @@ const App = () => {
         </div>
         <div className={`${styles.sectionDefault} ${!darkMode && styles.sectionDefaultLight}`}>
           <div className={styles.title}>
-            Generate temporary link and start chatting without worrying.
+            Generate a temporary link and start chatting without worrying.
           </div>
           <div className={styles.description}>
             <ul>
@@ -75,26 +75,13 @@ const App = () => {
             </div>
           )}
         </div>
-        {!chatLink && (
-          <div
-            className={`${styles.sectionContribute} ${
-              darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
-            }`}
-          >
-            <div className={styles.title}>
-              Join with a PIN
-              <PinInput />
-            </div>
-          </div>
-        )}
-
         <div
           className={`${styles.sectionContribute} ${
             darkMode === true ? styles.sectionDefault : styles.sectionDefaultLight
           }`}
         >
           <div className={styles.title}>
-            Our source-code is public on&nbsp;
+            The source-code is public on&nbsp;
             <a
               href="https://github.com/muke1908/chat-e2ee"
               target="_blank"
