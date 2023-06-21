@@ -3,24 +3,44 @@ import { cryptoUtils } from "./crypto";
 
 describe('cryptoUtils', () => {
   // Browser dependencies mock
+  const mockEncryptionResult = new ArrayBuffer(8);
+  const mock64BaseString = 'ZW5jcnlwdGVkLXRleHQ=';
   const subtle = {
     generateKey: jest.fn().mockResolvedValue({
       publicKey: 'public-key',
       privateKey: 'private-key',
     }),
-    exportKey: jest.fn().mockImplementation((type, str) => str),
-    importKey: jest.fn().mockImplementation((type, str) => str),
-    encrypt: jest.fn().mockResolvedValue({
-      ciphertext: 'encrypted-text'
+    // exportKey: jest.fn().mockImplementation((type, str) => str),
+    exportKey: jest.fn().mockImplementation(function (type, str) {
+      console.log('exportKey: ', str);
+      return str;
+    }),
+    // importKey: jest.fn().mockImplementation((type, str) => str),
+    importKey: jest.fn().mockImplementation(function (type, str) {
+      console.log('importKey: ', str);
+      return str;
+    }),
+    encrypt: jest.fn().mockImplementation(function (algorithm, publicKey, encoded) { 
+      console.log('algo: ', algorithm);
+      console.log('publicKey: ', publicKey);
+      console.log('encoded: ', encoded);
+      return mockEncryptionResult;
     })
   };
 
-  const btoa = jest.fn().mockImplementation((str) => str);
+  const btoa = jest.fn().mockImplementation(function (str) {
+    console.log('str received in btoa: ', str);
+    const base64string = Buffer.from(str).toString('base64');
+    console.log('base64string created with Buffer: ', base64string);
+    return mock64BaseString;
+    // (str) => 'ZW5jcnlwdGVkLXRleHQ=');
+  });
 
   let window = {} as any;
   window.crypto = {
       subtle: subtle
   } as any;
+
   window.btoa = btoa;
 
   beforeEach(() => {
@@ -39,14 +59,24 @@ describe('cryptoUtils', () => {
   });
 
   describe('encryptMessage', () => {
-    it('should encrypt plaintext using a public key and return a string', async () => {
+    it('should encrypt plaintext using a public key and return a base64-encoded string', async () => {
       const plaintext = 'This is a message';
-
       const { publicKey } = await cryptoUtils.generateKeypairs();
+      console.log('From encryptMessage test. This is the publicKey generated: ', publicKey);
       const ciphertext = await cryptoUtils.encryptMessage(plaintext, publicKey);
-
+      console.log('From encryptMessage test. This is the ciphertext generated: ', ciphertext);
       expect(window.crypto.subtle.importKey).toHaveBeenCalledWith('jwk', expect.any(String), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']);
-      expect(ciphertext).toBe('encrypted-text');
+      
+      expect(ciphertext).toBe('ZW5jcnlwdGVkLXRleHQ=');
+      // expect(ciphertext).toMatch(/^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/);
+
+      // expect(ciphertext).toBeTruthy;
+
+      
+      // expect(ciphertext).not.toBeNull;
+
+      
+      // expect(ciphertext).toBeNull;
     });
 
     // it('should produce different ciphertexts for different plaintexts', async () => {
