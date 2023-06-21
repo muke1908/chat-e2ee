@@ -1,6 +1,6 @@
-import storage from '../../../utils/storage';
+import { LS } from '../../../utils/storage';
 export const getKeyPairFromCache = (channelID) => {
-  const keyPair_storage = storage.get('session-keyPair') || {};
+  const keyPair_storage = LS.get('session-keyPair') || {};
   const keyPair = keyPair_storage.channelID === channelID ? keyPair_storage.keyPair : null;
 
   if (keyPair) {
@@ -18,7 +18,7 @@ export const storeKeyPair = (channelID, { publicKey, privateKey }) => {
     publicKey,
     privateKey
   };
-  storage.set('session-keyPair', {
+  LS.set('session-keyPair', {
     channelID,
     keyPair: _keyPair
   });
