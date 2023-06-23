@@ -144,3 +144,11 @@ Open browser console and filter you logs by @chat-e2ee/service
 
 <img width="722" alt="Screenshot 2023-06-06 at 10 11 49" src="https://github.com/muke1908/chat-e2ee/assets/20297989/78a6b894-0ffa-45d3-a572-417e92494d93">
 
+to enable logging set the following to false in configContext: 
+```
+{
+    settings: {
+        disableLog: boolean
+    }
+}
+```
