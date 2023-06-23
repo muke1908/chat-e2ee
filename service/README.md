@@ -130,7 +130,7 @@ msg object:
 ```
 `on-alice-disconnect` - receiver left/disconnected from the link  
 `limit-reached` - 2 users already join a link  
-`delivered` - a message is delivered to receiver  callback returns the ID of the message that's delivered.  
+`delivered` - a message is delivered to the receiver  callback returns the ID of the message that's delivered.  
 ```
 chate2ee.on('delivered', (id) => {
     console.log('delivered',id)
@@ -140,15 +140,15 @@ chate2ee.on('delivered', (id) => {
 
 ---
 ### Debugging: 
-Open browser console and filter you logs by @chat-e2ee/service  
+Open the browser console and filter your logs by @chat-e2ee/service  
 
 <img width="722" alt="Screenshot 2023-06-06 at 10 11 49" src="https://github.com/muke1908/chat-e2ee/assets/20297989/78a6b894-0ffa-45d3-a572-417e92494d93">
 
-to enable logging set the following to false in configContext: 
+to disable logging set the `settings.disableLog` to `true` in configContext: 
 ```
-{
+setConfig({
     settings: {
         disableLog: boolean
     }
-}
+})
 ```
