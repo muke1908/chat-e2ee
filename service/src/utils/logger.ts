@@ -2,8 +2,10 @@ import { configContext } from "../configContext";
 
 export class Logger {
     private counter = 0;
+    private disableLog = false;
+    
     constructor(private name = '@chat-e2ee/service', private childs: string[] = []) {
-
+        this.disableLog = configContext().settings.disableLog
     }
 
     private get logTitle(): string {
@@ -21,9 +23,9 @@ export class Logger {
     }
 
     public log(...args: any[]) {
-        if(!configContext().settings.disableLog) {
+        if(this.disableLog) {
             // Logs are disabled and will not be printed
-            // set disableLog: true in configContext to enable logs
+            // set disableLog: false in configContext to enable logs
             return;
         }
         if(this.counter) {
