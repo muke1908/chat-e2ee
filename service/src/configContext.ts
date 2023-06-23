@@ -5,7 +5,7 @@ let chate2eeConfig: configType = {
     apiURL: null,
     socketURL: null,
     settings: {
-        disableLog: false
+        disableLog: false // true - Disable Logs; false - Enable Logs
     }
 };
 
