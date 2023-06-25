@@ -11,13 +11,13 @@ import {
   isEmptyMessage
 } from "./helpers";
 
-import { ThemeContext } from "../../ThemeContext";
+import { ThemeContext } from "../../ThemeContext.js";
 import styles from "./Style.module.css";
 import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from "../../components/Messaging";
 import Notification from "../../components/Notification";
 import LinkSharingInstruction from "../../components/Messaging/LinkSharingInstruction";
 import notificationAudio from "../../components/Notification/audio.mp3";
-import { Timestamp } from "mongodb";
+import { LS, SS } from "../../utils/storage";
 
 const chate2ee = createChatInstance();
 type messageObj = {
@@ -26,12 +26,12 @@ type messageObj = {
   sender?: string;
   id?: string;
   local?: boolean;
-  timestamp?: Timestamp;
+  timestamp?: any;
 }[];
 
 const Chat = () => {
   const [text, setText] = useState("");
-  const [messages, setMessages] = useState<messageObj>([{}]);
+  const [messages, setMessages] = useState<messageObj>([]);
   const [selectedImg, setSelectedImg] = useState("");
   const [previewImg, setPreviewImg] = useState(false);
   const [usersInChannel, setUsers] = useState<{ uuid?: string }[]>([]);
@@ -55,6 +55,12 @@ const Chat = () => {
   useEffect(() => {
     storeUserSessionID(channelID, userId);
   }, [channelID]);
+
+  useEffect(() => {
+    if (LS.get("store-chat-messages")) {
+      SS.set(`chat#${channelID}`, messages);
+    }
+  }, [channelID, messages]);
 
   const playNotification = () => {
     setNotificationState(true);
@@ -153,7 +159,13 @@ const Chat = () => {
   };
 
   const initChat = async () => {
-    // TODO: restore previous messages from local storage
+    // restore previous messages from session storage
+    const messages = SS.get(`chat#${channelID}`);
+    if (!messages) {
+      return;
+    }
+
+    setMessages((prevMsg) => prevMsg.concat(messages));
   };
 
   useEffect(() => {

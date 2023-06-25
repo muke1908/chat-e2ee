@@ -1,5 +1,5 @@
 export type MongoDataType = Record<any, any> | null;
-const findOneFromArr = (arr: [], findCondition): MongoDataType =>
+const findOneFromArr = (arr: [], findCondition:any): MongoDataType =>
   arr.find((data) => {
     const conditionKeys = Object.keys(findCondition);
     const results = conditionKeys.filter(

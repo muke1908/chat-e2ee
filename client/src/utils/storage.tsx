@@ -1,15 +1,6 @@
-type storageSetParams = {
-  channelID: string;
-  userId: string;
-};
-type storageKeyPairParams = {
-  channelID: string;
-  keyPair: object | null;
-};
-
-const storage = {
+const storageProvider = (provider: any) => ({
   get: (key: string) => {
-    const inLS = localStorage.getItem(key);
+    const inLS = provider.getItem(key);
 
     if (inLS) {
       return JSON.parse(inLS);
@@ -17,12 +8,13 @@ const storage = {
 
     return null;
   },
-  set: (key: string, value: storageSetParams | storageKeyPairParams | boolean) => {
-    localStorage.setItem(key, JSON.stringify(value));
+  set: (key: string, value: any) => {
+    provider.setItem(key, JSON.stringify(value));
   },
   remove: (key: string) => {
-    localStorage.removeItem(key);
+    provider.removeItem(key);
   }
-};
+});
 
-export default storage;
+export const SS = storageProvider(window.sessionStorage);
+export const LS = storageProvider(window.localStorage);
