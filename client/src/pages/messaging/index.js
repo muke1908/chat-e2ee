@@ -156,7 +156,7 @@ const Chat = () => {
 
   const initChat = async () => {
     // restore previous messages from session storage
-    const messages = SS.get(`chat#${channelID}`, true)
+    const messages = SS.get(`chat#${channelID}`);
     if (!messages) {
       return;
     }
