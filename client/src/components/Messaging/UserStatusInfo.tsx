@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./styles/UserStatusInfo.module.css";
-import ThemeToggle from "../ThemeToggle/index.js";
+import ThemeToggle from "../ThemeToggle/index";
 import imageRetryIcon from "./assets/image-retry.png";
 import DeleteChatLink from "../DeleteChatLink";
 

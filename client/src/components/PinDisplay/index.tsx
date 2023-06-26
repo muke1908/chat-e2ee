@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
-import styles from './Style.module.css';
-import { ThemeContext } from '../../ThemeContext.js';
+import React, { useContext } from "react";
+import styles from "./Style.module.css";
+import { ThemeContext } from "../../ThemeContext";
 
-const PinDisplay = ({ content }) => {
+const PinDisplay = ({ content }: any) => {
   const [darkMode] = useContext(ThemeContext);
 
   return (

@@ -36,7 +36,7 @@ export const NewMessageForm = ({
 
   const wrapperHandler = (event: React.MouseEvent<HTMLDivElement>) => {
     inputRef.current?.focus();
-    handleSubmit;
+    // handleSubmit;
   };
 
   return (

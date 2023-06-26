@@ -1,9 +1,9 @@
 import React, { useContext, useState } from "react";
-import imagePicker from "../../../utils/imagePicker.tsx";
-import { ThemeContext } from "../../../ThemeContext.js";
+import imagePicker from "../../../utils/imagePicker";
+import { ThemeContext } from "../../../ThemeContext";
 import imagePickerIcon from "./assets/image-picker.png";
 import imagePickerIconDark from "./assets/image-picker-black.png";
-import Image from "../../Image/index.js";
+import Image from "../../Image/index";
 import styles from "./Style.module.css";
 
 const ImagePicker = (props: any) => {

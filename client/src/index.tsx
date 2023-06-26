@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import ReactDOM from "react-dom";
 // import styles from '@Style.module.css';
-import styles from "@Style.module.css";
+import styles from "./Style.module.css";
 
 import ChatLink from "./pages/chatlink";
 import Messaging from "./pages/messaging";
