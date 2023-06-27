@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { ThemeContext } from "../../ThemeContext.js";
+import { ThemeContext } from "../../ThemeContext";
 import { FiSun, FiMoon } from "react-icons/fi";
 import styles from "./Style.module.css";
 import { LS } from "../../utils/storage";
