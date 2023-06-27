@@ -11,12 +11,13 @@ import {
   isEmptyMessage
 } from "./helpers";
 
-import { ThemeContext } from "../../ThemeContext.js";
+import { ThemeContext } from "../../ThemeContext";
 import styles from "./Style.module.css";
 import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from "../../components/Messaging";
 import Notification from "../../components/Notification";
 import LinkSharingInstruction from "../../components/Messaging/LinkSharingInstruction";
 import notificationAudio from "../../components/Notification/audio.mp3";
+import { Timestamp } from "mongodb";
 import { LS, SS } from "../../utils/storage";
 
 const chate2ee = createChatInstance();
