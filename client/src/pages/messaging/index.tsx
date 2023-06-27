@@ -18,6 +18,7 @@ import Notification from "../../components/Notification";
 import LinkSharingInstruction from "../../components/Messaging/LinkSharingInstruction";
 import notificationAudio from "../../components/Notification/audio.mp3";
 import { Timestamp } from "mongodb";
+import { LS, SS } from "../../utils/storage";
 
 const chate2ee = createChatInstance();
 type messageObj = {
@@ -153,7 +154,13 @@ const Chat = () => {
   };
 
   const initChat = async () => {
-    // TODO: restore previous messages from local storage
+    // restore previous messages from session storage
+    const messages = SS.get(`chat#${channelID}`);
+    if (!messages) {
+      return;
+    }
+
+    setMessages((prevMsg) => prevMsg.concat(messages));
   };
 
   useEffect(() => {

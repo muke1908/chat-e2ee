@@ -1,7 +1,7 @@
 import React, { useState, createContext } from "react";
-import storage from "./utils/storage";
+import { LS } from "./utils/storage";
 
-let presetDarkMode = storage.get("theme");
+let presetDarkMode = LS.get("theme");
 presetDarkMode = presetDarkMode === null ? true : presetDarkMode;
 
 export const ThemeContext = createContext(presetDarkMode);
