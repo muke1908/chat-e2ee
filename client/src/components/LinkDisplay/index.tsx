@@ -13,7 +13,7 @@ const LinkDisplay = ({ content }: LinkDisplayProps) => {
   if (typeof content === "object" && content !== null) {
     chatLink = content.absoluteLink;
   } else {
-    chatLink = `${window.location.protocol}//${window.location.host}${content.link}`;
+    chatLink = `${window.location.protocol}//${window.location.host}${content}`;
   }
   const textAreaRef = useRef<HTMLInputElement | null>(null);
   const [buttonText, setButtonText] = useState("Copy");
