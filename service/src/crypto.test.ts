@@ -1,4 +1,3 @@
-import e from "cors";
 import { cryptoUtils } from "./crypto";
 
 describe('cryptoUtils', () => {
