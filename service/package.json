@@ -16,7 +16,8 @@
     "build": "concurrently \"webpack --mode production\" \"npm run dts\"",
     "watch": "webpack --watch",
     "dts": "../node_modules/typescript/bin/tsc src/public/types.ts --declaration --emitDeclarationOnly --declarationDir ./dist",
-    "publish-sdk": "npm publish"
+    "publish-sdk": "npm publish",
+    "test": "jest"
   },
   "dependencies": {
     "socket.io-client": "^4.6.1"
