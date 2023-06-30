@@ -2,7 +2,6 @@ import React, { useRef, useState, useContext } from 'react';
 import { FiLink, FiCopy, FiExternalLink } from 'react-icons/fi';
 import styles from './Style.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
-import PinDisplay from './../PinDisplay';
 
 const LinkDisplay = ({ content }) => {
   const chatLink = content.absoluteLink
