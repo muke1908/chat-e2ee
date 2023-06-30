@@ -2,7 +2,6 @@ import React, { useRef, useState, useContext } from 'react';
 import { FiLink, FiCopy, FiExternalLink } from 'react-icons/fi';
 import styles from './Style.module.css';
 import { ThemeContext } from '../../ThemeContext.js';
-import PinDisplay from './../PinDisplay';
 
 const LinkDisplay = ({ content }) => {
   const chatLink = content.absoluteLink
@@ -26,7 +25,7 @@ const LinkDisplay = ({ content }) => {
     <div className={styles.fullWidth}>
       <div className={styles.divider} />
       <span className={styles.pinDisplayMsg}>
-        Anyone with the PIN or the Link can join your chat
+        Anyone with the Link can join your chat
       </span>
       <div
         className={`${styles.copyToClipboardContainer}
@@ -54,12 +53,7 @@ const LinkDisplay = ({ content }) => {
           </button>
         </div>
       </div>
-      <div
-        className={`${styles.pinDisplay} ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
-      >
-        <span className={styles.pinValidMsg}>PIN (valid for 30 minutes)</span>
-        <PinDisplay content={content.pin} />
-      </div>
+     
       <div className={styles.divider} />
       <div
         className={`${styles.openLink}
