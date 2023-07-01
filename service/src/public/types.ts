@@ -1,11 +1,4 @@
-export const enum SOCKET_LISTENERS {
-    'LIMIT_REACHED' = 'limit-reached',
-    'DELIVERED' = 'delivered',
-    'ON_ALICE_JOIN' = 'on-alice-join',
-    'ON_ALICE_DISCONNECT' = 'on-alice-disconnect',
-    'CHAT_MESSAGE' = 'chat-message'
-}
-
+export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message";
 export type LinkObjType = {
     hash: string,
     link: string,
@@ -30,7 +23,7 @@ export interface IChatE2EE {
     getPublicKey(): Promise<any>; //fix: return type
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
-    on(listener: SOCKET_LISTENERS, callback): void
+    on(listener: SocketListenerType, callback): void;
 }
 
 export interface ICryptoUtils {
