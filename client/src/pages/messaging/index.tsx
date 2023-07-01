@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef, useContext } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
-import { createChatInstance, generateUUID, cryptoUtils, SOCKET_LISTENERS } from "@chat-e2ee/service";
+import { createChatInstance, generateUUID, cryptoUtils } from "@chat-e2ee/service";
 
 import {
   getUserSessionID,
@@ -17,7 +17,6 @@ import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from "../../co
 import Notification from "../../components/Notification";
 import LinkSharingInstruction from "../../components/Messaging/LinkSharingInstruction";
 import notificationAudio from "../../components/Notification/audio.mp3";
-import { Timestamp } from "mongodb";
 import { LS, SS } from "../../utils/storage";
 
 const chate2ee = createChatInstance();
@@ -172,7 +171,7 @@ const Chat = () => {
   useEffect(() => {
     // this is update the public key ref
     initPublicKey(channelID).then(() => {
-      chate2ee.on(SOCKET_LISTENERS.LIMIT_REACHED, () => {
+      chate2ee.on("limit-reached", () => {
         setMessages((prevMsg) =>
           prevMsg.concat({
             image: "",
@@ -181,11 +180,11 @@ const Chat = () => {
           })
         );
       });
-      chate2ee.on(SOCKET_LISTENERS.DELIVERED, (id: string) => {
+      chate2ee.on("delivered", (id: string) => {
         setDeliveredID((prev) => [...prev, id]);
       });
       // an event to notify that the other person is joined.
-      chate2ee.on(SOCKET_LISTENERS.ON_ALICE_JOIN, ({ publicKey }: { publicKey: string | null }) => {
+      chate2ee.on("on-alice-join", ({ publicKey }: { publicKey: string | null }) => {
         if (publicKey) {
           chate2ee.setPublicKey(publicKey);
           playNotification();
@@ -193,7 +192,7 @@ const Chat = () => {
         getSetUsers();
       });
 
-      chate2ee.on(SOCKET_LISTENERS.ON_ALICE_DISCONNECT, () => {
+      chate2ee.on("on-alice-disconnect", () => {
         console.log("alice disconnected!!");
         chate2ee.setPublicKey(null);
         playNotification();
@@ -203,13 +202,13 @@ const Chat = () => {
 
       //handle incoming message
       chate2ee.on(
-        SOCKET_LISTENERS.CHAT_MESSAGE,
+        "chat-message",
         async (msg: {
           message: string;
           image: string;
           sender: string;
           id: string;
-          timestamp: Timestamp;
+          timestamp: number;
         }) => {
           if(!myKeyRef.current?.privateKey) {
             throw new Error("Private key not found!");

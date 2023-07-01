@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run client\" \"npm run server\"  \"npm run watch-sdk\"",
+    "dev": "concurrently \"npm run client\" \"npm run server\"",
     "build-client": "cd client && npm run build",
     "build": "tsc && npm run build-client",
     "client": "cd client && npm start",
