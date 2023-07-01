@@ -2,7 +2,6 @@ import React, { useRef, useState, useContext } from "react";
 import { FiLink, FiCopy, FiExternalLink } from "react-icons/fi";
 import styles from "./Style.module.css";
 import { ThemeContext } from "../../ThemeContext";
-import PinDisplay from "../PinDisplay";
 
 type LinkDisplayProps = {
   content: { absoluteLink: string; pin: string } | string;
@@ -61,12 +60,7 @@ const LinkDisplay = ({ content }: LinkDisplayProps) => {
           </button>
         </div>
       </div>
-      <div
-        className={`${styles.pinDisplay} ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
-      >
-        <span className={styles.pinValidMsg}>PIN (valid for 30 minutes)</span>
-        <PinDisplay content={typeof content === "object" && content?.pin} />
-      </div>
+
       <div className={styles.divider} />
       <div
         className={`${styles.openLink}
