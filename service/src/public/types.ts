@@ -1,6 +1,15 @@
+export const enum SOCKET_LISTENERS {
+    'LIMIT_REACHED' = 'limit-reached',
+    'DELIVERED' = 'delivered',
+    'ON_ALICE_JOIN' = 'on-alice-join',
+    'ON_ALICE_DISCONNECT' = 'on-alice-disconnect',
+    'CHAT_MESSAGE' = 'chat-message'
+}
+
 export type LinkObjType = {
     hash: string,
     link: string,
+    absoluteLink: string | undefined,
     expired: boolean,
     deleted: boolean,
     pin: string,
@@ -20,6 +29,8 @@ export interface IChatE2EE {
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
     getPublicKey(): Promise<any>; //fix: return type
     dispose(): void;
+    encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
+    on(listener: SOCKET_LISTENERS, callback): void
 }
 
 export interface ICryptoUtils {
