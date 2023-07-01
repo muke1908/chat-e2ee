@@ -43,7 +43,7 @@ class ChatE2EE implements IChatE2EE {
 
     public async getLink(): Promise<LinkObjType> {
         logger.log('getLink()');
-        return this.linkObjPromise;
+        return getLink();
     }
 
     public async setChannel(channelId: string, userId: string, publicKey: string): Promise<void> {
@@ -126,7 +126,7 @@ class ChatE2EE implements IChatE2EE {
     }
 
     private init() {
-        this.linkObjPromise = getLink();
+        //do nothing
     }
 }
 
