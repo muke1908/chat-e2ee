@@ -73,6 +73,9 @@ Import `@chat-e2ee/service` SDK in your client project and build your own chat c
 3. Run `npm install` in root dir i.e. inside cloned repo.
 4. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
+:exclamation::exclamation:**Important:**
+If you are making changes in `./service` i.e. `@chat-e2ee/service`, make sure you run `npm run build-service-sdk` to reflect changes.
+
 NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
 
 **Important:**  
@@ -85,24 +88,13 @@ For native build read the [instructions](https://github.com/muke1908/chat-e2ee/t
 ### Folder structure
 
 - The FE client is located in `./client` which is coupled with the backend.
-- All the backend controllers goes to `./backend` folder.
+- All the backend controllers go to `./backend` folder.
 - Client uses a package `@chate2ee/service` to communicate with the backend. Located in `./service`.  
 - Express instance is on `./app.js`.
 - Entry point is `./index.js`.
 
-### APIs
-```endpoint: /api/<path>```
 
-| url                              | method   | payload                         | filename                  | description                                   |
-| -------------------------------- | -------- | ------------------------------ | ------------------------- | --------------------------------------------- |
-| `/chat-link`                 | `POST`   | `{token}`                      | `/api/index.js`           | to generate unique link to start chat session |
-| `/chat-link/status/:channel` | `GET`    |                                | `/api/index.js`           | to check if a channel is valid                |
-| `/chat/message`              | `POST`   | `{ channel, sender, message }` | `/api/messaging/index.js` | to send a message to a specific channel       |
-| `/chat-link/:channel`        | `DELETE` |                                | `/api/index.js`           | to delete a channel                           |
-
----
-
-Please follow the convention for commit message.  
+Please follow the convention for the commit message.  
 https://github.com/conventional-changelog/commitlint/#what-is-commitlint
 
 Example:  
