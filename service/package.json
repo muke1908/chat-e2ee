@@ -1,6 +1,6 @@
 {
   "name": "@chat-e2ee/service",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "SDK to create realtime messaging with chat-e2ee",
   "main": "dist/bundle.js",
   "author": "Mukesh",
@@ -14,10 +14,11 @@
   },
   "scripts": {
     "build": "concurrently \"webpack --mode production\" \"npm run dts\"",
-    "watch": "webpack --watch",
+    "watch": "concurrently \"webpack --watch\" \"node -e \\\"const fs=require('fs');let p=JSON.parse(fs.readFileSync('package.json'));p.version=p.version.replace(/(\\d+\\.\\d+\\.)(\\d+)/,(_,a,b)=>a+(++b));fs.writeFileSync('package.json',JSON.stringify(p,null,2));\\\"\" \"npm run watch-dts\"",
     "dts": "../node_modules/typescript/bin/tsc src/public/types.ts --declaration --emitDeclarationOnly --declarationDir ./dist",
     "publish-sdk": "npm publish",
-    "test": "jest"
+    "test": "jest",
+    "watch-dts": "../node_modules/.bin/nodemon --watch src/public/types.ts --exec \"npm run dts\""
   },
   "dependencies": {
     "socket.io-client": "^4.6.1"
