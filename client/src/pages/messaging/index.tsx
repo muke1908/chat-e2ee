@@ -264,7 +264,7 @@ const Chat = () => {
             <ScrollWrapper messageCount={messagesFormatted.length}>
               {messagesFormatted.map((message, index) => (
                 <Message
-                  key={index}
+                  key={message.id}
                   handleSend={handleSend}
                   index={index}
                   message={message}
