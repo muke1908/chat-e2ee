@@ -4,7 +4,6 @@ import LinkDisplay from "../../components/LinkDisplay/index";
 import { ThemeContext } from "../../ThemeContext";
 import styles from "./Style.module.css";
 import ThemeToggle from "../../components/ThemeToggle/index";
-import PinInput from "../../components/PinInput/index";
 
 import { createChatInstance } from "@chat-e2ee/service";
 
