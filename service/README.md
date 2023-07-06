@@ -9,23 +9,23 @@ npm i @chat-e2ee/service
 
 ### Usage:
 
-`@chat-e2ee/service` exports following modules:  
- - createChatInstance - Chat ops  
- - generateUUID - util func to generate UUID  
- - cryptoUtils - Encryption util  
- - setConfig - set URLs i.e. API endpoints
+`@chat-e2ee/service` exports the following modules:  
+ - createChatInstance - core chat ops.  
+ - generateUUID - util func to generate UUID.  
+ - cryptoUtils - encryption utils.  
+ - setConfig - configuration - set URLs i.e. API endpoints, debugging etc.
 
-`@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use custom server, use setConfig({ apiURL, socketURL });
+`@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use a custom server, use `setConfig({ apiURL, socketURL });`
 
-### Example:  
-Import the SDK.
+### Example and flow:  
+#### 1. Import the SDK:
 ```
 import { createChatInstance, generateUUID, cryptoUtils, setConfig } from '@chat-e2ee/service';
 const chatInstance = createChatInstance();
 ```
 
-
-First you have to set up a channel. To setup a channel you need to generate a hash, userid, and your publickey. 
+#### 2. Setup channel:
+First, you have to set up a channel. To set up a channel you need to generate a hash, user ID, and your public key. 
 
 ```
 cosnt { publicKey, privateKey } = cryptoUtils.generateKeypairs();
@@ -34,7 +34,7 @@ const { hash } = await chatInstance.getLink();
 
 chatInstance.setChannel(hash, userId, publickKey);
 ```
-Once you setup channel, user2 can join the channel by passing same hash to setChannel. But different userid and publickey.
+Once you set up a channel, user2 can join the channel by passing the same hash to `setChannel` with their own `userid` and `publickey`.
 When user2 joins the channel you can request user2's publicKey. 
 
 ```
@@ -47,12 +47,15 @@ chatInstance.on('on-alice-join', async () => {
     chatInstance.setPublicKey(receiverPublicKey);
 });
 ```
-Now you are ready to send message. 
+
+#### 3. Send message:
+Now you are ready to send a message. 
 ```
 await chatInstance.encrypt('some message').send();
 ```
 
-Setup listener to receive message from user2
+#### 4. Receive messages:
+Setup listener to receive messages from user2
 ```
 chatInstance.on('chat-message', async () => {
     const msgInPlainText = await cryptoUtils.decryptMessage(msg.message, privateKey);
