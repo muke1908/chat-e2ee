@@ -10,26 +10,39 @@ npm i @chat-e2ee/service
 ### Usage:
 
 `@chat-e2ee/service` exports the following modules:  
- - createChatInstance - core chat ops.  
- - generateUUID - util func to generate UUID.  
- - cryptoUtils - encryption utils.  
+ - createChatInstance - core chat ops.
+ - utils
+   - generateUUID - util func to generate UUID.  
+   - decryptMessage - to decrypt encrypted messages.  
  - setConfig - configuration - set URLs i.e. API endpoints, debugging etc.
 
 `@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use a custom server, use `setConfig({ apiURL, socketURL });`
 
+`config` follows: 
+```
+{
+    apiURL: string | null,
+    socketURL: string | null,
+    settings: {
+        disableLog: boolean,
+    }
+}
+```
+
 ### Example and flow:  
 #### 1. Import and initialize the SDK:
 ```
-import { createChatInstance, generateUUID, cryptoUtils, setConfig } from '@chat-e2ee/service';
-const chatInstance = createChatInstance();
+import { createChatInstance, utils, setConfig } from '@chat-e2ee/service';
+const chatInstance = createChatInstance(config);
 await chatInstance.init();
 ```
+Note that the config is optional.
 
 #### 2. Setup channel:
 First, you have to set up a channel. To set up a channel you need to generate a hash, user ID. 
 
 ```
-const userId = generateUUID(); // you can use your own user id.
+const userId = utils.generateUUID(); // you can use your own user id.
 const { hash } = await chatInstance.getLink();
 
 await chatInstance.setChannel(hash, userId);
@@ -49,7 +62,7 @@ Setup listener to receive messages from user2 and use your private key to decryp
 ```
 const { privateKey } = chatInstance.getKeyPair();
 chatInstance.on('chat-message', async () => {
-    const msgInPlainText = await cryptoUtils.decryptMessage(msg.message, privateKey);
+    const msgInPlainText = await utils.decryptMessage(msg.message, privateKey);
     console.log(msgInPlainText);
 });
 ```
