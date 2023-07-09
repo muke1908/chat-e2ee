@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef, useContext } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
-import { createChatInstance, generateUUID, cryptoUtils } from "@chat-e2ee/service";
+import { createChatInstance, generateUUID, cryptoUtils, TypeUsersInChannel } from "@chat-e2ee/service";
 
 import {
   getUserSessionID,
@@ -131,7 +131,7 @@ const Chat = () => {
   }, []);
 
   const getSetUsers = async () => {
-    const usersInChannel = [];
+    const usersInChannel: TypeUsersInChannel = [];
 
     try {
       const users = await chate2ee.getUsersInChannel();

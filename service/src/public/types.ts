@@ -11,6 +11,7 @@ export type LinkObjType = {
 
 export interface ISendMessageReturn { id: string, timestamp: string };
 export interface IGetPublicKeyReturn { publicKey: string};
+export type TypeUsersInChannel = { "uuid":string }[];
 
 export interface IChatE2EE {
     isEncrypted(): boolean;
@@ -18,12 +19,12 @@ export interface IChatE2EE {
     setChannel(channelId: string, userId: string, publicKey: string): void;
     setPublicKey(key: string): void;
     delete(): Promise<void>;
-    getUsersInChannel(): Promise<any>; //fix: return type
+    getUsersInChannel(): Promise<TypeUsersInChannel>;
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
-    getPublicKey(): Promise<any>; //fix: return type
+    getPublicKey(): Promise<IGetPublicKeyReturn>;
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
-    on(listener: SocketListenerType, callback): void;
+    on(listener: SocketListenerType, callback: (...args: any) => void): void;
 }
 
 export interface ICryptoUtils {

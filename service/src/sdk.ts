@@ -3,7 +3,7 @@ import deleteLink from './deleteLink';
 import getUsersInChannel from './getUsersInChannel';
 import sendMessage from './sendMessage';
 import { sharePublicKey, getPublicKey } from './publicKey';
-import { IChatE2EE, IGetPublicKeyReturn, ISendMessageReturn, LinkObjType } from './public/types';
+import { IChatE2EE, IGetPublicKeyReturn, ISendMessageReturn, LinkObjType, TypeUsersInChannel } from './public/types';
 import { cryptoUtils } from './crypto';
 import { SocketInstance, SubscriptionContextType } from './socket/socket';
 import { Logger } from './utils/logger';
@@ -73,7 +73,7 @@ class ChatE2EE implements IChatE2EE {
         return deleteLink({ channelID: this.channelId });
     }
 
-    public async getUsersInChannel(): Promise<any> {
+    public async getUsersInChannel(): Promise<TypeUsersInChannel> {
         logger.log(`getUsersInChannel()`);
         return getUsersInChannel({ channelID: this.channelId });
     }
