@@ -14,22 +14,20 @@ export interface IGetPublicKeyReturn { publicKey: string};
 export type TypeUsersInChannel = { "uuid":string }[];
 
 export interface IChatE2EE {
+    init(): Promise<void>;
+    getKeyPair(): { privateKey: string, publicKey: string };
     isEncrypted(): boolean;
     getLink(): Promise<LinkObjType>;
-    setChannel(channelId: string, userId: string, publicKey: string): void;
-    setPublicKey(key: string): void;
+    setChannel(channelId: string, userId: string): void;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<TypeUsersInChannel>;
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
-    getPublicKey(): Promise<IGetPublicKeyReturn>;
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType, callback: (...args: any) => void): void;
 }
 
 export interface ICryptoUtils {
-    generateKeypairs(): Promise<{privateKey: string, publicKey: string}>,
-    encryptMessage(plaintext: string, publicKey: string): Promise<string>,
     decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
 }
 

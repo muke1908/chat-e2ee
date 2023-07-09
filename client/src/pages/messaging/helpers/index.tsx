@@ -1,10 +1,10 @@
-import { LS } from "../../../utils/storage";
+import { LS } from '../../../utils/storage';
+
 export { isEmptyMessage } from "./validator";
 export { getKeyPairFromCache, storeKeyPair } from "./crypto";
 
 export const getUserSessionID = (channelID: any): string => {
   const userID_storage = LS.get("session-user-uuid") || {};
-  console.log(userID_storage);
   const userId = userID_storage.channelID === channelID ? userID_storage.userId : null;
   return userId;
 };

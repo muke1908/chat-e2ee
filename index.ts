@@ -1,7 +1,7 @@
 require("dotenv").config();
-import { initSocket } from "./backend/socket.io";
-import db from "./backend/db";
-import app from "./app";
+import app from './app';
+import db from './backend/db';
+import { initSocket } from './backend/socket.io';
 
 const PORT = process.env.PORT || 3001;
 
