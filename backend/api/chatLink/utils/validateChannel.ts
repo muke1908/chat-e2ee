@@ -1,6 +1,6 @@
-import { LINK_COLLECTION } from "../../../db/const";
-import db from "../../../db";
-import { LinkType } from "./link";
+import db from '../../../db';
+import { LINK_COLLECTION } from '../../../db/const';
+import { LinkType } from './link';
 
 export enum CHANNEL_STATE {
   "NOT_FOUND" = "NOT_FOUND",

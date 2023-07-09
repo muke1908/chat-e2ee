@@ -1,9 +1,8 @@
-import { Db, MongoClient } from "mongodb";
+import { Db, MongoClient } from 'mongodb';
+
 import {
-  insertInDb as _insertInDb,
-  findOneFromDB as _findOneFromDB,
-  updateOneFromDb as _updateOneFromDb
-} from "./inMemDB";
+    findOneFromDB as _findOneFromDB, insertInDb as _insertInDb, updateOneFromDb as _updateOneFromDb
+} from './inMemDB';
 
 const uri = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB_NAME;

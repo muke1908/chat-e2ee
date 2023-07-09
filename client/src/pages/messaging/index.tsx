@@ -1,25 +1,30 @@
-import React, { useCallback, useEffect, useState, useRef, useContext } from "react";
-import { useParams, useHistory } from "react-router-dom";
-
-import { createChatInstance, generateUUID, cryptoUtils, TypeUsersInChannel } from "@chat-e2ee/service";
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
 
 import {
-  getUserSessionID,
-  storeUserSessionID,
-  getKeyPairFromCache,
-  storeKeyPair,
-  isEmptyMessage
-} from "./helpers";
+    createChatInstance, utils, TypeUsersInChannel, setConfig
+} from '@chat-e2ee/service';
 
-import { ThemeContext } from "../../ThemeContext";
-import styles from "./Style.module.css";
-import { Message, UserStatusInfo, NewMessageForm, ScrollWrapper } from "../../components/Messaging";
-import Notification from "../../components/Notification";
-import LinkSharingInstruction from "../../components/Messaging/LinkSharingInstruction";
-import notificationAudio from "../../components/Notification/audio.mp3";
-import { LS, SS } from "../../utils/storage";
+import { Message, NewMessageForm, ScrollWrapper, UserStatusInfo } from '../../components/Messaging';
+import LinkSharingInstruction from '../../components/Messaging/LinkSharingInstruction';
+import Notification from '../../components/Notification';
+import notificationAudio from '../../components/Notification/audio.mp3';
+import { ThemeContext } from '../../ThemeContext';
+import { LS, SS } from '../../utils/storage';
+import {
+    getKeyPairFromCache, getUserSessionID, isEmptyMessage, storeKeyPair, storeUserSessionID
+} from './helpers';
+import styles from './Style.module.css';
+
+if(process.env.NODE_ENV === 'development') {
+  setConfig({
+    apiURL: 'http://localhost:3000',
+    socketURL: 'http://localhost:3000',
+  })
+}
 
 const chate2ee = createChatInstance();
+
 type messageObj = {
   body?: string;
   image?: string;
@@ -49,7 +54,7 @@ const Chat = () => {
   let userId = getUserSessionID(channelID);
   // if not in session, lets create one and store.
   if (!userId) {
-    userId = generateUUID();
+    userId = utils.generateUUID();
   }
 
   useEffect(() => {
@@ -71,16 +76,17 @@ const Chat = () => {
   };
 
   const initPublicKey = async (channelID: string) => {
+    await chate2ee.init();
     let _keyPair = getKeyPairFromCache(channelID);
     if (!_keyPair) {
-      _keyPair = await cryptoUtils.generateKeypairs();
+      _keyPair = chate2ee.getKeyPair();
       storeKeyPair(channelID, _keyPair);
 
       // share public key
-      console.log("New public key generated");
+      console.log("KeyPair received");
     }
     myKeyRef.current = _keyPair;
-    chate2ee.setChannel(channelID, userId, _keyPair?.publicKey);
+    chate2ee.setChannel(channelID, userId);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -146,8 +152,6 @@ const Chat = () => {
     // if alice is already connected,
     // get alice's publicKey
     if (alice) {
-      const key = await chate2ee.getPublicKey();
-      chate2ee.setPublicKey(key.publicKey);
       playNotification();
     }
   };
@@ -186,7 +190,6 @@ const Chat = () => {
       // an event to notify that the other person is joined.
       chate2ee.on("on-alice-join", ({ publicKey }: { publicKey: string | null }) => {
         if (publicKey) {
-          chate2ee.setPublicKey(publicKey);
           playNotification();
         }
         getSetUsers();
@@ -194,9 +197,7 @@ const Chat = () => {
 
       chate2ee.on("on-alice-disconnect", () => {
         console.log("alice disconnected!!");
-        chate2ee.setPublicKey(null);
         playNotification();
-
         getSetUsers();
       });
 
@@ -215,7 +216,7 @@ const Chat = () => {
           }
 
           try {
-            const message = await cryptoUtils.decryptMessage(
+            const message = await utils.decryptMessage(
               msg.message,
               myKeyRef.current.privateKey
             );

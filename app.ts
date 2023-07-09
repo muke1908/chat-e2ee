@@ -1,12 +1,14 @@
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import path from "path";
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express from 'express';
+import path from 'path';
+
+import apiController from './backend/api';
+
 require("dotenv").config();
 
 const app = express();
 app.disable("x-powered-by");
-import apiController from "./backend/api";
 const corsOptions = {
   origin: process.env.CHAT_LINK_DOMAIN || "localhost:3001"
 };

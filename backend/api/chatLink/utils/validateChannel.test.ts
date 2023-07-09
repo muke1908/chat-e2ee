@@ -1,6 +1,6 @@
-import channelValid, { CHANNEL_STATE } from './validateChannel';
-import db from "../../../db";
+import db from '../../../db';
 import { LINK_COLLECTION } from '../../../db/const';
+import channelValid, { CHANNEL_STATE } from './validateChannel';
 
 jest.mock('../../../db');
 

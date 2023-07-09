@@ -14,23 +14,22 @@ export interface IGetPublicKeyReturn { publicKey: string};
 export type TypeUsersInChannel = { "uuid":string }[];
 
 export interface IChatE2EE {
+    init(): Promise<void>;
+    getKeyPair(): { privateKey: string, publicKey: string };
     isEncrypted(): boolean;
     getLink(): Promise<LinkObjType>;
-    setChannel(channelId: string, userId: string, publicKey: string): void;
-    setPublicKey(key: string): void;
+    setChannel(channelId: string, userId: string): void;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<TypeUsersInChannel>;
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
-    getPublicKey(): Promise<IGetPublicKeyReturn>;
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType, callback: (...args: any) => void): void;
 }
 
-export interface ICryptoUtils {
-    generateKeypairs(): Promise<{privateKey: string, publicKey: string}>,
-    encryptMessage(plaintext: string, publicKey: string): Promise<string>,
+export interface IUtils {
     decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
+    generateUUID(): string,
 }
 
 export type configType = {
@@ -43,8 +42,7 @@ export type configType = {
 export type SetConfigType = (config: Partial<configType>) => void;
 
 export declare const createChatInstance: () => IChatE2EE;
-export declare const generateUUID: () => string;
-export declare const cryptoUtils: ICryptoUtils;
+export declare const utils: IUtils;
 export declare const setConfig: SetConfigType;
 
 

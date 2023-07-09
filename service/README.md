@@ -10,55 +10,59 @@ npm i @chat-e2ee/service
 ### Usage:
 
 `@chat-e2ee/service` exports the following modules:  
- - createChatInstance - core chat ops.  
- - generateUUID - util func to generate UUID.  
- - cryptoUtils - encryption utils.  
+ - createChatInstance - core chat ops.
+ - utils
+   - generateUUID - util func to generate UUID.  
+   - decryptMessage - to decrypt encrypted messages.  
  - setConfig - configuration - set URLs i.e. API endpoints, debugging etc.
 
 `@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use a custom server, use `setConfig({ apiURL, socketURL });`
 
+`config` follows: 
+```
+{
+    apiURL: string | null,
+    socketURL: string | null,
+    settings: {
+        disableLog: boolean,
+    }
+}
+```
+
 ### Example and flow:  
-#### 1. Import the SDK:
+#### 1. Import and initialize the SDK:
 ```
-import { createChatInstance, generateUUID, cryptoUtils, setConfig } from '@chat-e2ee/service';
-const chatInstance = createChatInstance();
+import { createChatInstance, utils, setConfig } from '@chat-e2ee/service';
+const chatInstance = createChatInstance(config);
+await chatInstance.init();
 ```
+Note that the config is optional.
 
 #### 2. Setup channel:
-First, you have to set up a channel. To set up a channel you need to generate a hash, user ID, and your public key. 
+First, you have to set up a channel. To set up a channel you need to generate a hash, user ID. 
 
 ```
-const { publicKey, privateKey } = await cryptoUtils.generateKeypairs();
-const userId = generateUUID(); // you can use your own user id.
+const userId = utils.generateUUID(); // you can use your own user id.
 const { hash } = await chatInstance.getLink();
 
-chatInstance.setChannel(hash, userId, publickKey);
+await chatInstance.setChannel(hash, userId);
 ```
-Once you set up a channel, user2 can join the channel by passing the same hash to `setChannel` with their own `userid` and `publickey`.
-When user2 joins the channel you can request user2's publicKey. 
+Once you set up a channel, user2 can join the channel by passing the same hash to `setChannel` with their own `userid`.
+Note that userid should be unique.
 
-```
-const receiverPublicKey = await chatInstance.getPublicKey();  
-receiverPublicKey && chatInstance.setPublicKey(receiverPublicKey);
-
-// set listener
-chatInstance.on('on-alice-join', async () => {
-    const receiverPublicKey = await chatInstance.getPublicKey();
-    chatInstance.setPublicKey(receiverPublicKey);
-});
-```
 
 #### 3. Send message:
-Now you are ready to send a message. 
+When both users have joined the channel, you are ready to send a message. 
 ```
 await chatInstance.encrypt('some message').send();
 ```
 
 #### 4. Receive messages:
-Setup listener to receive messages from user2
+Setup listener to receive messages from user2 and use your private key to decrypt messages.
 ```
+const { privateKey } = chatInstance.getKeyPair();
 chatInstance.on('chat-message', async () => {
-    const msgInPlainText = await cryptoUtils.decryptMessage(msg.message, privateKey);
+    const msgInPlainText = await utils.decryptMessage(msg.message, privateKey);
     console.log(msgInPlainText);
 });
 ```
@@ -84,25 +88,17 @@ linkDescription contains basic info:
 ```
 
 **Send message:**  
-1 - Custom encryption / No encryption:  
-> Simply call .sendMessage() with encrypted or plain text. 
-```
-chatInstance.sendMessage({ image, message: <message> });
-```
-
-2 - Using cryptoUtils from @chat-e2ee/service  
-> To get keys follow previous step
-```
-const encryptedMessage = cryptoUtils.encryptMessage(message, publicKey);
-chatInstance.sendMessage({ image, message: encryptedMessage });
-```
-
-3 - Auto encryption by @chat-e2ee/service  
-> @chat-e2ee/service will encrypt message with publicKey before sending to network. To use this, you have to call `.setPublicKey` once you receive the public key at step 2.  
-It will throw if public key is not set.
+1 - Auto encryption by @chat-e2ee/service  
+> @chat-e2ee/service will encrypt message with publicKey before sending to network.
 
 ```
 chatInstance.encrypt({ image, text }).send();
+```
+
+2 - Custom encryption / No encryption:  
+> Simply call .sendMessage() with encrypted or plain text. 
+```
+chatInstance.sendMessage({ image, message: <message> });
 ```
 
 ---
