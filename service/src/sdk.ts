@@ -75,7 +75,7 @@ class ChatE2EE implements IChatE2EE {
 
     public async setChannel(channelId: string, userId: string): Promise<void> {
         this.checkInitialized();
-        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId })}, publicKey removed from log`);
+        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId })}`);
         this.channelId = channelId;
         this.userId = userId;
         await sharePublicKey({ publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
@@ -125,7 +125,6 @@ class ChatE2EE implements IChatE2EE {
     }
 
     public on(listener: SocketListenerType, callback): void {
-        this.checkInitialized();
         const loggerWithCount = this.subscriptionLogger.count();
         const sub = this.subscriptions.get(listener);
         if (sub) {

@@ -8,8 +8,7 @@ import { SOCKET_TOPIC, socketEmit } from '../../socket.io';
 import getClientInstance from '../../socket.io/clients';
 import channelValid from '../chatLink/utils/validateChannel';
 import {
-    ChatMessageType, GetPublicKeyResponse, MessageResponse, SharePublicKeyResponse,
-    UsersInChannelResponse
+    ChatMessageType, GetPublicKeyResponse, MessageResponse, SharePublicKeyResponse, UsersInChannelResponse
 } from './types';
 
 const router = express.Router({ mergeParams: true });
