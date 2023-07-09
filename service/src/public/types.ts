@@ -27,8 +27,9 @@ export interface IChatE2EE {
     on(listener: SocketListenerType, callback: (...args: any) => void): void;
 }
 
-export interface ICryptoUtils {
+export interface IUtils {
     decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
+    generateUUID(): string,
 }
 
 export type configType = {
@@ -41,8 +42,7 @@ export type configType = {
 export type SetConfigType = (config: Partial<configType>) => void;
 
 export declare const createChatInstance: () => IChatE2EE;
-export declare const generateUUID: () => string;
-export declare const cryptoUtils: ICryptoUtils;
+export declare const utils: IUtils;
 export declare const setConfig: SetConfigType;
 
 

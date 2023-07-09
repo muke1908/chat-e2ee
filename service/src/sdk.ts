@@ -1,19 +1,20 @@
+import { setConfig } from './configContext';
 import { cryptoUtils as _cryptoUtils } from './crypto';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
-import {
-    IChatE2EE, ISendMessageReturn, LinkObjType, SocketListenerType, TypeUsersInChannel
-} from './public/types';
+import { configType, IChatE2EE, ISendMessageReturn, LinkObjType, SocketListenerType, TypeUsersInChannel } from './public/types';
 import { getPublicKey, sharePublicKey } from './publicKey';
 import sendMessage from './sendMessage';
 import { SocketInstance, SubscriptionContextType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
+import { generateUUID } from './utils/uuid';
 
-// export only decryptMessage util
-export const cryptoUtils = {
-    decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey)
+export const utils = {
+    decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
+    generateUUID
+
 }
 
 const logger = new Logger();
@@ -44,7 +45,9 @@ class ChatE2EE implements IChatE2EE {
 
     private initialized = false;
 
-    constructor() {}
+    constructor(config?: Partial<configType>) {
+        config && setConfig(config);
+    }
 
     public async init(): Promise<void> {
         const initLogger = logger.createChild('Init');
@@ -99,6 +102,7 @@ class ChatE2EE implements IChatE2EE {
     public async getUsersInChannel(): Promise<TypeUsersInChannel> {
         logger.log(`getUsersInChannel()`);
         this.checkInitialized();
+        await this.getPublicKey(logger.createChild('getUsersInChannel'));
         return getUsersInChannel({ channelID: this.channelId });
     }
 
@@ -111,9 +115,6 @@ class ChatE2EE implements IChatE2EE {
     public encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> } {
         logger.log(`encrypt()`);
         this.checkInitialized();
-        if (!this.receiverPublicKey) {
-            throw new Error('Public key is not set, call setPublicKey(key)');
-        }
 
         const encryptedTextPromise = _cryptoUtils.encryptMessage(text, this.receiverPublicKey);
         return ({
@@ -175,19 +176,4 @@ class ChatE2EE implements IChatE2EE {
             throw new Error('ChatE2EE is not initialized, call init()');
         }
     }
-}
-
-export const generateUUID = () => {
-    let uuid = '', i, random;
-
-    // generate random hexadecimal digits and concatenate them
-    for (i = 0; i < 32; i++) {
-        random = Math.random() * 16 | 0;
-        if (i === 8 || i === 12 || i === 16 || i === 20) {
-            uuid += '-';
-        }
-        uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
-    }
-
-    return uuid;
 }

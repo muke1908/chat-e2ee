@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { useHistory, useParams } from 'react-router-dom';
 
 import {
-    createChatInstance, cryptoUtils, generateUUID, TypeUsersInChannel, setConfig
+    createChatInstance, utils, TypeUsersInChannel, setConfig
 } from '@chat-e2ee/service';
 
 import { Message, NewMessageForm, ScrollWrapper, UserStatusInfo } from '../../components/Messaging';
@@ -54,7 +54,7 @@ const Chat = () => {
   let userId = getUserSessionID(channelID);
   // if not in session, lets create one and store.
   if (!userId) {
-    userId = generateUUID();
+    userId = utils.generateUUID();
   }
 
   useEffect(() => {
@@ -216,7 +216,7 @@ const Chat = () => {
           }
 
           try {
-            const message = await cryptoUtils.decryptMessage(
+            const message = await utils.decryptMessage(
               msg.message,
               myKeyRef.current.privateKey
             );
