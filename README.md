@@ -22,7 +22,7 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 
 ---
 
-For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#for-developers).  
+For installation instruction, go to [developer section](https://github.com/muke1908/chat-e2ee#computer-for-developers).  
 
 ### How to initiate chat
 
