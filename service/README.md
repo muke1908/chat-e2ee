@@ -28,7 +28,7 @@ const chatInstance = createChatInstance();
 First, you have to set up a channel. To set up a channel you need to generate a hash, user ID, and your public key. 
 
 ```
-cosnt { publicKey, privateKey } = cryptoUtils.generateKeypairs();
+const { publicKey, privateKey } = await cryptoUtils.generateKeypairs();
 const userId = generateUUID(); // you can use your own user id.
 const { hash } = await chatInstance.getLink();
 
