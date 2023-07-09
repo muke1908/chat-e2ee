@@ -18,10 +18,11 @@ npm i @chat-e2ee/service
 `@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use a custom server, use `setConfig({ apiURL, socketURL });`
 
 ### Example and flow:  
-#### 1. Import the SDK:
+#### 1. Import and initialize the SDK:
 ```
 import { createChatInstance, generateUUID, cryptoUtils, setConfig } from '@chat-e2ee/service';
 const chatInstance = createChatInstance();
+await chatInstance.init();
 ```
 
 #### 2. Setup channel:
@@ -31,7 +32,7 @@ First, you have to set up a channel. To set up a channel you need to generate a 
 const userId = generateUUID(); // you can use your own user id.
 const { hash } = await chatInstance.getLink();
 
-chatInstance.setChannel(hash, userId);
+await chatInstance.setChannel(hash, userId);
 ```
 Once you set up a channel, user2 can join the channel by passing the same hash to `setChannel` with their own `userid`.
 Note that userid should be unique.
@@ -74,17 +75,17 @@ linkDescription contains basic info:
 ```
 
 **Send message:**  
-1 - Custom encryption / No encryption:  
-> Simply call .sendMessage() with encrypted or plain text. 
-```
-chatInstance.sendMessage({ image, message: <message> });
-```
-
-2 - Auto encryption by @chat-e2ee/service  
+1 - Auto encryption by @chat-e2ee/service  
 > @chat-e2ee/service will encrypt message with publicKey before sending to network.
 
 ```
 chatInstance.encrypt({ image, text }).send();
+```
+
+2 - Custom encryption / No encryption:  
+> Simply call .sendMessage() with encrypted or plain text. 
+```
+chatInstance.sendMessage({ image, message: <message> });
 ```
 
 ---
