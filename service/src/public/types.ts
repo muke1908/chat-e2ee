@@ -1,11 +1,4 @@
-export const enum SOCKET_LISTENERS {
-    'LIMIT_REACHED' = 'limit-reached',
-    'DELIVERED' = 'delivered',
-    'ON_ALICE_JOIN' = 'on-alice-join',
-    'ON_ALICE_DISCONNECT' = 'on-alice-disconnect',
-    'CHAT_MESSAGE' = 'chat-message'
-}
-
+export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message";
 export type LinkObjType = {
     hash: string,
     link: string,
@@ -18,25 +11,25 @@ export type LinkObjType = {
 
 export interface ISendMessageReturn { id: string, timestamp: string };
 export interface IGetPublicKeyReturn { publicKey: string};
+export type TypeUsersInChannel = { "uuid":string }[];
 
 export interface IChatE2EE {
+    init(): Promise<void>;
+    getKeyPair(): { privateKey: string, publicKey: string };
     isEncrypted(): boolean;
     getLink(): Promise<LinkObjType>;
-    setChannel(channelId: string, userId: string, publicKey: string): void;
-    setPublicKey(key: string): void;
+    setChannel(channelId: string, userId: string): void;
     delete(): Promise<void>;
-    getUsersInChannel(): Promise<any>; //fix: return type
+    getUsersInChannel(): Promise<TypeUsersInChannel>;
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
-    getPublicKey(): Promise<any>; //fix: return type
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
-    on(listener: SOCKET_LISTENERS, callback): void
+    on(listener: SocketListenerType, callback: (...args: any) => void): void;
 }
 
-export interface ICryptoUtils {
-    generateKeypairs(): Promise<{privateKey: string, publicKey: string}>,
-    encryptMessage(plaintext: string, publicKey: string): Promise<string>,
+export interface IUtils {
     decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
+    generateUUID(): string,
 }
 
 export type configType = {
@@ -49,8 +42,7 @@ export type configType = {
 export type SetConfigType = (config: Partial<configType>) => void;
 
 export declare const createChatInstance: () => IChatE2EE;
-export declare const generateUUID: () => string;
-export declare const cryptoUtils: ICryptoUtils;
+export declare const utils: IUtils;
 export declare const setConfig: SetConfigType;
 
 

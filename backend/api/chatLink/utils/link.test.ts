@@ -1,6 +1,7 @@
+import { v4 } from 'uuid';
+
 import generateLink from './link';
 import { generatePIN } from './pin';
-import { v4 } from 'uuid';
 
 jest.mock('uuid', () => ({
   v4: jest.fn().mockReturnValue('hash'),

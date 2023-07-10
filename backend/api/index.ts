@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express';
 
-const router = express.Router({ mergeParams: true });
+import chatLinkController from './chatLink';
+import chatController from './messaging';
 
-import chatController from "./messaging";
-import chatLinkController from "./chatLink";
+const router = express.Router({ mergeParams: true });
 
 router.get("/", async (req: Request, res: Response) => {
   res.send({ message: "/api is working!" });

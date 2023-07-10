@@ -1,4 +1,5 @@
-import crypto from "crypto";
+import crypto from 'crypto';
+
 const base36map = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 export const generatePIN = (uuid: string, pinLength = 4): string => {
