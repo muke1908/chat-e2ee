@@ -5,7 +5,7 @@ import { ThemeContext } from '../../ThemeContext';
 import { LinkObjType } from '@chat-e2ee/service';
 
 const LinkDisplay: React.FC<{ content: LinkObjType}> = ( { content } ) => {
-  const chatLink = content.absoluteLink || `${window.location.protocol}//${window.location.host}/${content.hash}`;
+  const chatLink = content.absoluteLink || `${window.location.protocol}//${window.location.host}/chat/${content.hash}`;
   const textAreaRef = useRef<HTMLInputElement | null>(null);
   const [buttonText, setButtonText] = useState("Copy");
   const [darkMode] = useContext(ThemeContext);

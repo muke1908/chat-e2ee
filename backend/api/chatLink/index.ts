@@ -1,10 +1,10 @@
-import express from "express";
-import asyncHandler from "../../middleware/asyncHandler";
-import generateLink, { LinkType } from "./utils/link";
-import channelValid, { CHANNEL_STATE } from "./utils/validateChannel";
+import express from 'express';
 
-import db from "../../db";
-import { LINK_COLLECTION } from "../../db/const";
+import db from '../../db';
+import { LINK_COLLECTION } from '../../db/const';
+import asyncHandler from '../../middleware/asyncHandler';
+import generateLink, { LinkType } from './utils/link';
+import channelValid, { CHANNEL_STATE } from './utils/validateChannel';
 
 const router = express.Router({ mergeParams: true });
 

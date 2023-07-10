@@ -1,4 +1,8 @@
-import { ICryptoUtils } from "./public/types";
+interface ICryptoUtils {
+    generateKeypairs(): Promise<{privateKey: string, publicKey: string}>,
+    encryptMessage(plaintext: string, publicKey: string): Promise<string>,
+    decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
+}
 
 // Generate an RSA key pair
 async function generateRSAKeyPair(): Promise<CryptoKeyPair> {

@@ -1,13 +1,15 @@
-import express, { Request, Response } from "express";
-import uploadImage from "../../external/uploadImage";
-import db from "../../db";
-import channelValid from "../chatLink/utils/validateChannel";
-import { socketEmit, SOCKET_TOPIC } from "../../socket.io";
-import getClientInstance from "../../socket.io/clients";
-import asyncHandler from "../../middleware/asyncHandler";
+import express, { Request, Response } from 'express';
 
-import { PUBLIC_KEY_COLLECTION } from "../../db/const";
-import { ChatMessageType, GetPublicKeyResponse, MessageResponse, SharePublicKeyResponse, UsersInChannelResponse } from "./types";
+import db from '../../db';
+import { PUBLIC_KEY_COLLECTION } from '../../db/const';
+import uploadImage from '../../external/uploadImage';
+import asyncHandler from '../../middleware/asyncHandler';
+import { SOCKET_TOPIC, socketEmit } from '../../socket.io';
+import getClientInstance from '../../socket.io/clients';
+import channelValid from '../chatLink/utils/validateChannel';
+import {
+    ChatMessageType, GetPublicKeyResponse, MessageResponse, SharePublicKeyResponse, UsersInChannelResponse
+} from './types';
 
 const router = express.Router({ mergeParams: true });
 const clients = getClientInstance();
@@ -87,7 +89,9 @@ router.get(
     }
     const receiverID = clients.getReceiverIDBySenderID(userId as string, channel as string);
     const data = await db.findOneFromDB<GetPublicKeyResponse>({ channel, user: receiverID }, PUBLIC_KEY_COLLECTION);
-    return res.send(data);
+    return res.send(data || {
+      public_key: null
+  });
   })
 );
 
