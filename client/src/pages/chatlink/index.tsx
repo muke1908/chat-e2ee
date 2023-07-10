@@ -4,12 +4,11 @@ import LinkDisplay from "../../components/LinkDisplay/index";
 import { ThemeContext } from "../../ThemeContext";
 import styles from "./Style.module.css";
 import ThemeToggle from "../../components/ThemeToggle/index";
-import PinInput from "../../components/PinInput/index";
 
-import { createChatInstance } from "@chat-e2ee/service";
+import { createChatInstance, LinkObjType } from "@chat-e2ee/service";
 
 const App = () => {
-  const [chatLink, setChatLink] = useState("");
+  const [chatLink, setChatLink] = useState<LinkObjType>(null);
   const [loading, setLoading] = useState(false);
   const [darkMode] = useContext(ThemeContext);
 
@@ -21,7 +20,7 @@ const App = () => {
     setLoading(true);
     try {
       const chate2ee = createChatInstance();
-      const linkResp: string = await chate2ee.getLink();
+      const linkResp = await chate2ee.getLink();
       setChatLink(linkResp);
     } catch (error: any) {
       console.error(error);

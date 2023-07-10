@@ -1,12 +1,3 @@
-type storageSetParams = {
-  channelID: string;
-  userId: string;
-};
-type storageKeyPairParams = {
-  channelID: string;
-  keyPair: object | null;
-};
-
 const storageProvider = (provider: any) => ({
   get: (key: string) => {
     const inLS = provider.getItem(key);
@@ -17,7 +8,7 @@ const storageProvider = (provider: any) => ({
 
     return null;
   },
-  set: (key: string, value: storageSetParams | storageKeyPairParams | boolean) => {
+  set: (key: string, value: any) => {
     provider.setItem(key, JSON.stringify(value));
   },
   remove: (key: string) => {

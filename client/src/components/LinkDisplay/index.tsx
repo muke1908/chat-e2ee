@@ -1,20 +1,11 @@
-import React, { useRef, useState, useContext } from "react";
-import { FiLink, FiCopy, FiExternalLink } from "react-icons/fi";
-import styles from "./Style.module.css";
-import { ThemeContext } from "../../ThemeContext";
-import PinDisplay from "../PinDisplay";
+import React, { useRef, useState, useContext } from 'react';
+import { FiLink, FiCopy, FiExternalLink } from 'react-icons/fi';
+import styles from './Style.module.css';
+import { ThemeContext } from '../../ThemeContext';
+import { LinkObjType } from '@chat-e2ee/service';
 
-type LinkDisplayProps = {
-  content: { absoluteLink: string; pin: string } | string;
-};
-
-const LinkDisplay = ({ content }: LinkDisplayProps) => {
-  let chatLink = "";
-  if (typeof content === "object" && content !== null) {
-    chatLink = content.absoluteLink;
-  } else {
-    chatLink = `${window.location.protocol}//${window.location.host}${content}`;
-  }
+const LinkDisplay: React.FC<{ content: LinkObjType}> = ( { content } ) => {
+  const chatLink = content.absoluteLink || `${window.location.protocol}//${window.location.host}/${content.hash}`;
   const textAreaRef = useRef<HTMLInputElement | null>(null);
   const [buttonText, setButtonText] = useState("Copy");
   const [darkMode] = useContext(ThemeContext);
@@ -33,7 +24,7 @@ const LinkDisplay = ({ content }: LinkDisplayProps) => {
     <div className={styles.fullWidth}>
       <div className={styles.divider} />
       <span className={styles.pinDisplayMsg}>
-        Anyone with the PIN or the Link can join your chat
+        Anyone with the Link can join your chat
       </span>
       <div
         className={`${styles.copyToClipboardContainer}
@@ -60,12 +51,6 @@ const LinkDisplay = ({ content }: LinkDisplayProps) => {
             <FiCopy className={styles.copyIcon} /> {buttonText}
           </button>
         </div>
-      </div>
-      <div
-        className={`${styles.pinDisplay} ${darkMode ? styles.darkOpenLink : styles.lightOpenLink}`}
-      >
-        <span className={styles.pinValidMsg}>PIN (valid for 30 minutes)</span>
-        <PinDisplay content={typeof content === "object" && content?.pin} />
       </div>
       <div className={styles.divider} />
       <div

@@ -3,9 +3,9 @@ import deleteLink from './deleteLink';
 import getUsersInChannel from './getUsersInChannel';
 import sendMessage from './sendMessage';
 import { sharePublicKey, getPublicKey } from './publicKey';
-import { IChatE2EE, IGetPublicKeyReturn, ISendMessageReturn, LinkObjType } from './public/types';
+import { IChatE2EE, IGetPublicKeyReturn, ISendMessageReturn, LinkObjType, SOCKET_LISTENERS } from './public/types';
 import { cryptoUtils } from './crypto';
-import { SocketInstance, SOCKET_LISTENERS, SubscriptionContextType } from './socket/socket';
+import { SocketInstance, SubscriptionContextType } from './socket/socket';
 import { Logger } from './utils/logger';
 
 export { cryptoUtils } from './crypto';
@@ -102,7 +102,7 @@ class ChatE2EE implements IChatE2EE {
         })
     }
 
-    public on(listener: SOCKET_LISTENERS, callback) {
+    public on(listener: SOCKET_LISTENERS, callback): void {
         const loggerWithCount = this.subscriptionLogger.count();
         const sub = this.subscriptions.get(listener);
         if (sub) {

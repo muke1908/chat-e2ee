@@ -2,16 +2,10 @@ import socketIOClient, { Socket } from 'socket.io-client';
 import { Logger } from '../utils/logger';
 import { chatJoinPayloadType } from '../sdk';
 import { configContext } from '../configContext';
+import { SOCKET_LISTENERS } from '../public/types';
 export type SubscriptionType = Map<SOCKET_LISTENERS, Set<(...args: any) => void>>;
 export type SubscriptionContextType = () => SubscriptionType;
 
-export const enum SOCKET_LISTENERS {
-    'LIMIT_REACHED' = 'limit-reached',
-    'DELIVERED' = 'delivered',
-    'ON_ALICE_JOIN' = 'on-alice-join',
-    'ON_ALICE_DISCONNECT' = 'on-alice-disconnect',
-    'CHAT_MESSAGE' = 'chat-message'
-}
 
 const getBaseURL = (): string => {
     const { socketURL } = configContext();

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef, useContext } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
-import { createChatInstance, generateUUID, cryptoUtils } from "@chat-e2ee/service";
+import { createChatInstance, generateUUID, cryptoUtils, SOCKET_LISTENERS } from "@chat-e2ee/service";
 
 import {
   getUserSessionID,
@@ -27,12 +27,12 @@ type messageObj = {
   sender?: string;
   id?: string;
   local?: boolean;
-  timestamp?: Timestamp;
+  timestamp?: any;
 }[];
 
 const Chat = () => {
   const [text, setText] = useState("");
-  const [messages, setMessages] = useState<messageObj>([{}]);
+  const [messages, setMessages] = useState<messageObj>([]);
   const [selectedImg, setSelectedImg] = useState("");
   const [previewImg, setPreviewImg] = useState(false);
   const [usersInChannel, setUsers] = useState<{ uuid?: string }[]>([]);
@@ -55,7 +55,13 @@ const Chat = () => {
 
   useEffect(() => {
     storeUserSessionID(channelID, userId);
-  }, [channelID]);
+  }, [channelID, userId]);
+
+  useEffect(() => {
+    if (LS.get("store-chat-messages")) {
+      SS.set(`chat#${channelID}`, messages);
+    }
+  }, [channelID, messages]);
 
   const playNotification = () => {
     setNotificationState(true);
@@ -166,7 +172,7 @@ const Chat = () => {
   useEffect(() => {
     // this is update the public key ref
     initPublicKey(channelID).then(() => {
-      chate2ee.on("limit-reached", () => {
+      chate2ee.on(SOCKET_LISTENERS.LIMIT_REACHED, () => {
         setMessages((prevMsg) =>
           prevMsg.concat({
             image: "",
@@ -175,11 +181,11 @@ const Chat = () => {
           })
         );
       });
-      chate2ee.on("delivered", (id: string) => {
+      chate2ee.on(SOCKET_LISTENERS.DELIVERED, (id: string) => {
         setDeliveredID((prev) => [...prev, id]);
       });
       // an event to notify that the other person is joined.
-      chate2ee.on("on-alice-join", ({ publicKey }: { publicKey: string | null }) => {
+      chate2ee.on(SOCKET_LISTENERS.ON_ALICE_JOIN, ({ publicKey }: { publicKey: string | null }) => {
         if (publicKey) {
           chate2ee.setPublicKey(publicKey);
           playNotification();
@@ -187,7 +193,7 @@ const Chat = () => {
         getSetUsers();
       });
 
-      chate2ee.on("on-alice-disconnect", () => {
+      chate2ee.on(SOCKET_LISTENERS.ON_ALICE_DISCONNECT, () => {
         console.log("alice disconnected!!");
         chate2ee.setPublicKey(null);
         playNotification();
@@ -197,7 +203,7 @@ const Chat = () => {
 
       //handle incoming message
       chate2ee.on(
-        "chat-message",
+        SOCKET_LISTENERS.CHAT_MESSAGE,
         async (msg: {
           message: string;
           image: string;
@@ -205,10 +211,14 @@ const Chat = () => {
           id: string;
           timestamp: Timestamp;
         }) => {
+          if(!myKeyRef.current?.privateKey) {
+            throw new Error("Private key not found!");
+          }
+
           try {
             const message = await cryptoUtils.decryptMessage(
               msg.message,
-              myKeyRef.current?.privateKey
+              myKeyRef.current.privateKey
             );
             setMessages((prevMsg) =>
               prevMsg.concat({
@@ -258,7 +268,7 @@ const Chat = () => {
             <ScrollWrapper messageCount={messagesFormatted.length}>
               {messagesFormatted.map((message, index) => (
                 <Message
-                  key={index}
+                  key={message.id}
                   handleSend={handleSend}
                   index={index}
                   message={message}
