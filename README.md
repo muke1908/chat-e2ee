@@ -17,8 +17,12 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 2. Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any man in the middle. 
 4. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
 
-:boom: **Spin up your own frontend**: 
- - JS SDK and use chat-e2ee backend as service - `@chate2ee/service` [Read Documentation](https://github.com/muke1908/chat-e2ee/tree/master/service)
+## :star: JS SDK 
+[<img align="center" width="200" src="https://i.imgur.com/O3Wr6fK.png">](https://github.com/muke1908/chat-e2ee/tree/master/service)  
+
+**Spin up your own frontend**: 
+JS SDK and use chat-e2ee backend as service - `@chate2ee/service`  
+[ :page_with_curl: Documentation](https://github.com/muke1908/chat-e2ee/tree/master/service)
 
 ---
 
