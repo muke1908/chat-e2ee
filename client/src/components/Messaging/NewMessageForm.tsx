@@ -10,7 +10,7 @@ import emojiPickerIconDark from "./assets/emoji-picker-black.png";
 
 type SetStateType<T> = React.Dispatch<React.SetStateAction<T>>;
 type NewMessageFormProps = {
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  handleSubmit: any;
   text: string;
   setText: SetStateType<string>;
   selectedImg?: string;
@@ -36,7 +36,7 @@ export const NewMessageForm = ({
 
   const wrapperHandler = (event: React.MouseEvent<HTMLDivElement>) => {
     inputRef.current?.focus();
-    // handleSubmit;
+    handleSubmit();
   };
 
   return (
