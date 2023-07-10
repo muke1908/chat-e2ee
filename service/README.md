@@ -11,27 +11,12 @@ This is a client-side SDK to interact with chat-e2ee service. It allows dev to b
 npm i @chat-e2ee/service
 ```
 
-### Usage:
-
 `@chat-e2ee/service` exports the following modules:  
  - createChatInstance - core chat ops.
  - utils
    - generateUUID - util func to generate UUID.  
    - decryptMessage - to decrypt encrypted messages.  
  - setConfig - configuration - set URLs i.e. API endpoints, debugging etc.
-
-`@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use a custom server, use `setConfig({ apiURL, socketURL });`
-
-`config` follows: 
-```
-{
-    apiURL: string | null,
-    socketURL: string | null,
-    settings: {
-        disableLog: boolean,
-    }
-}
-```
 
 ### Example and flow:  
 #### 1. Import and initialize the SDK:
@@ -140,6 +125,23 @@ chate2ee.on('delivered', (id) => {
 })
 ```
   
+
+---
+
+### Config:
+Call setConfig with config object to override default config parameters.
+
+`config` follows: 
+```
+{
+    apiURL: string | null,
+    socketURL: string | null,
+    settings: {
+        disableLog: boolean,
+    }
+}
+```
+Note that `@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use a custom server, use `setConfig({ apiURL, socketURL });`
 
 ---
 ### Debugging: 
