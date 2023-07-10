@@ -1,4 +1,8 @@
-# SDK
+<p align="center">
+<img align="center" width="300" src="https://i.imgur.com/QLjL12y.jpg">  
+</p>
+  
+  
 This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service. It uses [socket.io](https://socket.io/) for websocket connection.    
 
 [![npm version](https://img.shields.io/npm/v/@chat-e2ee/service.svg)](https://www.npmjs.com/package/@chat-e2ee/service)
