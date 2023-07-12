@@ -1,6 +1,11 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { ChatMessageType } from "../api/messaging/types";
 import connectionListener from "./listeners";
+
+export interface CustomSocket extends Socket {
+  userID: string,
+  channelID: string
+}
 
 let io: Server = null;
 export enum SOCKET_TOPIC {
@@ -34,7 +39,7 @@ export const initSocket = (server) => {
   console.log("Websocket is up!");
 
   // add listeners
-  io.on("connection", (socket) => connectionListener(socket, io));
+  io.on("connection", (socket) => connectionListener(socket as CustomSocket, io));
 
   return io;
 };
