@@ -38,12 +38,12 @@ const App = () => {
           className={`${styles.header}
           ${darkMode === true ? styles.darkModeHeader : styles.lightModeHeader}`}
         >
-          Disposable chat session
+          🔐 Disposable e2ee-chat
           <ThemeToggle />
         </div>
         <div className={`${styles.sectionDefault} ${!darkMode && styles.sectionDefaultLight}`}>
           <div className={styles.title}>
-            Generate a temporary link and start chatting without worrying.
+            Secure, end-to-end encrypted environment for exchanging sensitive information with peer.
           </div>
           <div className={styles.description}>
             <ul>
@@ -59,7 +59,7 @@ const App = () => {
             <div className={styles.linkGenerationBtnContainer}>
               <br />
               <Button
-                label="Create new chat link"
+                label="Create chat link"
                 type="primary"
                 onClick={generateLink}
                 disabled={loading}
@@ -78,7 +78,7 @@ const App = () => {
           }`}
         >
           <div className={styles.title}>
-            The source-code is public on&nbsp;
+            ❤️ The source-code is public on&nbsp;
             <a
               href="https://github.com/muke1908/chat-e2ee"
               target="_blank"
