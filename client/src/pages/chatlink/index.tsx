@@ -16,7 +16,7 @@ const App = () => {
     if (loading) {
       return;
     }
-
+    
     setLoading(true);
     try {
       const chate2ee = createChatInstance();
@@ -59,7 +59,7 @@ const App = () => {
             <div className={styles.linkGenerationBtnContainer}>
               <br />
               <Button
-                label="Create chat link"
+                label={loading?"Creating...":"Create chat link"}
                 type="primary"
                 onClick={generateLink}
                 disabled={loading}
