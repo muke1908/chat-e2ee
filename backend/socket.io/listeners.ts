@@ -1,9 +1,9 @@
 import getClientInstance from "./clients";
 import channelValid from "../api/chatLink/utils/validateChannel";
-import { socketEmit, SOCKET_TOPIC } from "./index";
+import { socketEmit, SOCKET_TOPIC , CustomSocket} from "./index";
 
 const clients = getClientInstance();
-const connectionListener = (socket, io) => {
+const connectionListener = (socket: CustomSocket, io) => {
   socket.on("chat-join", async (data) => {
     const { userID, channelID, publicKey } = data;
 
