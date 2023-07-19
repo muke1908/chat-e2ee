@@ -36,12 +36,11 @@ export const NewMessageForm = ({
 
   const wrapperHandler = (event: React.MouseEvent<HTMLDivElement>) => {
     inputRef.current?.focus();
-    handleSubmit();
+    handleSubmit(event);
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
       className={`${styles.sendMessageForm} ${!darkMode && styles.lightsendMessageForm}`}
     >
       <div className={styles.emojiMessageContainer}>
