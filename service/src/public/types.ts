@@ -18,7 +18,7 @@ export interface IChatE2EE {
     getKeyPair(): { privateKey: string, publicKey: string };
     isEncrypted(): boolean;
     getLink(): Promise<LinkObjType>;
-    setChannel(channelId: string, userId: string, userName: string): void;
+    setChannel(channelId: string, userId: string, userName?: string): void;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<TypeUsersInChannel>;
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
