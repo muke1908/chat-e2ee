@@ -77,7 +77,7 @@ class ChatE2EE implements IChatE2EE {
         return getLink();
     }
 
-    public async setChannel(channelId: string, userId: string, userName: string): Promise<void> {
+    public async setChannel(channelId: string, userId: string, userName?: string): Promise<void> {
         this.checkInitialized();
         logger.log(`setChannel(), ${JSON.stringify({ channelId, userId,userName })}`);
         this.channelId = channelId;
