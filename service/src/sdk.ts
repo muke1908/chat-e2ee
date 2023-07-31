@@ -32,6 +32,7 @@ export type chatJoinPayloadType = {
 class ChatE2EE implements IChatE2EE {
     private channelId?: string;
     private userId?: string;
+    private userName?: string;
 
     private privateKey?: string;
     private publicKey?: string;
@@ -76,13 +77,14 @@ class ChatE2EE implements IChatE2EE {
         return getLink();
     }
 
-    public async setChannel(channelId: string, userId: string): Promise<void> {
+    public async setChannel(channelId: string, userId: string, userName?: string): Promise<void> {
         this.checkInitialized();
-        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId })}`);
+        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId,userName })}`);
         this.channelId = channelId;
         this.userId = userId;
-        await sharePublicKey({ publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
-        this.socket.joinChat({ publicKey: this.publicKey, userID: this.userId, channelID: this.channelId })
+        this.userName = userName;
+        await sharePublicKey({ publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
+        this.socket.joinChat({ publicKey: this.publicKey, userID: this.userId, channelID: this.channelId})
         await this.getPublicKey(logger);
         return;
     }
