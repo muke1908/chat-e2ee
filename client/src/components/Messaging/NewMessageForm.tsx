@@ -36,12 +36,18 @@ export const NewMessageForm = ({
 
   const wrapperHandler = (event: React.MouseEvent<HTMLDivElement>) => {
     inputRef.current?.focus();
-    handleSubmit();
+    handleSubmit(event);
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleSubmit(event);
+    }
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
       className={`${styles.sendMessageForm} ${!darkMode && styles.lightsendMessageForm}`}
     >
       <div className={styles.emojiMessageContainer}>
@@ -62,6 +68,7 @@ export const NewMessageForm = ({
             onChange={(e) => setText(e.target.value)}
             value={text}
             autoComplete="off"
+            onKeyPress={handleKeyPress}
           />
           {selectedImg === "" ? null : <RemoveButton onClick={resetImage} />}
           <div className={styles.buttonImageContainer}>
