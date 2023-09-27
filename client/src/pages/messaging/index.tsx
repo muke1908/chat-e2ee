@@ -1,26 +1,28 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
 
+import { createChatInstance, utils, TypeUsersInChannel, setConfig } from "@chat-e2ee/service";
+
+import { Message, NewMessageForm, ScrollWrapper, UserStatusInfo } from "../../components/Messaging";
+import LinkSharingInstruction from "../../components/Messaging/LinkSharingInstruction";
+import Notification from "../../components/Notification";
+import notificationAudio from "../../components/Notification/audio.mp3";
+import { ThemeContext } from "../../ThemeContext";
+import { LS, SS } from "../../utils/storage";
 import {
-    createChatInstance, utils, TypeUsersInChannel, setConfig
-} from '@chat-e2ee/service';
+  getKeyPairFromCache,
+  getUserSessionID,
+  isEmptyMessage,
+  storeKeyPair,
+  storeUserSessionID
+} from "./helpers";
+import styles from "./Style.module.css";
 
-import { Message, NewMessageForm, ScrollWrapper, UserStatusInfo } from '../../components/Messaging';
-import LinkSharingInstruction from '../../components/Messaging/LinkSharingInstruction';
-import Notification from '../../components/Notification';
-import notificationAudio from '../../components/Notification/audio.mp3';
-import { ThemeContext } from '../../ThemeContext';
-import { LS, SS } from '../../utils/storage';
-import {
-    getKeyPairFromCache, getUserSessionID, isEmptyMessage, storeKeyPair, storeUserSessionID
-} from './helpers';
-import styles from './Style.module.css';
-
-if(process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   setConfig({
-    apiURL: 'http://localhost:3000',
-    socketURL: 'http://localhost:3000',
-  })
+    apiURL: "http://localhost:3000",
+    socketURL: "http://localhost:3000"
+  });
 }
 
 const chate2ee = createChatInstance();
@@ -124,7 +126,7 @@ const Chat = () => {
       alert("Key not received / No one in chat");
     }
 
-    const { id, timestamp } = await chate2ee.encrypt({ image, text: body }).send();
+    const { id, timestamp } = await chate2ee.encrypt({ image: btoa(image), text: body }).send();
 
     setMessages((prevMsg) => {
       const { ...message } = prevMsg[index];
@@ -211,15 +213,12 @@ const Chat = () => {
           id: string;
           timestamp: number;
         }) => {
-          if(!myKeyRef.current?.privateKey) {
+          if (!myKeyRef.current?.privateKey) {
             throw new Error("Private key not found!");
           }
 
           try {
-            const message = await utils.decryptMessage(
-              msg.message,
-              myKeyRef.current.privateKey
-            );
+            const message = await utils.decryptMessage(msg.message, myKeyRef.current.privateKey);
             setMessages((prevMsg) =>
               prevMsg.concat({
                 image: msg.image,
