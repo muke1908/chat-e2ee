@@ -9,10 +9,7 @@ require("dotenv").config();
 
 const app = express();
 app.disable("x-powered-by");
-const corsOptions = {
-  origin: "*"
-};
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
 
 // add routes
