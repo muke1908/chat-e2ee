@@ -149,30 +149,3 @@
     width: 100%;
   }
 }
-
-.qrCodeContainer {
-  margin-top: 20px;
-}
-
-.qrButton {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  margin-top: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.qrButton:hover {
-  background-color: #0056b3; 
-}
-
-.lightModeButton {
-  background-color: #f0f0f0; 
-  color: #333; 
-}
-
-.lightModeButton:hover {
-  background-color: #ccc; 
-}
