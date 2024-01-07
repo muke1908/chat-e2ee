@@ -152,27 +152,33 @@
 
 .qrCodeContainer {
   margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 
+
 .qrButton {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  margin-top: 10px;
+  border-width: 1px;
+  font-family: inherit;
+  font-size: 18px;
+  width: 110px;
+  height: 40px;
+  border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  outline: none;
+  border-color: #434343;
+  background: #4bb2f9;
+  color: white;
+  margin-left: 5px;
 }
 
 .qrButton:hover {
   background-color: #0056b3; 
 }
 
-.lightModeButton {
-  background-color: #f0f0f0; 
-  color: #333; 
+.QrCodeContent{
+  display: flex;
+  align-items: center;
 }
 
-.lightModeButton:hover {
-  background-color: #ccc; 
-}
+

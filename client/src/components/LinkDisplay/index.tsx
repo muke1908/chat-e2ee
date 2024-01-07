@@ -1,5 +1,5 @@
 import React, { useRef, useState, useContext } from "react";
-import { FiLink, FiCopy, FiExternalLink } from "react-icons/fi";
+import { FiLink, FiCopy, FiExternalLink, FiArrowDown, FiArrowUp } from "react-icons/fi";
 import styles from "./Style.module.css";
 import { ThemeContext } from "../../ThemeContext";
 import { LinkObjType } from "@chat-e2ee/service";
@@ -52,6 +52,21 @@ const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
           >
             <FiCopy className={styles.copyIcon} /> {buttonText}
           </button>
+          <button
+            type="button"
+            className={`${styles.qrButton} ${!darkMode && styles.lightModeButton}`}
+            onClick={() => setShowQR(!showQR)}
+          >
+            {showQR ? (
+              <div className={styles.QrCodeContent}>
+                QR Code <FiArrowUp className={styles.qrIcon} />
+              </div>
+            ) : (
+              <div className={styles.QrCodeContent}>
+                QR Code <FiArrowDown className={styles.qrIcon} />
+              </div>
+            )}
+          </button>
         </div>
       </div>
       <div className={styles.divider} />
@@ -68,13 +83,6 @@ const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
           <QRCode value={chatLink} size={128} />
         </div>
       )}
-      <button
-        type="button"
-        className={`${styles.qrButton} ${!darkMode && styles.lightModeButton}`}
-        onClick={() => setShowQR(!showQR)}
-      >
-        {showQR ? "Hide QR Code" : "Show QR Code"}
-      </button>
     </div>
   );
 };
