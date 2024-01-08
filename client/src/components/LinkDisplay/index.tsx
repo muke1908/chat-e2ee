@@ -1,13 +1,17 @@
-import React, { useRef, useState, useContext } from 'react';
-import { FiLink, FiCopy, FiExternalLink } from 'react-icons/fi';
-import styles from './Style.module.css';
-import { ThemeContext } from '../../ThemeContext';
-import { LinkObjType } from '@chat-e2ee/service';
+import React, { useRef, useState, useContext } from "react";
+import { FiLink, FiCopy, FiExternalLink, FiArrowDown, FiArrowUp } from "react-icons/fi";
+import styles from "./Style.module.css";
+import { ThemeContext } from "../../ThemeContext";
+import { LinkObjType } from "@chat-e2ee/service";
+import QRCode from "qrcode.react";
 
-const LinkDisplay: React.FC<{ content: LinkObjType}> = ( { content } ) => {
-  const chatLink = content.absoluteLink || `${window.location.protocol}//${window.location.host}/chat/${content.hash}`;
+const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
+  const chatLink =
+    content.absoluteLink ||
+    `${window.location.protocol}//${window.location.host}/chat/${content.hash}`;
   const textAreaRef = useRef<HTMLInputElement | null>(null);
   const [buttonText, setButtonText] = useState("Copy");
+  const [showQR, setShowQR] = useState(false);
   const [darkMode] = useContext(ThemeContext);
 
   const copyCodeToClipboard = () => {
@@ -23,9 +27,7 @@ const LinkDisplay: React.FC<{ content: LinkObjType}> = ( { content } ) => {
   return (
     <div className={styles.fullWidth}>
       <div className={styles.divider} />
-      <span className={styles.pinDisplayMsg}>
-        Anyone with the Link can join your chat
-      </span>
+      <span className={styles.pinDisplayMsg}>Anyone with the Link can join your chat</span>
       <div
         className={`${styles.copyToClipboardContainer}
         ${!darkMode && styles.lightModeContainer}`}
@@ -50,6 +52,21 @@ const LinkDisplay: React.FC<{ content: LinkObjType}> = ( { content } ) => {
           >
             <FiCopy className={styles.copyIcon} /> {buttonText}
           </button>
+          <button
+            type="button"
+            className={`${styles.qrButton} ${!darkMode && styles.lightModeButton}`}
+            onClick={() => setShowQR(!showQR)}
+          >
+            {showQR ? (
+              <div className={styles.QrCodeContent}>
+                QR Code <FiArrowUp className={styles.qrIcon} />
+              </div>
+            ) : (
+              <div className={styles.QrCodeContent}>
+                QR Code <FiArrowDown className={styles.qrIcon} />
+              </div>
+            )}
+          </button>
         </div>
       </div>
       <div className={styles.divider} />
@@ -61,6 +78,11 @@ const LinkDisplay: React.FC<{ content: LinkObjType}> = ( { content } ) => {
           Open chat <FiExternalLink />
         </a>
       </div>
+      {showQR && (
+        <div className={styles.qrCodeContainer}>
+          <QRCode value={chatLink} size={128} />
+        </div>
+      )}
     </div>
   );
 };
