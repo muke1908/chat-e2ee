@@ -10,3 +10,24 @@
   width: 0;
   height: 0;
 }
+
+.popup {
+  position: fixed;
+  bottom: 15%;
+  right: 47%;
+  background-color: #fff;
+  font-weight: 600;
+  color: #333;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
+.popup:hover {
+  background-color: #333;
+  color: #fff;
+}
+
