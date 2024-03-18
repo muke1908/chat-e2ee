@@ -6,11 +6,12 @@ html, body {
 }
 
 body {
-  font-family: monospace;
+  font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
   overflow: auto;
+  background: rgb(242, 242, 242);
 }
 
 body {
@@ -23,7 +24,7 @@ body::-webkit-scrollbar {
 
 .defaultMode {
   background: #121212;
-  color: #aeaeae;
+  color: #ffffff;
   height: 100%;
 }
 
@@ -44,7 +45,7 @@ code {
 }
 
 a {
-  color: inherit !important;
+  color: white;
 }
 
 .fullWidth {
@@ -52,7 +53,7 @@ a {
 }
 
 .lightMode {
-  background: #f2f2f2;
+  background: #ffff;
   color: #000000;
 }
 

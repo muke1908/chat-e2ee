@@ -1,64 +1,59 @@
-.linkGenerationPage .linkGenerationBtnContainer {
-  text-align: center;
-}
-.linkGenerationPage .header {
-  padding: 20px;
-  padding-left: 0px;
-  font-size: 24px;
-}
-
-.linkGenerationPage .generate-link-btn {
-  background: #4caf50;
-  color: #fff;
-  padding: 10px;
-  width: 180px;
-  text-align: center;
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-.linkGenerationPage .generate-link-btn.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.linkGenerationPage .captchaHeightSetter {
-  min-height: 75px;
+.flexContainer {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 1rem; /* Replace space-y-4 with gap for vertical spacing */
+  width: 100%;
+  min-height: 100vh;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
 
-.linkGenerationPage .title {
-  font-size: 18px;
-}
-
-.header {
+.mainContent {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem; /* Replace space-y-6 with gap for vertical spacing */
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.darkModeHeader {
-  color: #4bb2f9;
+.subContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem; /* Replace space-y-2 with gap for vertical spacing */
+  text-align: center;
 }
 
-.lightModeHeader {
-  color: #231709;
+.title {
+  font-size: 1.875rem; /* 3xl */
+  font-weight: bold;
 }
 
-.sectionContribute {
-  margin: 40px 0px 40px 0px;
+.paragraph {
+  font-size: 0.875rem; /* sm */
+  color: #9ca3af; /* text-gray-500 */
 }
 
-.sectionDefault {
-  background: #212121;
-  padding: 20px;
-  box-shadow: 4px 3px 10px #121212;
-  border-radius: 5px;
+.list {
+  font-size: 0.875rem; /* sm */
+  color: #f97316; /* text-orange-500 */
+  text-align: center;
+  list-style: none;
+
 }
 
-.sectionDefaultLight {
-  background: #e3e3e3;
-  padding: 20px;
-  box-shadow: 4px 3px 10px #eeeeee;
-  border-radius: 5px;
+.buttonArea {
+  display: flex;
+  justify-content: center;
+}
+
+.infoBox {
+  background-color: #e5e7eb; /* bg-gray-200 */
+  color: #9ca3af; /* text-gray-500 */
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
 }
