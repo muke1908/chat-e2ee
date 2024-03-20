@@ -1,0 +1,31 @@
+.button {
+  padding: 10px 20px;
+  display: inline-block;
+  border-radius: 8px; /* Adjusted for more pronounced rounded corners */
+  border-color: transparent;
+  font-size: 16px;
+  opacity: 1;
+  font-family: inherit;
+  transition: 180ms;
+  cursor: pointer;
+}
+
+.disabled {
+  pointer-events: none;
+  background: transparent;
+}
+
+.darkMode {
+  background: #434343;
+  color: #fff;
+}
+
+.lightMode {
+  background: #3cb043;
+  color: #fff;
+}
+
+.primary {
+  background: #f97316;
+  color: #fff;
+}

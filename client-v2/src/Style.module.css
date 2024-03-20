@@ -1,0 +1,76 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  overflow: auto;
+  background: rgb(242, 242, 242);
+}
+
+body {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+body::-webkit-scrollbar { 
+  display: none;  /* Safari and Chrome */
+}
+
+.defaultMode {
+  background: #121212;
+  color: #ffffff;
+  height: 100%;
+}
+
+.bodyContent {
+  max-width: 800px;
+  margin: auto;
+  height: 98%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+@media screen and (max-width: 640px) {
+  .section--default {
+    border-radius: 0px;
+  }
+}
+
+a {
+  color: white;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.lightMode {
+  background: #ffff;
+  color: #000000;
+}
+
+@media only screen and (max-width: 900px) {
+  .bodyContent {
+    max-width: 700px;
+  }
+}
+
+@media only screen and (max-width: 800px) {
+  .bodyContent {
+    max-width: 600px;
+  }
+}
+
+@media only screen and (max-width: 640px) {
+  .bodyContent {
+    max-width: 95%;
+  }
+}
