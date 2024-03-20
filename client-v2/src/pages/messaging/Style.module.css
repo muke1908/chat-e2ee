@@ -1,0 +1,26 @@
+.messageContainer {
+  /* height fallback */
+  height: calc(100% - 68px);
+  display: flex;
+  flex-direction: column;
+}
+.messageBlock {
+  padding: 20px;
+  background: #212121;
+  box-shadow: 4px 3px 10px #121212;
+  border-radius: 5px;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.lightModeContainer {
+  background: #e3e3e3;
+  box-shadow: 4px 3px 10px #eeeeee;
+}
+
+@media screen and (max-width: 640px) {
+  .messageBlock {
+    border-radius: 0px;
+  }
+}

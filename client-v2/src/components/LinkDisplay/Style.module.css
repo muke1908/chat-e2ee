@@ -27,7 +27,7 @@
   resize: none;
   box-sizing: border-box;
   padding-left: 10px;
-  font-family: monospace;
+  font-family: Arial, Helvetica, sans-serif;
   background: #121212;
   color: #aeaeae;
 }
@@ -77,20 +77,19 @@
 .openLink a {
   text-decoration: none;
   display: inline-block;
-  border: 1px solid #434343;
+  border: 1px solid transparent;
+  background-color: #f97316;
   padding: 5px 10px;
   border-radius: 4px;
   transition: 180ms;
-  font-size: 12px;
+  font-size: 14px;
 }
 .darkOpenLink a:hover {
-  color: #fff !important;
-  border-color: #fff;
+  background-color: #ff9100; 
 }
 
 .lightOpenLink a:hover {
-  color: #aeaeae !important;
-  border-color: #aeaeae;
+  background-color: #ff9100; 
 }
 
 .fullWidth {
@@ -173,7 +172,7 @@
 }
 
 .qrButton:hover {
-  background-color: #0056b3; 
+  background-color: #ff9100; 
 }
 
 .QrCodeContent{
@@ -182,3 +181,49 @@
 }
 
 
+/*-------------------------------------------*/
+.card {
+  border-radius: 10px; 
+  padding: 20px;
+  border: groove;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; 
+}
+
+.title {
+  font-size: 20px; 
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size:  0.875rem;; 
+  color: #666; 
+}
+
+.input {
+  border: 1px solid #ddd; 
+  border-radius: 5px; 
+  padding: 10px;
+  font-size: 14px; 
+}
+
+.button {
+  border: none;
+  border-radius: 5px; 
+  padding: 10px 15px;
+  font-size: 14px; 
+  cursor: pointer; 
+}
+
+.copyButton,
+.qrButton {
+  background-color: #f97316; 
+  color: white; 
+  margin-top: 10px; 
+}
+
+.flexRow {
+  display: flex;
+  gap: 10px; 
+}
