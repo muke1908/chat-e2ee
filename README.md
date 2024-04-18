@@ -1,5 +1,5 @@
 ## chat-e2ee
-**Disposable chat session**: this app will allow two mutually agreed users to have a chat in _end-to-end_ encrypted environment. The app itself doesn't track you or ask any infromation from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device. This is not a replacement of your usual chat application.  
+**Disposable chat session**: this app will allow two mutually agreed users to have a chat in _end-to-end_ encrypted environment. The app itself doesn't track you or ask for any information from you. Data is owned by **only you** and **only while chatting**. Your private key is generated on your device and never leaves your device. This is not a replacement for your usual chat application.  
 
 The project is still in **development** phase and open for contribution.  
 Demo: https://chat-e2ee-2.azurewebsites.net  
@@ -13,7 +13,7 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 
 ## Features
 
-1. No login/signp - the end users **don't identify** themselves .
+1. No login/signup - the end users **don't identify** themselves.
 2. Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any man in the middle. 
 4. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
 
@@ -30,10 +30,10 @@ For installation instruction, go to [developer section](https://github.com/muke1
 
 ### How to initiate chat
 
-1. Generate unique link.
+1. Generate a unique link.
 2. Share the link or PIN with the person you want to chat with.
 3. Start chatting.
-4. The messages are end-to-end encrypted hence, no one can decrypt your message other than you.
+4. The messages are end-to-end encrypted; therefore, no one can decrypt your message other than you.
 
 **How the encryption works**
 
@@ -62,7 +62,7 @@ More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
 This project includes a light weight frontend UI - bootstrapped with [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html). The FE client is located in `./client` folder.  
 
 **Backend:**  
-The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serve the static frontend from `./client/build`.   
+The backend runs on express/nodejs. In production mode, express server exposes the API endpoints and serves the static frontend from `./client/build`.   
 
 **JS SDK:**  
 `@chat-e2ee/service` - located in `./service` - A SDK that client uses to interact with backend. More info: [Readme](https://github.com/muke1908/chat-e2ee/tree/master/service)
@@ -78,9 +78,9 @@ Import `@chat-e2ee/service` SDK in your client project and build your own chat c
 4. Run `npm run dev` to spin up your client/server. This will run your react app in dev mode and server in watch mode by nodemon.
 
 :exclamation::exclamation:**Important:**
-If you are making changes in `./service` i.e. `@chat-e2ee/service`, make sure you run `npm run build-service-sdk` to reflect changes.
+If you are making changes to `./service` i.e. `@chat-e2ee/service`, make sure you run `npm run build-service-sdk` to reflect changes.
 
-NOTE: by default `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So make sure that these ports are not blocked on your system.
+NOTE: by default, `create-react-app` runs webpack-dev-server on port `3000`. The server is configured to run on `3001` port. So, make sure that these ports are not blocked on your system.
 
 **Important:**  
 Check `.env.sample` to configure your `.env` file.  
@@ -114,4 +114,4 @@ Example:
 ## :closed_lock_with_key:	 Cryptographic notice
 This distribution includes cryptographic software. The country in which you currently reside may have restrictions on the import, possession, use, and/or re-export to another country, of encryption software. BEFORE using any encryption software, please check your country's laws, regulations and policies concerning the import, possession, or use, and re-export of encryption software, to see if this is permitted. See http://www.wassenaar.org/ for more information.
 
-The U.S. Government Department of Commerce, Bureau of Industry and Security (BIS), has classified this software as Export Commodity Control Number (ECCN) 5D002.C.1, which includes information security software using or performing cryptographic functions with asymmetric algorithms. The form and manner of this distribution makes it eligible for export under the License Exception ENC Technology Software Unrestricted (TSU) exception (see the BIS Export Administration Regulations, Section 740.13) for both object code and source code.
+The U.S. Government Department of Commerce, Bureau of Industry and Security (BIS) has classified this software as Export Commodity Control Number (ECCN) 5D002.C.1, which includes information security software using or performing cryptographic functions with asymmetric algorithms. The form and manner of this distribution makes it eligible for export under the License Exception ENC Technology Software Unrestricted (TSU) exception (see the BIS Export Administration Regulations, Section 740.13) for both object code and source code.
