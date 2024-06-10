@@ -2,13 +2,10 @@ FROM node:lts-alpine
 #Set production mode deployment
 ENV NODE_ENV "production"
 WORKDIR /chat-e2ee
-COPY package*.json /chat-e2ee/
-
+# todo break apart client and server dep installs/builds
+COPY . /chat-e2ee/ 
 
 RUN npm install 
-
-#copy the content of current directory to /app inside container
-COPY . /chat-e2ee
 
 RUN npm run build 
 
