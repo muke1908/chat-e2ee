@@ -1,10 +1,9 @@
 FROM node:lts-alpine
 #Set production mode deployment
 ENV NODE_ENV "production"
+WORKDIR /chat-e2ee
+COPY package*.json /chat-e2ee/
 
-COPY package*.json /chat-e2ee
-
-WORKDIR /chat-e2ee 
 
 RUN npm install 
 
