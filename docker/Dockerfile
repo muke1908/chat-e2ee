@@ -7,7 +7,7 @@ COPY . /chat-e2ee/
 
 RUN npm install 
 
-RUN npm run build 
+RUN npm run build --unsafe-perm
 
 # todo - multi part build (lets us slim down container to not unclude all the webpack stuff)
 
