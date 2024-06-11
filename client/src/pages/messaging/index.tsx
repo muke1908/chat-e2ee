@@ -23,8 +23,8 @@ if(process.env.NODE_ENV === 'development') {
   })
 } else {
 setConfig({
-    apiURL: `${location.protocol}//${location.hostname}` ,
-    socketURL: `${location.protocol}//${location.hostname}`  ,
+    apiURL: `${window.location.protocol}//${window.location.hostname}` ,
+    socketURL: `${window.location.protocol}//${window.location.hostname}`  ,
   })
 }
 
