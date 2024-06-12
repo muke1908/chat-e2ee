@@ -21,6 +21,11 @@ if(process.env.NODE_ENV === 'development') {
     apiURL: 'http://localhost:3000',
     socketURL: 'http://localhost:3000',
   })
+} else {
+setConfig({
+    apiURL: `${window.location.protocol}//${window.location.hostname}` ,
+    socketURL: `${window.location.protocol}//${window.location.hostname}`  ,
+  })
 }
 
 const chate2ee = createChatInstance();

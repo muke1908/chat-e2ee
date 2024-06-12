@@ -16,6 +16,10 @@ From the project root directory, issue the following command :
 docker build . -f docker/Dockerfile -t chat-e2e:latest
 ```
 
+##### Alternatively, there is a pre-built docker image
+
+it is available at ```ghcr.io/muke1908/chat-e2ee:master``` 
+
 ##### Running the docker container
 
 1. Create a .env file

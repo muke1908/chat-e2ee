@@ -1,17 +1,19 @@
-FROM node:12.18.3-buster
+FROM node:lts-alpine
 
-#Set production mode deployment
-ENV NODE_ENV "production"
+WORKDIR /chat-e2ee
+# todo break apart client and server dep installs/builds so that they can be cached b/w builds
+COPY . /chat-e2ee/ 
 
-#copy the content of current directory to /app inside container
-COPY . /chat-e2ee
+RUN npm install 
 
-WORKDIR /chat-e2ee 
+RUN npm run build
 
-RUN npm install --unsafe-perm
-
-RUN npm run build 
+# todo - multi part build (lets us slim down container to not unclude all the webpack stuff)
 
 RUN rm .env.sample
 
+EXPOSE 3001
+USER node
+#Set production mode deployment
+ENV NODE_ENV "production"
 ENTRYPOINT [ "npm", "run", "docker_start" ]
