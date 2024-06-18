@@ -1,0 +1,8 @@
+node_modules
+dist
+.github
+.vscode
+client/build
+client/node_modules
+service/dist
+service/node_modules
