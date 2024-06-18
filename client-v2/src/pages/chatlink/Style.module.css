@@ -1,0 +1,59 @@
+.flexContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem; /* Replace space-y-4 with gap for vertical spacing */
+  width: 100%;
+  min-height: 100vh;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem; /* Replace space-y-6 with gap for vertical spacing */
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.subContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem; /* Replace space-y-2 with gap for vertical spacing */
+  text-align: center;
+}
+
+.title {
+  font-size: 1.875rem; /* 3xl */
+  font-weight: bold;
+}
+
+.paragraph {
+  font-size: 0.875rem; /* sm */
+  color: #9ca3af; /* text-gray-500 */
+}
+
+.list {
+  font-size: 0.875rem; /* sm */
+  color: #f97316; /* text-orange-500 */
+  text-align: center;
+  list-style: none;
+
+}
+
+.buttonArea {
+  display: flex;
+  justify-content: center;
+}
+
+.infoBox {
+  background-color: #e5e7eb; /* bg-gray-200 */
+  color: #9ca3af; /* text-gray-500 */
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}

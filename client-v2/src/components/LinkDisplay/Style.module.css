@@ -1,0 +1,229 @@
+.copyToClipboardContainer {
+  color: #fff;
+  display: flex;
+  padding: 2px;
+  flex: 1;
+  border-radius: 5px;
+  margin-top: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 10px;
+  border: 1px solid #121212;
+  background: #121212;
+  position: relative;
+}
+
+.lightModeContainer {
+  border: 1px solid #f2f2f2;
+  background: #f2f2f2;
+}
+
+.linkTextArea {
+  width: 100%;
+  border-width: 0px;
+  font-size: 18px;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  padding-left: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #121212;
+  color: #aeaeae;
+}
+
+.lightTextArea {
+  background: #f2f2f2;
+  color: #000000;
+}
+
+.copyButton {
+  border-width: 1px;
+  font-family: inherit;
+  font-size: 18px;
+  width: 100px;
+  height: 40px;
+  border-radius: 5px;
+  cursor: pointer;
+  outline: none;
+  border-color: #434343;
+  background: #434343;
+  color: #aeaeae;
+}
+
+.lightModeButton {
+  border-color: #e2e2e2;
+  background: #e2e2e2;
+  color: #000000;
+}
+
+.linkIcon {
+  font-size: 20px;
+  color: #aeaeae;
+}
+
+.copyIcon {
+  font-size: '15px';
+}
+
+.textAreaContainer {
+  flex: 1;
+}
+
+.openLink {
+  text-align: center;
+  margin-top: 10px;
+}
+.openLink a {
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid transparent;
+  background-color: #f97316;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: 180ms;
+  font-size: 14px;
+}
+.darkOpenLink a:hover {
+  background-color: #ff9100; 
+}
+
+.lightOpenLink a:hover {
+  background-color: #ff9100; 
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.pinDisplay {
+  margin-top: 50px;
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.pinDisplayMsg {
+  font-size: 12px;
+}
+
+.pinValidMsg {
+  font-size: 11px;
+  margin-bottom: 15px;
+}
+
+.labelLinkTextArea {
+  display: block;
+  position: absolute;
+  top: -20px;
+  left: 0px;
+  font-size: small;
+  color: #aeaeae;
+}
+
+@media screen and (min-width: 640px) {
+  .fullWidth {
+    display: flex;
+    flex-flow: wrap;
+  }
+  .fullWidth > div {
+    flex: 1 auto;
+  }
+  .pinDisplay {
+    margin: 0;
+  }
+  .pinDisplayMsg {
+    width: 100%;
+    font-size: 18px;
+    padding-bottom: 20px;
+  }
+
+  .openLink {
+    width: 100%;
+    flex: 1 auto;
+  }
+
+  .divider {
+    margin: 30px 0;
+    border-top: 1px solid #434343;
+    width: 100%;
+  }
+}
+
+.qrCodeContainer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+
+.qrButton {
+  border-width: 1px;
+  font-family: inherit;
+  font-size: 18px;
+  width: 110px;
+  height: 40px;
+  border-radius: 5px;
+  cursor: pointer;
+  outline: none;
+  border-color: #434343;
+  background: #4bb2f9;
+  color: white;
+  margin-left: 5px;
+}
+
+.qrButton:hover {
+  background-color: #ff9100; 
+}
+
+.QrCodeContent{
+  display: flex;
+  align-items: center;
+}
+
+
+/*-------------------------------------------*/
+.card {
+  border-radius: 10px; 
+  padding: 20px;
+  border: groove;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; 
+}
+
+.title {
+  font-size: 20px; 
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size:  0.875rem;; 
+  color: #666; 
+}
+
+.input {
+  border: 1px solid #ddd; 
+  border-radius: 5px; 
+  padding: 10px;
+  font-size: 14px; 
+}
+
+.button {
+  border: none;
+  border-radius: 5px; 
+  padding: 10px 15px;
+  font-size: 14px; 
+  cursor: pointer; 
+}
+
+.copyButton,
+.qrButton {
+  background-color: #f97316; 
+  color: white; 
+  margin-top: 10px; 
+}
+
+.flexRow {
+  display: flex;
+  gap: 10px; 
+}

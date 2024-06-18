@@ -1,0 +1,149 @@
+.emojiPickerContainer {
+  margin: auto 10px;
+}
+
+.emojiPickerContainer:hover {
+  cursor: pointer;
+}
+
+.emojiPickerIcon {
+  width: 30px;
+  height: auto;
+  display: table;
+}
+
+.emojiRowContainer {
+  height: 50px;
+}
+
+.emojiRowContainerOpen {
+  height: 100%;
+  scroll-behavior: smooth;
+  margin-bottom: 10px;
+}
+
+.lightEmojiRowContainer {
+  background: #f2f2f2;
+}
+
+.sendMessageForm {
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.lightsendMessageForm {
+  border-color: #cbcbcb;
+}
+
+.sendMessageInput {
+  font-family: inherit;
+  font-size: 18px;
+  resize: none;
+  flex: 1;
+  border: 0;
+  padding: 10px;
+  height: 50px;
+  box-sizing: border-box;
+  outline: none;
+  background: #000;
+  color: #fff;
+}
+
+.lightMessageInput {
+  background: #e2e2e2;
+  color: #000000;
+  outline: none;
+  border-color: #e2e2e2;
+}
+
+.sendButton {
+  height: 50px;
+  display: flex;
+  width: 100px;
+  font-family: inherit;
+  font-size: 18px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #e91e63;
+  color: #fff;
+  transition: 180ms;
+}
+
+.lightModeSend {
+  background: #3cb043;
+  color: #fff;
+}
+
+.lightModeSend:hover {
+  background: #028a0f !important;
+}
+
+.sendButton:hover {
+  background: #ab0b42;
+}
+
+.imagePickerContainer {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+@media screen and (max-width: 640px) {
+  .sendMessageForm {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+}
+
+.buttonImageContainer {
+  display: flex;
+}
+
+.msgBtnImgContainer {
+  display: flex;
+  justify-content: flex-start;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #212121;
+}
+
+.emojiMessageContainer {
+  width: 100%;
+}
+
+@media only screen and (max-width: 600px) {
+  .sendMessageForm {
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .msgBtnImgContainer {
+    height: 40px;
+  }
+
+  .emojiPickerIcon {
+    width: 25px;
+    height: auto;
+    display: table;
+  }
+
+  .sendMessageInput {
+    max-width: 80%;
+    height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sendButton {
+    height: 40px;
+    width: 70px;
+  }
+
+  .imagePickerContainer {
+    margin-top: 2px;
+  }
+}
