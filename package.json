@@ -28,13 +28,13 @@
     "form-data": "^3.0.0",
     "mongodb": "^4.17.0",
     "node-fetch": "^2.6.7",
-    "react-bootstrap": "^1.5.2",
-    "socket.io": "^4.5.4",
-    "ts-node": "^10.9.1",
-    "typescript": "5.0.4",
+    "socket.io": "^4.5.4",    
     "uuid": "^8.2.0"
   },
   "devDependencies": {
+    "react-bootstrap": "^1.5.2",
+    "ts-node": "^10.9.1",
+    "typescript": "5.0.4",
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-conventional": "^17.3.0",
     "@types/cors": "^2.8.12",
