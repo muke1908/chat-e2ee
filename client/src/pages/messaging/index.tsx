@@ -67,7 +67,7 @@ const Chat = () => {
   }, [channelID, userId]);
 
   useEffect(() => {
-    if (LS.get("store-chat-messages")) {
+    if (LS.get("store-chat-messages") && messages.length > 0) {
       SS.set(`chat#${channelID}`, messages);
     }
   }, [channelID, messages]);
