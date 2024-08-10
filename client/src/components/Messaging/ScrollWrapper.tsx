@@ -12,42 +12,38 @@ export const ScrollWrapper = ({ children, messageCount }: ScrollWrapperProps) =>
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
+    const wrapper = wrapperRef.current;
     const handleScroll = () => {
-      const wrapper = wrapperRef.current;
       if (!wrapper) return;
       setIsAtBottom(wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight);
     };
 
- const wrapperElement = wrapperRef.current;
-    if (wrapperElement) {
-      wrapperElement.addEventListener('scroll', handleScroll);
+    if (wrapper) {
+      wrapper.addEventListener('scroll', handleScroll);
     }
 
     return () => {
-      if (wrapperElement) {
-        wrapperElement.removeEventListener('scroll', handleScroll);
+      if (wrapper) {
+        wrapper.removeEventListener('scroll', handleScroll);
       }
     };
   }, []);
 
   useEffect(() => {
-    if (isAtBottom && messageCount > 0) {
+    if (isAtBottom) {
       scrollToBottom();
-    }
-  }, [messageCount, isAtBottom]);
-
-  useEffect(() => {
-    if (!isAtBottom && messageCount > 0) {
+    } else {
       setShowPopup(true);
     }
 // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageCount]);
 
   const scrollToBottom = () => {
-    if (wrapperRef.current) {
-      wrapperRef.current.scrollTop = wrapperRef.current.scrollHeight;
+    const wrapper = wrapperRef.current;
+    if (wrapper) {
+      setShowPopup(false);
+      wrapper.scrollTop = wrapper.scrollHeight;
     }
-    setShowPopup(false);
   };
 
   return (
