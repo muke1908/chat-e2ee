@@ -1,8 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-
 import styles from "./styles/Message.module.css";
 import Image from "../Image";
-
 import { ThemeContext } from "../../ThemeContext";
 import { Timestamp } from "mongodb";
 
@@ -51,16 +49,30 @@ export const Message = ({
   }, []);
 
   const [darkMode] = useContext(ThemeContext);
+  let messageClass;
+
+  if (owner) {
+    if (!local) {
+      messageClass = `${styles.messageRight} ${styles.noanimate}`;
+    } else {
+      messageClass = styles.messageRight;
+    }
+  } else {
+    messageClass = styles.messageLeft;
+  }
+
   return (
-    <div className={owner === true ? styles.messageRight : styles.messageLeft}>
+    <div className={messageClass}>
       <div className={styles.messageInfo}>
-        <div className={styles.sentReceived}>You {owner === true ? "sent" : "received"}</div>
+        <div className={styles.sentReceived}>
+          You {owner ? "sent" : "received"}
+        </div>
         <div className={`${styles.messageContainer} ${!darkMode && styles.lightModeContainer}`}>
           {image && <Image src={image} maxWidth="300px" maxHeight="300px" />}
           {body}
           {timestamp && (
             <span className={styles.timestamp}>
-              {(owner === true ? "sent at " : "received at ") +
+              {(owner ? "sent at " : "received at ") +
                 new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
