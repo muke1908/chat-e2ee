@@ -15,7 +15,13 @@ export const ScrollWrapper = ({ children, messageCount }: ScrollWrapperProps) =>
     const wrapper = wrapperRef.current;
     const handleScroll = () => {
       if (!wrapper) return;
-      setIsAtBottom(wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight);
+      const atBottom = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 1;
+      setIsAtBottom(atBottom);
+
+      // Hide popup if scrolled to bottom
+      if (atBottom) {
+        setShowPopup(false);
+      }
     };
 
     if (wrapper) {
