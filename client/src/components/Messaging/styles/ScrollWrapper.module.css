@@ -14,7 +14,8 @@
 .popup {
   position: fixed;
   bottom: 15%;
-  right: 47%;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: #fff;
   font-weight: 600;
   color: #333;
