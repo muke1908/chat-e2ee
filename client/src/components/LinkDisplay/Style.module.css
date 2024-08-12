@@ -161,12 +161,12 @@
   border-width: 1px;
   font-family: inherit;
   font-size: 18px;
-  width: 110px;
+  width: 100px;
   height: 40px;
   border-radius: 5px;
   cursor: pointer;
   outline: none;
-  border-color: #434343;
+  border-color: #4bb2f9;
   background: #4bb2f9;
   color: white;
   margin-left: 5px;
@@ -178,7 +178,12 @@
 
 .QrCodeContent{
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: center;
 }
 
-
+.qrIcon {
+  display: inline-block;
+  margin-top: 0;
+  transform: translateY(2px);
+}

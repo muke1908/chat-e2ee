@@ -13,7 +13,7 @@ const App = () => {
   const [darkMode] = useContext(ThemeContext);
   return (
     <div
-      style={{ background: darkMode ? "#121212" : "#f2f2f2", paddingBottom: "10px" }}
+      style={{ background: darkMode ? "#121212" : "#f2f2f2"}}
       className={`${styles.defaultMode} ${!darkMode && styles.lightMode} `}
     >
       <Router>
