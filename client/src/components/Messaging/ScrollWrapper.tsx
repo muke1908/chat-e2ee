@@ -8,48 +8,54 @@ type ScrollWrapperProps = {
 
 export const ScrollWrapper = ({ children, messageCount }: ScrollWrapperProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
-  const [scrollAtBottom, setScrollAtBottom] = useState(true);
 
   useEffect(() => {
-    if (wrapperRef.current) {
-      const wrapper = wrapperRef.current;
-      const isScrolledToBottom = wrapper.scrollHeight - wrapper.scrollTop === wrapper.clientHeight;
-      setScrollAtBottom(isScrolledToBottom);
-      if (isScrolledToBottom) {
-        wrapper.scrollTop = wrapper.scrollHeight;
-      } else {
-        setShowPopup(true);
+    const wrapper = wrapperRef.current;
+    const handleScroll = () => {
+      if (!wrapper) return;
+      const atBottom = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 1;
+      setIsAtBottom(atBottom);
+
+      // Hide popup if scrolled to bottom
+      if (atBottom) {
+        setShowPopup(false);
       }
+    };
+
+    if (wrapper) {
+      wrapper.addEventListener('scroll', handleScroll);
     }
+
+    return () => {
+      if (wrapper) {
+        wrapper.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isAtBottom) {
+      scrollToBottom();
+    } else {
+      setShowPopup(true);
+    }
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageCount]);
 
-  useEffect(() => {
-    if (scrollAtBottom && wrapperRef.current) {
-      wrapperRef.current.scrollTop = wrapperRef.current.scrollHeight;
-    }
-  }, [scrollAtBottom, messageCount]);
-
   const scrollToBottom = () => {
-    if (wrapperRef.current) {
-      wrapperRef.current.scrollTop = wrapperRef.current.scrollHeight;
+    const wrapper = wrapperRef.current;
+    if (wrapper) {
       setShowPopup(false);
-    }
-  };
-
-  const handleScroll = () => {
-    if (wrapperRef.current) {
-      const wrapper = wrapperRef.current;
-      const isScrolledToBottom = wrapper.scrollHeight - wrapper.scrollTop === wrapper.clientHeight;
-      setScrollAtBottom(isScrolledToBottom);
-      setShowPopup(false);
+      wrapper.scrollTop = wrapper.scrollHeight;
     }
   };
 
   return (
-    <div className={styles.scrollWrapper} ref={wrapperRef} onScroll={handleScroll}>
+    <div className={styles.scrollWrapper} ref={wrapperRef}>
       {children}
-      {showPopup && !scrollAtBottom && (
+      {showPopup && (
         <div className={styles.popup} onClick={scrollToBottom}>
           New Messages
         </div>
