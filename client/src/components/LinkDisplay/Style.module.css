@@ -41,7 +41,7 @@
   border-width: 1px;
   font-family: inherit;
   font-size: 18px;
-  width: 100px;
+  width: 50px;
   height: 40px;
   border-radius: 5px;
   cursor: pointer;
@@ -64,6 +64,7 @@
 
 .copyIcon {
   font-size: '15px';
+  transform: translateY(2px);
 }
 
 .textAreaContainer {
@@ -121,6 +122,44 @@
   color: #aeaeae;
 }
 
+.qrCodeContainer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.qrButton {
+  border-width: 1px;
+  font-family: inherit;
+  font-size: 18px;
+  width: 50px;
+  height: 40px;
+  border-radius: 5px;
+  cursor: pointer;
+  outline: none;
+  border-color: #4bb2f9;
+  background: #4bb2f9;
+  color: white;
+  margin-left: 5px;
+  transform: translateY(2px);
+}
+
+.qrButton:hover {
+  background-color: #0056b3; 
+}
+
+.QrCodeContent{
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.qrIcon {
+  display: inline-block;
+  margin-top: 0;
+  transform: none;
+}
+
 @media screen and (min-width: 640px) {
   .fullWidth {
     display: flex;
@@ -148,42 +187,17 @@
     border-top: 1px solid #434343;
     width: 100%;
   }
-}
 
-.qrCodeContainer {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
+  .copyButton {
+    width: 100px;
+  }
 
+  .qrButton {
+    width: 100px;
+    transform: none;
+  }
 
-.qrButton {
-  border-width: 1px;
-  font-family: inherit;
-  font-size: 18px;
-  width: 110px;
-  height: 40px;
-  border-radius: 5px;
-  cursor: pointer;
-  outline: none;
-  border-color: #4bb2f9;
-  background: #4bb2f9;
-  color: white;
-  margin-left: 5px;
-}
-
-.qrButton:hover {
-  background-color: #0056b3; 
-}
-
-.QrCodeContent{
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-}
-
-.qrIcon {
-  display: inline-block;
-  margin-top: 0;
-  transform: translateY(2px);
+  .qrIcon {
+    transform: translateY(2px);
+  }
 }
