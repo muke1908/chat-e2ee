@@ -17,6 +17,10 @@
   animation: fade-in-right 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) both;
 }
 
+.noanimate {
+  animation: none !important; /* disable animation */
+}
+
 .messageLeft + .messageLeft .sentReceived {
   display: none;
 }
