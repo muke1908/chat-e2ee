@@ -1,4 +1,6 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+
+
+  import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import {
@@ -258,6 +260,69 @@ const Chat = () => {
       timestamp
     };
   });
+
+// added a useeffect to check whather the 
+useEffect(() => {
+  const validateLink = async () => {
+    try {
+      // FOR PRODUCTION MODE URL SHOULD BE https://chat-e2ee-2.azurewebsites.net/api/chat-link/status/${channelID}
+      // FOR RUNING LOCALLY URL SHOULD BE http://localhost:3001/api/chat-link/status/${channelID}
+      const URL = `http://localhost:3001/api/chat-link/status/${channelID}`
+      const response = await fetch(URL);
+      if (response.status !== 200) {
+        // If the link is invalid, start a 2-second countdown before redirecting
+        setLinkActive(false);
+        const timer = setTimeout(() => {
+          history.push("/"); // Redirect after 2 seconds
+        }, 2000);
+
+        return () => clearTimeout(timer); // Cleanup the timer if component unmounts
+      } else {
+        // Link is still valid
+        setLinkActive(true);
+      }
+    } catch (error) {
+      console.error("Error validating chat link:", error);
+      setLinkActive(false);
+      const timer = setTimeout(() => {
+        history.push("/"); // Redirect after 2 seconds on error
+      }, 2000); // redireting aftrer 2 second and u can as much u want 
+
+      return () => clearTimeout(timer); // Cleanup the timer if component unmounts
+    }
+  };
+
+  // Function to throttle link validation checks
+  const throttledValidateLink = throttle(validateLink, 1000); // Throttle the function to run every 5 seconds
+
+  // Validate the link immediately on component mount
+  validateLink();
+
+  // Periodically revalidate the link every 5 seconds
+  const intervalId = setInterval(() => {
+    throttledValidateLink();
+  }, 1000); // Check every 1 seconds (adjust this interval as needed)
+
+  return () => {
+    clearInterval(intervalId); // Cleanup the interval on component unmount
+  };
+}, [channelID, history]);
+
+
+// Helper function to throttle a function call
+function throttle<T extends (...args: any[]) => void>(func: T, limit: number): (...args: Parameters<T>) => void {
+  let inThrottle: boolean;
+  return function (this: any, ...args: Parameters<T>) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => {
+        inThrottle = false;
+      }, limit);
+    }
+  };
+}
+
   if (linkActive) {
     return (
       <>
@@ -307,7 +372,19 @@ const Chat = () => {
     return (
       <div className={styles.messageContainer}>
         <div className={`${styles.messageBlock} ${!darkMode && styles.lightModeContainer}`}>
-          <p>This link is no longer active</p>
+        <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    textAlign: 'center',
+         }}>
+    <div>
+        <p>This link has expired or been deleted!</p>
+        <p>Redirecting to home page in seconds...</p>
+    </div>
+</div>
+          
         </div>
       </div>
     );

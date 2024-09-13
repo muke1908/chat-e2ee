@@ -45,6 +45,7 @@ router.get(
     return res.send(link);
   })
 );
+// this route is improved
 router.get(
   "/status/:channel",
   asyncHandler(async (req, res) => {

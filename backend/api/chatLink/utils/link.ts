@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { generatePIN } from './pin';
 
-const { CHAT_LINK_DOMAIN } = process.env;
+const CHAT_LINK_DOMAIN = process.env.CHAT_LINK_DOMAIN || 'http://localhost:3000';
 const PIN_LENGTH = 4;
 
 export type LinkType = {

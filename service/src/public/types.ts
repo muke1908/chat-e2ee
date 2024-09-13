@@ -44,5 +44,3 @@ export type SetConfigType = (config: Partial<configType>) => void;
 export declare const createChatInstance: () => IChatE2EE;
 export declare const utils: IUtils;
 export declare const setConfig: SetConfigType;
-
-

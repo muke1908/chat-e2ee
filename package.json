@@ -1,74 +1,75 @@
 {
-  "name": "chat-e2ee",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "concurrently \"npm run client\" \"npm run server\"",
-    "build-client": "cd client && npm run build",
-    "build": "tsc && npm run build-client",
-    "client": "cd client && npm start",
-    "server": "cross-env NODE_ENV=development nodemon --watch \"./**\" --ext \"ts,json\" --ignore \"./client\" --ignore \"./service\" --exec \"ts-node index.ts\"",
-    "watch-sdk": "cd service && npm run watch",
-    "serve": "node ./dist/index",
-    "test": "cross-env NODE_ENV=test jest",
-    "start": "cross-env NODE_ENV=production npm run serve",
-    "postinstall": "npm run build-service-sdk && cd client && npm install",
-    "docker_start": "cross-env NODE_ENV=production node ./dist/index",
-    "build-service-sdk": "cd service && npm install && npm run build",
-    "publish-sdk": "cd service && npm run publish-sdk"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "cross-env": "^7.0.2",
-    "dotenv": "^8.2.0",
-    "express": "^4.19.2",
-    "form-data": "^3.0.0",
-    "mongodb": "^4.17.0",
-    "node-fetch": "^2.6.7",
-    "socket.io": "^4.5.4",    
-    "uuid": "^8.2.0"
-  },
-  "devDependencies": {
-    "react-bootstrap": "^1.5.2",
-    "ts-node": "^10.9.1",
-    "typescript": "5.0.4",
-    "@commitlint/cli": "^17.3.0",
-    "@commitlint/config-conventional": "^17.3.0",
-    "@types/cors": "^2.8.12",
-    "@types/express": "^4.17.13",
-    "@types/jest": "^29.5.1",
-    "@types/node": "^17.0.0",
-    "@types/node-fetch": "^2.6.2",
-    "@types/socket.io": "^3.0.2",
-    "concurrently": "^5.2.0",
-    "eslint": "^8.39.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-jest": "22.5.1",
-    "husky": "^8.0.1",
-    "jest": "^29.5.0",
-    "lint-staged": "^13.2.1",
-    "nodemon": "^2.0.4",
-    "prettier": "^2.0.5",
-    "supertest": "^4.0.2",
-    "ts-jest": "^29.1.0"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "lint-staged"
+    "name": "chat-e2ee",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "concurrently \"npm run client\" \"npm run server\"",
+        "build-client": "cd client && npm run build",
+        "build": "tsc && npm run build-client",
+        "client": "cd client && npm start",
+        "server": "cross-env NODE_ENV=development nodemon --watch \"./**\" --ext \"ts,json\" --ignore \"./client\" --ignore \"./service\" --exec \"ts-node index.ts\"",
+        "watch-sdk": "cd service && npm run watch",
+        "serve": "node ./dist/index",
+        "test": "cross-env NODE_ENV=test jest",
+        "start": "cross-env NODE_ENV=production npm run serve",
+        "postinstall": "npm run build-service-sdk && cd client && npm install",
+        "docker_start": "cross-env NODE_ENV=production node ./dist/index",
+        "build-service-sdk": "cd service && npm install && npm run build",
+        "publish-sdk": "cd service && npm run publish-sdk"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@chat-e2ee/service": "^1.5.0",
+        "cors": "^2.8.5",
+        "cross-env": "^7.0.2",
+        "dotenv": "^8.2.0",
+        "express": "^4.19.2",
+        "form-data": "^3.0.0",
+        "mongodb": "^4.17.0",
+        "node-fetch": "^2.6.7",
+        "socket.io": "^4.5.4",
+        "uuid": "^8.2.0"
+    },
+    "devDependencies": {
+        "@commitlint/cli": "^17.3.0",
+        "@commitlint/config-conventional": "^17.3.0",
+        "@types/cors": "^2.8.12",
+        "@types/express": "^4.17.13",
+        "@types/jest": "^29.5.1",
+        "@types/node": "^17.0.0",
+        "@types/node-fetch": "^2.6.2",
+        "@types/socket.io": "^3.0.2",
+        "concurrently": "^5.2.0",
+        "eslint": "^8.39.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-jest": "22.5.1",
+        "husky": "^8.0.1",
+        "jest": "^29.5.0",
+        "lint-staged": "^13.2.1",
+        "nodemon": "^2.0.4",
+        "prettier": "^2.0.5",
+        "react-bootstrap": "^1.5.2",
+        "supertest": "^4.0.2",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.5.4"
+    },
+    "husky": {
+        "hooks": {
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.js": [
+            "eslint --fix",
+            "git add"
+        ],
+        "*.{js,css,json,md}": [
+            "prettier --write",
+            "git add"
+        ]
     }
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "git add"
-    ],
-    "*.{js,css,json,md}": [
-      "prettier --write",
-      "git add"
-    ]
-  }
 }

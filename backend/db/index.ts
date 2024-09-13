@@ -4,9 +4,16 @@ import {
     findOneFromDB as _findOneFromDB, insertInDb as _insertInDb, updateOneFromDb as _updateOneFromDb
 } from './inMemDB';
 
-const uri = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB_NAME;
+// added local db address if you didnt create a .env file
+const uri = process.env.MONGO_URI || 'mongodb://localhost:27017';
+const dbName = process.env.MONGO_DB_NAME || 'realtimechatting';
+
+console.log('uri', uri);
+console.log('dbName', dbName);
+
 const client = uri ? new MongoClient(uri) : null;
+
+console.log('client', client);
 
 let db: Db = null;
 let inMem = uri ? false : true;
