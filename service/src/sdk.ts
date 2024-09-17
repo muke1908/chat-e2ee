@@ -10,6 +10,7 @@ import { SocketInstance, SubscriptionContextType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
+import { WebRTCCall } from './webrtc';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
@@ -42,8 +43,11 @@ class ChatE2EE implements IChatE2EE {
     private socket: SocketInstance;
 
     private subscriptionLogger = logger.createChild('Subscription');
+    private callLogger = logger.createChild('Call');
 
     private initialized = false;
+    private call?: WebRTCCall;
+    private iceCandidates = [];
 
     constructor(config?: Partial<configType>) {
         config && setConfig(config);
@@ -51,6 +55,7 @@ class ChatE2EE implements IChatE2EE {
 
     public async init(): Promise<void> {
         const initLogger = logger.createChild('Init');
+        const evetLogger = logger.createChild('Events');
         initLogger.log(`Started.`);
 
         this.createSocketSubcription();
@@ -58,14 +63,53 @@ class ChatE2EE implements IChatE2EE {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
         this.on('on-alice-join', () => {
-            initLogger.log("Receiver connected.");
+            evetLogger.log("Receiver connected.");
             this.getPublicKey(initLogger);
         })
 
         this.on("on-alice-disconnect", () => {
-            initLogger.log("Receiver disconnected");
+            evetLogger.log("Receiver disconnected");
             this.receiverPublicKey = null;
         });
+
+        /**
+         * Related to webrtc connection
+         */
+        this.on('webrtc-session-description', (data) => {
+            evetLogger.log("New session description");
+            if(data.type === 'offer') {
+                evetLogger.log("New offer");
+                this.call = this.getWebRtcCall();
+            }else if(data.type === 'answer') {
+                evetLogger.log("New answer");
+                if(!this.call) {
+                    evetLogger.log("No all to answer");
+                    return;
+                }
+            }else if(data.type === 'candidate') {
+                evetLogger.log("New candidate");
+                if(!this.call) {
+                    evetLogger.log("call not created yet, storing ICE candidate");
+                    this.iceCandidates.push(data);
+                }
+            }
+            this.call?.signal(data);
+        });
+
+        /**
+         * TO DO: 
+         * Use better approach to add ICE Candidate 
+         */
+        const timer = setInterval(() => {
+            if(this.iceCandidates.length && this.call) {
+                console.log('setting ICE candidate')
+                this.iceCandidates.forEach((ice) => {
+                    this.call.signal(ice);
+                })
+
+                clearTimeout(timer);
+            }
+        }, 1000)
 
         initLogger.log(`Finished.`);
         this.initialized = true;
@@ -158,6 +202,19 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
+    public async startCall(): Promise<Call> {
+        if(this.call) {
+            throw new Error('Call already active');
+        }
+        const call = new Call(this.getWebRtcCall());
+        await call.startCall();
+        return call;
+    }
+
+    public async endCall(): Promise<void> {
+        return this.call?.endCall();
+    }
+
     //get receiver public key
     private async getPublicKey(logger: Logger): Promise<void> {
         logger.log(`getPublicKey()`);
@@ -176,6 +233,22 @@ class ChatE2EE implements IChatE2EE {
         if(!this.initialized) {
             throw new Error('ChatE2EE is not initialized, call init()');
         }
+    }
+
+    private getWebRtcCall(): WebRTCCall {
+        this.checkInitialized();
+        return new WebRTCCall(this.userId, this.channelId, this.subscriptions, this.callLogger);
+    }
+}
+
+export class Call {
+    constructor(private webRtcCall: WebRTCCall) {}
+
+    public async startCall(): Promise<void> {
+        return this.webRtcCall.startCall();
+    }
+    public async endCall(): Promise<void> {
+        return this.webRtcCall.endCall();
     }
 }
 

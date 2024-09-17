@@ -2,17 +2,18 @@ import socketIOClient, { Socket } from 'socket.io-client';
 import { Logger } from '../utils/logger';
 import { chatJoinPayloadType } from '../sdk';
 import { configContext } from '../configContext';
-import { SocketListenerType } from '../public/types';
+import { SocketListenerTypeInternal } from '../public/types';
 
-export type SubscriptionType = Map<SocketListenerType, Set<(...args: any) => void>>;
+export type SubscriptionType = Map<SocketListenerTypeInternal, Set<(...args: any) => void>>;
 export type SubscriptionContextType = () => SubscriptionType;
 
-const SOCKET_LISTENERS: Record<string, SocketListenerType> = {
+const SOCKET_LISTENERS: Record<string, SocketListenerTypeInternal> = {
     'LIMIT_REACHED': "limit-reached",
     'DELIVERED': "delivered",
     'ON_ALICE_JOIN': "on-alice-join",
     'ON_ALICE_DISCONNECT': "on-alice-disconnect",
-    'CHAT_MESSAGE': "chat-message"
+    'CHAT_MESSAGE': "chat-message",
+    "WEBRTC_SESSION_DESCRIPTION": "webrtc-session-description"
 }
 
 const getBaseURL = (): string => {
@@ -35,6 +36,7 @@ export class SocketInstance {
             this.handler(SOCKET_LISTENERS.CHAT_MESSAGE, args);
             this.markDelivered(args[0]);
         });
+        this.socket.on(SOCKET_LISTENERS.WEBRTC_SESSION_DESCRIPTION, (...args) => this.handler(SOCKET_LISTENERS.WEBRTC_SESSION_DESCRIPTION, args))
         logger.log('Initiialized');
     }
 
@@ -49,7 +51,7 @@ export class SocketInstance {
         this.socket.disconnect();
     }
 
-    private handler(listener: SocketListenerType, args) {
+    private handler(listener: SocketListenerTypeInternal, args) {
         const loggerWithCount = this.eventHandlerLogger.count();
         loggerWithCount.log(`handler called for ${listener}`);
         const callbacks = this.subscriptionContext().get(listener);

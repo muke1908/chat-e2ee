@@ -22,7 +22,7 @@ export class Logger {
         return new Logger(`${this.name}`, [...this.childs, name]);
     }
 
-    public log(...args: any[]) {
+    public log(...args: any[]): void {
         if(this.disableLog) {
             // Logs are disabled and will not be printed
             // set disableLog: false in configContext to enable logs

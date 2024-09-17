@@ -1,4 +1,6 @@
-export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message";
+import { Call } from "../sdk";
+export type SocketListenerType = Omit<SocketListenerTypeInternal, "webrtc-session-description">;
+export type SocketListenerTypeInternal = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
 export type LinkObjType = {
     hash: string,
     link: string,
@@ -25,6 +27,9 @@ export interface IChatE2EE {
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType, callback: (...args: any) => void): void;
+    // webrtc call 
+    startCall(): Promise<Call>;
+    endCall(): void;
 }
 
 export interface IUtils {
@@ -40,9 +45,4 @@ export type configType = {
     }
 }
 export type SetConfigType = (config: Partial<configType>) => void;
-
-export declare const createChatInstance: () => IChatE2EE;
-export declare const utils: IUtils;
-export declare const setConfig: SetConfigType;
-
 
