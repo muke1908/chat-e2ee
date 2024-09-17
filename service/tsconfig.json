@@ -1,11 +1,12 @@
 {
     "compilerOptions": {  
+      "outDir": "dist/types",
       "target": "ES5",    
       "strict": true,
       "esModuleInterop": true,
       "sourceMap": true,
       "noImplicitAny": false,
-      "declaration": false, // generating separately, npm run dts
+      "declaration": true,
       "strictNullChecks": false,
       "downlevelIteration": true,
       "lib": ["es5", "es6", "dom"],

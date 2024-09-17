@@ -14,7 +14,6 @@ import { generateUUID } from './utils/uuid';
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
     generateUUID
-
 }
 
 const logger = new Logger();
@@ -179,3 +178,5 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 }
+
+export * from './public/types';

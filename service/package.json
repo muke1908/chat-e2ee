@@ -5,7 +5,7 @@
   "main": "dist/bundle.js",
   "author": "Mukesh",
   "license": "ISC",
-  "types": "dist/types.d.ts",
+  "types": "dist/types/sdk.d.ts",
   "devDependencies": {
     "ts-loader": "^9.4.2",
     "webpack": "^5.82.0",
@@ -13,9 +13,8 @@
     "webpack-remove-debug": "^0.1.0"
   },
   "scripts": {
-    "build": "webpack --mode production && npm run dts",
+    "build": "webpack --mode production",
     "watch": "concurrently \"webpack --watch\" \"npm run watch-dts\"",
-    "dts": "../node_modules/typescript/bin/tsc src/public/types.ts --declaration --emitDeclarationOnly --declarationDir ./dist",
     "publish-sdk": "npm publish",
     "test": "jest",
     "watch-dts": "../node_modules/.bin/nodemon --watch src/public/types.ts --exec \"npm run dts\""
