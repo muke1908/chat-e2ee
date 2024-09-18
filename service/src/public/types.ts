@@ -12,7 +12,7 @@ export type LinkObjType = {
 }
 
 export interface ISendMessageReturn { id: string, timestamp: string };
-export interface IGetPublicKeyReturn { publicKey: string};
+export interface IGetPublicKeyReturn { publicKey: string, aesKey: string};
 export type TypeUsersInChannel = { "uuid":string }[];
 
 export interface IChatE2EE {

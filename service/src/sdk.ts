@@ -1,5 +1,5 @@
 import { setConfig } from './configContext';
-import { cryptoUtils as _cryptoUtils } from './crypto';
+import { cryptoUtils as _cryptoUtils, AesGcmEncryption } from './crypto';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
@@ -36,7 +36,7 @@ class ChatE2EE implements IChatE2EE {
 
     private privateKey?: string;
     private publicKey?: string;
-
+    
     private receiverPublicKey?: string;
 
     private subscriptions = new Map();
@@ -49,6 +49,7 @@ class ChatE2EE implements IChatE2EE {
     private call?: WebRTCCall;
     private iceCandidates = [];
 
+    private symEncryption = new AesGcmEncryption();
     constructor(config?: Partial<configType>) {
         config && setConfig(config);
     }
@@ -60,8 +61,10 @@ class ChatE2EE implements IChatE2EE {
 
         this.createSocketSubcription();
         const { privateKey, publicKey } = await _cryptoUtils.generateKeypairs();
+
         this.privateKey = privateKey;
         this.publicKey = publicKey;
+
         this.on('on-alice-join', () => {
             evetLogger.log("Receiver connected.");
             this.getPublicKey(initLogger);
@@ -99,6 +102,7 @@ class ChatE2EE implements IChatE2EE {
         /**
          * TO DO: 
          * Use better approach to add ICE Candidate 
+         * https://medium.com/@fengliu_367/getting-started-with-webrtc-a-practical-guide-with-example-code-b0f60efdd0a7
          */
         const timer = setInterval(() => {
             if(this.iceCandidates.length && this.call) {
@@ -111,6 +115,9 @@ class ChatE2EE implements IChatE2EE {
             }
         }, 1000)
 
+        initLogger.log(`Initializing AES Encryption for webrtc`);
+        await this.symEncryption.int();
+        initLogger.log(`Initialized AES Encryption for webrtc`);
         initLogger.log(`Finished.`);
         this.initialized = true;
     }
@@ -126,7 +133,10 @@ class ChatE2EE implements IChatE2EE {
         this.channelId = channelId;
         this.userId = userId;
         this.userName = userName;
-        await sharePublicKey({ publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
+
+        const aesPlain = await this.symEncryption.getRawAesKeyToExport();
+
+        await sharePublicKey({ aesKey: aesPlain, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
         this.socket.joinChat({ publicKey: this.publicKey, userID: this.userId, channelID: this.channelId})
         await this.getPublicKey(logger);
         return;
@@ -221,6 +231,9 @@ class ChatE2EE implements IChatE2EE {
         const receiverPublicKey = await getPublicKey({ userId: this.userId, channelId: this.channelId });
         logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
         this.receiverPublicKey = receiverPublicKey?.publicKey;
+        if(receiverPublicKey.aesKey) {
+            await this.symEncryption.setRemoteAesKey(receiverPublicKey.aesKey)
+        }
         return;
     }
 
@@ -237,7 +250,14 @@ class ChatE2EE implements IChatE2EE {
 
     private getWebRtcCall(): WebRTCCall {
         this.checkInitialized();
-        return new WebRTCCall(this.userId, this.channelId, this.subscriptions, this.callLogger);
+        this.call = new WebRTCCall(
+            this.symEncryption,
+            this.userId, 
+            this.channelId, 
+            this.subscriptions, 
+            this.callLogger,
+        );
+        return this.call;
     }
 }
 

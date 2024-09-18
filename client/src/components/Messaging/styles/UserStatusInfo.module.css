@@ -1,14 +1,14 @@
 .userInfo {
   padding: 15px 0px 15px 0px;
   font-weight: 400;
-  display: grid;
-  grid-template-columns: 2fr auto auto;
+  display: flex;
+  flex-direction: row;
   grid-column-gap: 15px;
-  align-content: center;
   align-items: center;
 }
 .userInfoOnline {
   color: #4caf50;
+  flex: 1;
 }
 
 @media screen and (max-width: 640px) {
@@ -29,6 +29,7 @@
 .userOnlineWaiting {
   display: flex;
   align-items: center;
+  flex: 1;
 }
 
 .retryImageIcon {

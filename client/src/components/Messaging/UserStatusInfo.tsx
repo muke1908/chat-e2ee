@@ -8,12 +8,16 @@ export const UserStatusInfo = ({
   online,
   getSetUsers,
   channelID,
-  handleDeleteLink
+  handleDeleteLink,
+  startCall,
+  endCall
 }: {
   online: any;
   getSetUsers: any;
   channelID: any;
   handleDeleteLink: any;
+  startCall: any,
+  endCall: any
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -44,8 +48,25 @@ export const UserStatusInfo = ({
           />
         </div>
       )}
+      {
+        online && <CallButton call={startCall}/>
+      }
       <DeleteChatLink handleDeleteLink={handleDeleteLink} />
       <ThemeToggle />
     </div>
   );
 };
+
+
+const CallButton = ({ call }: {call: any}) => {
+  return (
+    <div>
+      <div
+        role="button"
+        onClick={call}
+      >
+        Call
+      </div>
+    </div>
+  )
+}
