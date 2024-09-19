@@ -2,12 +2,12 @@ import socketIOClient, { Socket } from 'socket.io-client';
 import { Logger } from '../utils/logger';
 import { chatJoinPayloadType } from '../sdk';
 import { configContext } from '../configContext';
-export type SocketListenerTypeInternal = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
+export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
 
-export type SubscriptionType = Map<SocketListenerTypeInternal, Set<(...args: any) => void>>;
+export type SubscriptionType = Map<SocketListenerType, Set<Function>>;
 export type SubscriptionContextType = () => SubscriptionType;
 
-const SOCKET_LISTENERS: Record<string, SocketListenerTypeInternal> = {
+const SOCKET_LISTENERS: Record<string, SocketListenerType> = {
     'LIMIT_REACHED': "limit-reached",
     'DELIVERED': "delivered",
     'ON_ALICE_JOIN': "on-alice-join",
@@ -26,7 +26,7 @@ export class SocketInstance {
     private socket: Socket;
 
     private eventHandlerLogger = this.logger.createChild('eventHandlerLogger');
-    constructor(private subscriptionContext: SubscriptionContextType, private logger: Logger) {
+    constructor(private subscriptionContext: () => SubscriptionType, private logger: Logger) {
         this.socket = socketIOClient(`${getBaseURL()}/`);
         this.socket.on(SOCKET_LISTENERS.LIMIT_REACHED, (...args) => this.handler(SOCKET_LISTENERS.LIMIT_REACHED, args));
         this.socket.on(SOCKET_LISTENERS.DELIVERED, (...args) => this.handler(SOCKET_LISTENERS.DELIVERED, args));
@@ -51,7 +51,7 @@ export class SocketInstance {
         this.socket.disconnect();
     }
 
-    private handler(listener: SocketListenerTypeInternal, args) {
+    private handler(listener: SocketListenerType, args) {
         const loggerWithCount = this.eventHandlerLogger.count();
         loggerWithCount.log(`handler called for ${listener}`);
         const callbacks = this.subscriptionContext().get(listener);

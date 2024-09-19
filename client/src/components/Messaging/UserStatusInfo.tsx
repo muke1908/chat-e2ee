@@ -24,15 +24,15 @@ export const UserStatusInfo = ({
   const [ callState, setCallState ] = useState(undefined);
 
   useEffect(() => {
-    chate2ee.onCallAdded((call) => {
+    chate2ee.on('call-added', (call) => {
       setCall(call);
     });
 
-    chate2ee.onCallRemoved(() => {
+    chate2ee.on('call-removed', () => {
       setCall(null);
     });
 
-    chate2ee.onPCStateChanged((state) => {
+    chate2ee.on('pc-state-changed', (state) => {
       setCallState(state);
     });
   }, [chate2ee]);

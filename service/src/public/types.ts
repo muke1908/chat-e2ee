@@ -1,7 +1,6 @@
-import { SocketListenerTypeInternal } from "../socket/socket";
-import { E2ECall } from "../webrtc";
+import { SocketListenerType } from "../socket/socket";
+import { E2ECall, PeerConnectionEventType } from "../webrtc";
 
-export type SocketListenerType = Omit<SocketListenerTypeInternal, "webrtc-session-description">;
 export type LinkObjType = {
     hash: string,
     link: string,
@@ -27,13 +26,10 @@ export interface IChatE2EE {
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
-    on(listener: SocketListenerType, callback: (...args: any) => void): void;
+    on(listener: SocketListenerType | PeerConnectionEventType, callback: (...args: any) => void): void;
     // webrtc call 
     startCall(): Promise<E2ECall>;
     endCall(): void;
-    onPCStateChanged(cb: (state: RTCPeerConnectionState) => void) : void;
-    onCallAdded(cb: (call: E2ECall) => void): void,
-    onCallRemoved(cb: () => void): void
     activeCall: E2ECall | null
 }
 
