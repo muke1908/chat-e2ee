@@ -2,7 +2,7 @@ import socketIOClient, { Socket } from 'socket.io-client';
 import { Logger } from '../utils/logger';
 import { chatJoinPayloadType } from '../sdk';
 import { configContext } from '../configContext';
-import { SocketListenerTypeInternal } from '../public/types';
+export type SocketListenerTypeInternal = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
 
 export type SubscriptionType = Map<SocketListenerTypeInternal, Set<(...args: any) => void>>;
 export type SubscriptionContextType = () => SubscriptionType;

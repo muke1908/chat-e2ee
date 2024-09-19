@@ -1,3 +1,13 @@
+.callStatusBar {
+    position: fixed;
+    background: #4caf50;
+    width: 100%;
+    left: 0;
+    padding: 2px;
+    font-size: 12px;
+    color: white;
+    bottom: 0;
+}
 .userInfo {
   padding: 15px 0px 15px 0px;
   font-weight: 400;

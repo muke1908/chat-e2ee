@@ -1,5 +1,6 @@
+import { AesGcmEncryption } from './cryptoAES';
 import { setConfig } from './configContext';
-import { cryptoUtils as _cryptoUtils, AesGcmEncryption } from './crypto';
+import { cryptoUtils as _cryptoUtils } from './cryptoRSA';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
@@ -10,7 +11,7 @@ import { SocketInstance, SubscriptionContextType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
-import { WebRTCCall } from './webrtc';
+import { WebRTCCall, E2ECall } from './webrtc';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
@@ -47,9 +48,21 @@ class ChatE2EE implements IChatE2EE {
 
     private initialized = false;
     private call?: WebRTCCall;
+    private onCallAddedHandler?: (call: E2ECall) => void;
+    private onCallRemovedHandler?: () => void;
+    private onPCStateChangedHandler?: (state: RTCPeerConnectionState) => void;
+
     private iceCandidates = [];
 
     private symEncryption = new AesGcmEncryption();
+
+    private onPcConnectionChanged(state: RTCPeerConnectionState): void {
+        this.onPCStateChangedHandler(state)
+        if(state === 'failed' || state === 'closed') {
+            this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
+            this.endCall();
+        }
+    }
     constructor(config?: Partial<configType>) {
         config && setConfig(config);
     }
@@ -76,50 +89,50 @@ class ChatE2EE implements IChatE2EE {
         });
 
         /**
-         * Related to webrtc connection
+         * Related to webrtc connection,
+         * Move it to WebRTC class?
          */
         this.on('webrtc-session-description', (data) => {
             evetLogger.log("New session description");
             if(data.type === 'offer') {
                 evetLogger.log("New offer");
                 this.call = this.getWebRtcCall();
-            }else if(data.type === 'answer') {
-                evetLogger.log("New answer");
-                if(!this.call) {
-                    evetLogger.log("No all to answer");
-                    return;
-                }
-            }else if(data.type === 'candidate') {
-                evetLogger.log("New candidate");
-                if(!this.call) {
-                    evetLogger.log("call not created yet, storing ICE candidate");
-                    this.iceCandidates.push(data);
-                }
-            }
-            this.call?.signal(data);
-        });
+                this.onCallAddedHandler?.(this.activeCall);
+                this.call.signal(data);
 
-        /**
-         * TO DO: 
-         * Use better approach to add ICE Candidate 
-         * https://medium.com/@fengliu_367/getting-started-with-webrtc-a-practical-guide-with-example-code-b0f60efdd0a7
-         */
-        const timer = setInterval(() => {
-            if(this.iceCandidates.length && this.call) {
-                console.log('setting ICE candidate')
+                // add ICE from buffer
                 this.iceCandidates.forEach((ice) => {
                     this.call.signal(ice);
                 })
+                this.iceCandidates = [];
 
-                clearTimeout(timer);
+            }else if(data.type === 'answer') {
+                evetLogger.log("New answer");
+                this.call.signal(data);
+            }else if(data.type === 'candidate') {
+                evetLogger.log('ICE Candidate received.');
+                if(!this.call) {
+                    evetLogger.log("call not created yet, storing ICE candidate");
+                    this.iceCandidates.push(data);
+                }else {
+                    this.call.signal(data);
+                }
             }
-        }, 1000)
+        });
+
 
         initLogger.log(`Initializing AES Encryption for webrtc`);
         await this.symEncryption.int();
         initLogger.log(`Initialized AES Encryption for webrtc`);
         initLogger.log(`Finished.`);
         this.initialized = true;
+    }
+
+    public get activeCall(): E2ECall | null {
+        if(!this.call) {
+            return null;
+        }
+        return new E2ECall(this.call);
     }
 
     public async getLink(): Promise<LinkObjType> {
@@ -212,17 +225,35 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
-    public async startCall(): Promise<Call> {
+    public async startCall(): Promise<E2ECall> {
+        if(!WebRTCCall.isSupported()) {
+            throw new Error('createEncodedStreams not supported.');
+        }
         if(this.call) {
             throw new Error('Call already active');
         }
-        const call = new Call(this.getWebRtcCall());
+        const call = new E2ECall(this.getWebRtcCall());
         await call.startCall();
         return call;
     }
 
     public async endCall(): Promise<void> {
-        return this.call?.endCall();
+        this.call?.endCall();
+        this.call = null;
+        this.onCallRemovedHandler?.();
+        return;
+    }
+
+    public onCallAdded(cb: (call: E2ECall) => void): void {
+        this.onCallAddedHandler = cb
+    }
+
+    public onCallRemoved(cb: () => void): void {
+        this.onCallRemovedHandler = cb
+    }
+
+    public onPCStateChanged(cb: (state: RTCPeerConnectionState) => void) : void {
+        this.onPCStateChangedHandler = cb;
     }
 
     //get receiver public key
@@ -251,24 +282,13 @@ class ChatE2EE implements IChatE2EE {
     private getWebRtcCall(): WebRTCCall {
         this.checkInitialized();
         this.call = new WebRTCCall(
+            this.onPcConnectionChanged.bind(this),
             this.symEncryption,
             this.userId, 
             this.channelId, 
-            this.subscriptions, 
             this.callLogger,
         );
         return this.call;
-    }
-}
-
-export class Call {
-    constructor(private webRtcCall: WebRTCCall) {}
-
-    public async startCall(): Promise<void> {
-        return this.webRtcCall.startCall();
-    }
-    public async endCall(): Promise<void> {
-        return this.webRtcCall.endCall();
     }
 }
 

@@ -1,5 +1,4 @@
-import { AesGcmEncryption } from "./crypto";
-import { SocketListenerType } from "./sdk";
+import { AesGcmEncryption } from "./cryptoAES";
 import { Logger } from "./utils/logger";
 import { webrtcSession } from "./webrtcSession";
 
@@ -9,14 +8,26 @@ interface SignalData {
 }
 
 export class WebRTCCall {
+    private callStateChangeCallback?: (state: RTCPeerConnectionState) => void; 
     private peer: Peer;
 
     public static isSupported(): boolean {
         return  !!(RTCRtpSender.prototype as any).createEncodedStreams;
     }
-    constructor(encryption: AesGcmEncryption, private sender: string, private channel: string, subscriptions: Map<SocketListenerType, Set<Function>>, private logger: Logger) {
+
+    constructor(onPcConnectionChanged: (state: RTCPeerConnectionState) => void, encryption: AesGcmEncryption, sender: string, channel: string, private logger: Logger) {
         this.logger.log('Creating WebRTCCall');
-        this.peer = new Peer(encryption, sender, channel, this.logger);
+        this.peer = new Peer(
+            onPcConnectionChanged,
+            encryption, 
+            sender, 
+            channel, 
+            this.logger.createChild('Peer')
+        );
+    }
+
+    public get callState(): RTCPeerConnectionState {
+        return this.peer.callState;
     }
 
     async startCall(): Promise<void> {
@@ -29,7 +40,7 @@ export class WebRTCCall {
         this.peer?.dispose();
     }
 
-    public signal(data): void {
+    public signal(data: SignalData): void {
         this.logger.log('handling signal data');
         if(!this.peer) {
             throw new Error('No peer connection');
@@ -39,14 +50,22 @@ export class WebRTCCall {
 }
 
 class Peer {
+    private state: RTCPeerConnectionState;
     private pc: RTCPeerConnection;
-    private logger?: Logger;
 
     private audioEl?: HTMLAudioElement;
     private audioStream?: MediaStream;
-    constructor(private encryption: AesGcmEncryption, private sender: string, private channel: string, logger: Logger) {
-        this.logger = logger.createChild('Peer');
-        this.pc = new RTCPeerConnection ({
+
+    private localStreamAcquisatonPromise?: Promise<void>
+    constructor(
+        private onPcConnectionChanged: (state: RTCPeerConnectionState) => void,
+        private encryption: AesGcmEncryption, 
+        private sender: string, 
+        private channel: string, 
+        private logger: Logger
+    ) {
+        this.pc = new (RTCPeerConnection as any)({
+            encodedInsertableStreams: true,
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
                 { urls: "stun:stun.l.google.com:5349" },
@@ -61,9 +80,15 @@ class Peer {
             ]
         });
 
+        this.pc.onconnectionstatechange = () => {
+            this.logger.log('Peer Connection State: ', this.pc.connectionState);
+            this.state = this.pc.connectionState;
+            this.onPcConnectionChanged(this.state);
+        };
+
         this.pc.onicecandidate = (event) => {
             if (event.candidate) {
-                this.logger.log('ICE Candidate (Caller) gathered');
+                this.logger.log('ICE Candidate (Caller) gathered.');
                 webrtcSession({ 
                     description: {
                         candidate: event.candidate,
@@ -76,24 +101,25 @@ class Peer {
         };
 
         this.pc.ontrack = (event) => {
-                        
             event.streams[0].getAudioTracks().forEach(() => {
                 this.logger.log('Adding remote audio track');
-                this.applyDecryption('audio');
+                this.applyDecryption('audio', event.receiver);
                 this.appendAudioStreamToDom(event.streams[0], 'remote');    
             })
-
-            event.streams[0].getVideoTracks().forEach(() => {
-                this.logger.log('Adding remote video track');
-                this.applyDecryption('video');
-                this.appenVideoStreamToDom(event.streams[0], 'remote');
-            })
         };
+
+        this.state = this.pc.connectionState;
+        this.localStreamAcquisatonPromise = this.addLocalAudioTracks();
+    }
+
+    public get callState(): RTCPeerConnectionState {
+        return this.state;
     }
 
     public async createAndSendOffer() {
+        await this.localStreamAcquisatonPromise;
         this.logger.log('createAndSendOffer');
-        await this.addLocalAudioTracks();
+        // await this.addLocalAudioTracks();
         const offer = await this.pc.createOffer();
         await this.pc.setLocalDescription(offer);
         await webrtcSession({ 
@@ -107,9 +133,9 @@ class Peer {
 
     public async signal(data: SignalData) {
         if (data.type === 'offer') {
+            await this.localStreamAcquisatonPromise;
             this.logger.log('Signal, offer');
             await this.pc.setRemoteDescription(new RTCSessionDescription(data));
-            // await this.addLocalAudioTracks();
             const answer = await this.pc.createAnswer();
             await this.pc.setLocalDescription(answer);
             await webrtcSession({ 
@@ -143,7 +169,7 @@ class Peer {
     }
 
     private async addLocalAudioTracks(): Promise<void> {
-        this.logger.log('addLocalAudioTracks');
+        this.logger.log('addLocalAudioTracks, adding local track to Peer Connection');
         this.audioStream = await this.getAudioStream();
         this.audioStream.getTracks().forEach(track => this.pc.addTrack(track, this.audioStream));
         this.applyEncryption('audio');
@@ -157,7 +183,8 @@ class Peer {
         this.appenVideoStreamToDom(stream, 'local');
         stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
         this.applyEncryption('video');
-    }*/
+    }
+    */
 
     private async getAudioStream(): Promise<MediaStream> {
         this.logger.log('getAudioStream');
@@ -169,7 +196,7 @@ class Peer {
         return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     }
 
-    private appendAudioStreamToDom(stream: MediaStream, tag: string): void {
+    private async appendAudioStreamToDom(stream: MediaStream, tag: string): Promise<void> {
         this.logger.log('Adding remote audio track');
         this.audioEl = document.createElement('audio');
         this.audioEl.setAttribute('autoplay', 'true');
@@ -177,7 +204,7 @@ class Peer {
         this.audioEl.srcObject = stream;
 
         try {
-            this.audioEl.play();
+            await this.audioEl.play();
         }catch(err) {
             this.logger.log(err);
             this.audioEl.setAttribute('controls', 'true');
@@ -199,8 +226,7 @@ class Peer {
         videoEl.srcObject = stream
     }
 
-    private applyDecryption(mediaType: 'audio' | 'video'): void {
-        const receiver = this.pc.getReceivers().find(r => r.track.kind === mediaType);
+    private applyDecryption(mediaType: 'audio' | 'video', receiver: RTCRtpReceiver): void {
         const transformer = new TransformStream({
             transform: async (chunk: RTCEncodedAudioFrame, controller) => {
                 
@@ -218,7 +244,7 @@ class Peer {
             }
         });
 
-        const receiverStreams = (receiver as any).createEncodedStreams();
+        const receiverStreams =  (receiver as any).createEncodedStreams();
         receiverStreams.readable
             .pipeThrough(transformer)
             .pipeTo(receiverStreams.writable);
@@ -248,5 +274,19 @@ class Peer {
         senderStreams.readable
             .pipeThrough(transformer)
             .pipeTo(senderStreams.writable);
+    }
+}
+
+// Public facing class
+export class E2ECall {
+    constructor(private readonly webRtcCall: WebRTCCall) {}
+    public get state(): RTCPeerConnectionState {
+        return this.webRtcCall.callState;
+    }
+    public async startCall(): Promise<void> {
+        return this.webRtcCall.startCall();
+    }
+    public async endCall(): Promise<void> {
+        return this.webRtcCall.endCall();
     }
 }

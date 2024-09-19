@@ -1,6 +1,7 @@
-import { Call } from "../sdk";
+import { SocketListenerTypeInternal } from "../socket/socket";
+import { E2ECall } from "../webrtc";
+
 export type SocketListenerType = Omit<SocketListenerTypeInternal, "webrtc-session-description">;
-export type SocketListenerTypeInternal = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
 export type LinkObjType = {
     hash: string,
     link: string,
@@ -28,8 +29,12 @@ export interface IChatE2EE {
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType, callback: (...args: any) => void): void;
     // webrtc call 
-    startCall(): Promise<Call>;
+    startCall(): Promise<E2ECall>;
     endCall(): void;
+    onPCStateChanged(cb: (state: RTCPeerConnectionState) => void) : void;
+    onCallAdded(cb: (call: E2ECall) => void): void,
+    onCallRemoved(cb: () => void): void
+    activeCall: E2ECall | null
 }
 
 export interface IUtils {

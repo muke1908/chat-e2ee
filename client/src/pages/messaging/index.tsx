@@ -265,8 +265,7 @@ const Chat = () => {
           getSetUsers={getSetUsers}
           channelID={channelID}
           handleDeleteLink={handleDeleteLink}
-          startCall={() => chate2ee.startCall()}
-          endCall={() => chate2ee.endCall()}
+          chate2ee={chate2ee}
         />
 
         <div className={styles.messageContainer}>

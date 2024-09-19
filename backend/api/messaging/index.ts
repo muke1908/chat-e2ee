@@ -27,16 +27,13 @@ router.post(
     if (!valid) {
       return res.sendStatus(404);
     }
-    const usersInChannel = clients.getClientsByChannel(channel);
-    const usersInChannelArr = Object.keys(usersInChannel);
-    const ifSenderIsInChannel = usersInChannelArr.find((u) => u === sender);
 
-    if (!ifSenderIsInChannel) {
+    if (!clients.isSenderInChannel(channel, sender)) {
       console.error('Sender is not in channel');
       return res.status(401).send({ error: "Permission denied" });
     }
 
-    const receiver = usersInChannelArr.find((u) => u !== sender);
+    const receiver = clients.getReceiverIDBySenderID(sender, channel);
     if(!receiver) {
       console.error('No receiver is in the channel');
       return;
@@ -53,10 +50,9 @@ router.post(
     };
 
     if (image) {
-      const { imageurl } = await uploadImage(image);
-      dataToPublish.image = imageurl;
+      return res.status(400).send({ message: "Image not supported" });
     }
-    const receiverSid = usersInChannel[receiver].sid;
+    const receiverSid = clients.getSIDByIDs(receiver, channel).sid;
     socketEmit<SOCKET_TOPIC.CHAT_MESSAGE>(SOCKET_TOPIC.CHAT_MESSAGE, receiverSid, dataToPublish);
     return res.send({ message: "message sent", id, timestamp });
   })

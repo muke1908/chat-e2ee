@@ -22,22 +22,19 @@ router.post(
       if (!valid) {
         return res.sendStatus(404);
       }
-      const usersInChannel = clients.getClientsByChannel(channel);
-      const usersInChannelArr = Object.keys(usersInChannel);
-      const ifSenderIsInChannel = usersInChannelArr.find((u) => u === sender);
-  
-      if (!ifSenderIsInChannel) {
+      
+      if (!clients.isSenderInChannel(channel, sender)) {
         console.error('Sender is not in channel');
         return res.status(401).send({ error: "Permission denied" });
       }
   
-      const receiver = usersInChannelArr.find((u) => u !== sender);
+      const receiver = clients.getReceiverIDBySenderID(sender, channel);
       if(!receiver) {
         console.error('No receiver is in the channel');
-        return res.status(406).send({ error: "No user available to accept offer" });
+        return res.status(406).send({ error: "No user available to accept call" });
       }
   
-      const receiverSid = usersInChannel[receiver].sid;
+      const receiverSid = clients.getSIDByIDs(receiver, channel).sid;
       socketEmit<SOCKET_TOPIC.WEBRTC_SESSION_DESCRIPTION>(SOCKET_TOPIC.WEBRTC_SESSION_DESCRIPTION, receiverSid, description);
       return res.send({ status: "ok" });
     })
