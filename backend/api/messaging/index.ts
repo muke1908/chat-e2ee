@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 
 import db from '../../db';
 import { PUBLIC_KEY_COLLECTION } from '../../db/const';
-import uploadImage from '../../external/uploadImage';
 import asyncHandler from '../../middleware/asyncHandler';
 import { SOCKET_TOPIC, socketEmit } from '../../socket.io';
 import getClientInstance from '../../socket.io/clients';
@@ -84,7 +83,6 @@ router.get(
       return res.sendStatus(404);
     }
     const receiverID = clients.getReceiverIDBySenderID(userId as string, channel as string);
-    console.log(receiverID)
     const data = await db.findOneFromDB<GetPublicKeyResponse>({ channel, user: receiverID }, PUBLIC_KEY_COLLECTION);
     return res.send(data || {
       publicKey: null,

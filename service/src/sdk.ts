@@ -241,7 +241,6 @@ class ChatE2EE implements IChatE2EE {
         this.call?.endCall();
         this.call = null;
         this.onCallRemovedHandler?.();
-        return;
     }
 
     public onCallAdded(cb: (call: E2ECall) => void): void {
