@@ -242,8 +242,7 @@ class ChatE2EE implements IChatE2EE {
     public async endCall(): Promise<void> {
         this.call?.endCall();
         this.call = null;
-        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());
-        
+        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());   
     }
 
     //get receiver public key

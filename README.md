@@ -9,13 +9,13 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 ---
   
 
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=muke1908_chat-e2ee&metric=code_smells)](https://sonarcloud.io/project/issues?id=muke1908_chat-e2ee&resolved=false&types=CODE_SMELL)  [![](https://img.shields.io/github/issues/muke1908/chat-e2ee?style=flat)](https://github.com/muke1908/chat-e2ee/issues) 
 
 ## Features
 
-1. No login/signup - the end users **don't identify** themselves.
-2. Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any man in the middle. 
-4. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
+1. :negative_squared_cross_mark: No login/signup - the end users **don't identify** themselves.
+2. :closed_lock_with_key:	End-to-end encrypted Audio-Call  (Experimental - added on [19th September, 2024](https://github.com/muke1908/chat-e2ee/commit/efae545c4c378dd7cae3c133843c1d58fded8a56)), Note that Audio encryption in webrtc call is done diffrently, please refer [Wiki](https://github.com/muke1908/chat-e2ee/wiki/End%E2%80%90to%E2%80%90end-encryption-in-Webrtc-audio-call)
+4. :no_entry_sign: Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any man in the middle. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
 
 ## :star: JS SDK 
 [<img align="center" width="200" src="https://i.imgur.com/O3Wr6fK.png">](https://github.com/muke1908/chat-e2ee/tree/master/service)  
@@ -23,6 +23,9 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 **Spin up your own frontend**: 
 JS SDK and use chat-e2ee backend as service - `@chate2ee/service`  
 [ :page_with_curl: Documentation](https://github.com/muke1908/chat-e2ee/tree/master/service)
+
+This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service. It uses socket.io for websocket connection and webrtc to facilitate 1-1 audio call.   
+
 
 ---
 
