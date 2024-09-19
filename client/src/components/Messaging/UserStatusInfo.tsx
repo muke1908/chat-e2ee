@@ -35,7 +35,7 @@ export const UserStatusInfo = ({
     chate2ee.onPCStateChanged((state) => {
       setCallState(state);
     });
-  }, []);
+  }, [chate2ee]);
 
   const makeCall = async () => {
     if(call) {
