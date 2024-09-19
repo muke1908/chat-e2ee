@@ -1,4 +1,4 @@
-import { cryptoUtils } from "./crypto";
+import { cryptoUtils } from "./cryptoRSA";
 
 describe('cryptoUtils', () => {
   const mockBase64String = 'ZW5jcnlwdGVkLXRleHQ='; // decoded = encrypted-text

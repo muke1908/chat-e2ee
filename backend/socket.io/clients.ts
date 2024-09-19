@@ -70,6 +70,12 @@ class Clients implements ClientRecordInterface{
     delete this.clientRecord[channelID][userID];
   }
 
+  isSenderInChannel(channel: string, sender: string): boolean {
+    const usersInChannel = this.getClientsByChannel(channel);
+    const usersInChannelArr = Object.keys(usersInChannel);
+    return !!usersInChannelArr.find((u) => u === sender);
+  }
+
 }
 
 const clientInstance = new Clients();

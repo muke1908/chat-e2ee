@@ -1,6 +1,7 @@
 // router.response
 export type MessageResponse = { message: string, id: string, timestamp: number }
 export type SharePublicKeyResponse = { status: string }
+export type WebrtcSessionResponse = { status: string }
 export type GetPublicKeyResponse = { public_key: string }
 export type UsersInChannelResponse = { uuid: string }[]
 

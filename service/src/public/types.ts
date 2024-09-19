@@ -1,4 +1,7 @@
-export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message";
+import { SocketListenerTypeInternal } from "../socket/socket";
+import { E2ECall } from "../webrtc";
+
+export type SocketListenerType = Omit<SocketListenerTypeInternal, "webrtc-session-description">;
 export type LinkObjType = {
     hash: string,
     link: string,
@@ -10,7 +13,7 @@ export type LinkObjType = {
 }
 
 export interface ISendMessageReturn { id: string, timestamp: string };
-export interface IGetPublicKeyReturn { publicKey: string};
+export interface IGetPublicKeyReturn { publicKey: string, aesKey: string};
 export type TypeUsersInChannel = { "uuid":string }[];
 
 export interface IChatE2EE {
@@ -25,6 +28,13 @@ export interface IChatE2EE {
     dispose(): void;
     encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType, callback: (...args: any) => void): void;
+    // webrtc call 
+    startCall(): Promise<E2ECall>;
+    endCall(): void;
+    onPCStateChanged(cb: (state: RTCPeerConnectionState) => void) : void;
+    onCallAdded(cb: (call: E2ECall) => void): void,
+    onCallRemoved(cb: () => void): void
+    activeCall: E2ECall | null
 }
 
 export interface IUtils {
@@ -40,9 +50,4 @@ export type configType = {
     }
 }
 export type SetConfigType = (config: Partial<configType>) => void;
-
-export declare const createChatInstance: () => IChatE2EE;
-export declare const utils: IUtils;
-export declare const setConfig: SetConfigType;
-
 

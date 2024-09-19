@@ -29,7 +29,6 @@ setConfig({
 }
 
 const chate2ee = createChatInstance();
-
 type messageObj = {
   body?: string;
   image?: string;
@@ -266,6 +265,7 @@ const Chat = () => {
           getSetUsers={getSetUsers}
           channelID={channelID}
           handleDeleteLink={handleDeleteLink}
+          chate2ee={chate2ee}
         />
 
         <div className={styles.messageContainer}>

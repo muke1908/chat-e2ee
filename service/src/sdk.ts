@@ -1,5 +1,6 @@
+import { AesGcmEncryption } from './cryptoAES';
 import { setConfig } from './configContext';
-import { cryptoUtils as _cryptoUtils } from './crypto';
+import { cryptoUtils as _cryptoUtils } from './cryptoRSA';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
@@ -10,6 +11,7 @@ import { SocketInstance, SubscriptionContextType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
+import { WebRTCCall, E2ECall } from './webrtc';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
@@ -35,40 +37,102 @@ class ChatE2EE implements IChatE2EE {
 
     private privateKey?: string;
     private publicKey?: string;
-
+    
     private receiverPublicKey?: string;
 
     private subscriptions = new Map();
     private socket: SocketInstance;
 
     private subscriptionLogger = logger.createChild('Subscription');
+    private callLogger = logger.createChild('Call');
 
     private initialized = false;
+    private call?: WebRTCCall;
+    private onCallAddedHandler?: (call: E2ECall) => void;
+    private onCallRemovedHandler?: () => void;
+    private onPCStateChangedHandler?: (state: RTCPeerConnectionState) => void;
 
+    private iceCandidates = [];
+
+    private symEncryption = new AesGcmEncryption();
+
+    private onPcConnectionChanged(state: RTCPeerConnectionState): void {
+        this.onPCStateChangedHandler(state)
+        if(state === 'failed' || state === 'closed') {
+            this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
+            this.endCall();
+        }
+    }
     constructor(config?: Partial<configType>) {
         config && setConfig(config);
     }
 
     public async init(): Promise<void> {
         const initLogger = logger.createChild('Init');
+        const evetLogger = logger.createChild('Events');
         initLogger.log(`Started.`);
 
         this.createSocketSubcription();
         const { privateKey, publicKey } = await _cryptoUtils.generateKeypairs();
+
         this.privateKey = privateKey;
         this.publicKey = publicKey;
+
         this.on('on-alice-join', () => {
-            initLogger.log("Receiver connected.");
+            evetLogger.log("Receiver connected.");
             this.getPublicKey(initLogger);
         })
 
         this.on("on-alice-disconnect", () => {
-            initLogger.log("Receiver disconnected");
+            evetLogger.log("Receiver disconnected");
             this.receiverPublicKey = null;
         });
 
+        /**
+         * Related to webrtc connection,
+         * Move it to WebRTC class?
+         */
+        this.on('webrtc-session-description', (data) => {
+            evetLogger.log("New session description");
+            if(data.type === 'offer') {
+                evetLogger.log("New offer");
+                this.call = this.getWebRtcCall();
+                this.onCallAddedHandler?.(this.activeCall);
+                this.call.signal(data);
+
+                // add ICE from buffer
+                this.iceCandidates.forEach((ice) => {
+                    this.call.signal(ice);
+                })
+                this.iceCandidates = [];
+
+            }else if(data.type === 'answer') {
+                evetLogger.log("New answer");
+                this.call.signal(data);
+            }else if(data.type === 'candidate') {
+                evetLogger.log('ICE Candidate received.');
+                if(!this.call) {
+                    evetLogger.log("call not created yet, storing ICE candidate");
+                    this.iceCandidates.push(data);
+                }else {
+                    this.call.signal(data);
+                }
+            }
+        });
+
+
+        initLogger.log(`Initializing AES Encryption for webrtc`);
+        await this.symEncryption.int();
+        initLogger.log(`Initialized AES Encryption for webrtc`);
         initLogger.log(`Finished.`);
         this.initialized = true;
+    }
+
+    public get activeCall(): E2ECall | null {
+        if(!this.call) {
+            return null;
+        }
+        return new E2ECall(this.call);
     }
 
     public async getLink(): Promise<LinkObjType> {
@@ -82,7 +146,10 @@ class ChatE2EE implements IChatE2EE {
         this.channelId = channelId;
         this.userId = userId;
         this.userName = userName;
-        await sharePublicKey({ publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
+
+        const aesPlain = await this.symEncryption.getRawAesKeyToExport();
+
+        await sharePublicKey({ aesKey: aesPlain, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
         this.socket.joinChat({ publicKey: this.publicKey, userID: this.userId, channelID: this.channelId})
         await this.getPublicKey(logger);
         return;
@@ -158,12 +225,45 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
+    public async startCall(): Promise<E2ECall> {
+        if(!WebRTCCall.isSupported()) {
+            throw new Error('createEncodedStreams not supported.');
+        }
+        if(this.call) {
+            throw new Error('Call already active');
+        }
+        const call = new E2ECall(this.getWebRtcCall());
+        await call.startCall();
+        return call;
+    }
+
+    public async endCall(): Promise<void> {
+        this.call?.endCall();
+        this.call = null;
+        this.onCallRemovedHandler?.();
+    }
+
+    public onCallAdded(cb: (call: E2ECall) => void): void {
+        this.onCallAddedHandler = cb
+    }
+
+    public onCallRemoved(cb: () => void): void {
+        this.onCallRemovedHandler = cb
+    }
+
+    public onPCStateChanged(cb: (state: RTCPeerConnectionState) => void) : void {
+        this.onPCStateChangedHandler = cb;
+    }
+
     //get receiver public key
     private async getPublicKey(logger: Logger): Promise<void> {
         logger.log(`getPublicKey()`);
         const receiverPublicKey = await getPublicKey({ userId: this.userId, channelId: this.channelId });
         logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
         this.receiverPublicKey = receiverPublicKey?.publicKey;
+        if(receiverPublicKey.aesKey) {
+            await this.symEncryption.setRemoteAesKey(receiverPublicKey.aesKey)
+        }
         return;
     }
 
@@ -176,6 +276,18 @@ class ChatE2EE implements IChatE2EE {
         if(!this.initialized) {
             throw new Error('ChatE2EE is not initialized, call init()');
         }
+    }
+
+    private getWebRtcCall(): WebRTCCall {
+        this.checkInitialized();
+        this.call = new WebRTCCall(
+            this.onPcConnectionChanged.bind(this),
+            this.symEncryption,
+            this.userId, 
+            this.channelId, 
+            this.callLogger,
+        );
+        return this.call;
     }
 }
 

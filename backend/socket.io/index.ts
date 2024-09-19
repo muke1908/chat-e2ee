@@ -15,6 +15,7 @@ export enum SOCKET_TOPIC {
   DELIVERED = 'delivered',
   ON_ALICE_DISCONNECTED = 'on-alice-disconnect',
   MESSAGE = 'message',
+  WEBRTC_SESSION_DESCRIPTION = 'webrtc-session-description'
 }
 
 type emitDataTypes = {

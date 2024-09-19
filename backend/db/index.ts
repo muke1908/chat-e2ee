@@ -39,7 +39,7 @@ const findOneFromDB = async<T>(findCondition, collectionName: string): Promise<T
     return _findOneFromDB(findCondition, collectionName);
   }
 
-  return db.collection(collectionName).findOne(findCondition) as T;
+  return db.collection(collectionName).findOne(findCondition, { sort: { _id: -1 } }) as T;
 }
 
 const updateOneFromDb = async<T>(condition, data, collectionName: string): Promise<T> => {
