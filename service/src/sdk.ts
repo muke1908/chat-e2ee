@@ -4,14 +4,14 @@ import { cryptoUtils as _cryptoUtils } from './cryptoRSA';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
-import { configType, IChatE2EE, ISendMessageReturn, LinkObjType, SocketListenerType, TypeUsersInChannel } from './public/types';
+import { configType, IChatE2EE, ISendMessageReturn, LinkObjType, TypeUsersInChannel } from './public/types';
 import { getPublicKey, sharePublicKey } from './publicKey';
 import sendMessage from './sendMessage';
-import { SocketInstance, SubscriptionContextType } from './socket/socket';
+import { SocketInstance, SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
-import { WebRTCCall, E2ECall } from './webrtc';
+import { WebRTCCall, E2ECall, peerConnectionEvents, PeerConnectionEventType } from './webrtc';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
@@ -33,14 +33,15 @@ export type chatJoinPayloadType = {
 class ChatE2EE implements IChatE2EE {
     private channelId?: string;
     private userId?: string;
-    private userName?: string;
 
     private privateKey?: string;
     private publicKey?: string;
     
     private receiverPublicKey?: string;
 
-    private subscriptions = new Map();
+    //To Do: Fix types
+    private subscriptions: Map<string, Set<Function>> = new Map();
+    private callSubscriptions: Map<string, Set<Function>> = new Map();
     private socket: SocketInstance;
 
     private subscriptionLogger = logger.createChild('Subscription');
@@ -48,16 +49,12 @@ class ChatE2EE implements IChatE2EE {
 
     private initialized = false;
     private call?: WebRTCCall;
-    private onCallAddedHandler?: (call: E2ECall) => void;
-    private onCallRemovedHandler?: () => void;
-    private onPCStateChangedHandler?: (state: RTCPeerConnectionState) => void;
-
     private iceCandidates = [];
 
     private symEncryption = new AesGcmEncryption();
 
     private onPcConnectionChanged(state: RTCPeerConnectionState): void {
-        this.onPCStateChangedHandler(state)
+        this.callSubscriptions.get("pc-state-changed")?.forEach((cb) => cb(state));
         if(state === 'failed' || state === 'closed') {
             this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
             this.endCall();
@@ -97,7 +94,7 @@ class ChatE2EE implements IChatE2EE {
             if(data.type === 'offer') {
                 evetLogger.log("New offer");
                 this.call = this.getWebRtcCall();
-                this.onCallAddedHandler?.(this.activeCall);
+                this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
                 this.call.signal(data);
 
                 // add ICE from buffer
@@ -145,7 +142,6 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`setChannel(), ${JSON.stringify({ channelId, userId,userName })}`);
         this.channelId = channelId;
         this.userId = userId;
-        this.userName = userName;
 
         const aesPlain = await this.symEncryption.getRawAesKeyToExport();
 
@@ -193,8 +189,14 @@ class ChatE2EE implements IChatE2EE {
         })
     }
 
-    public on(listener: SocketListenerType, callback): void {
+    public on(listener: string, callback): void {
         const loggerWithCount = this.subscriptionLogger.count();
+        let subscriptions = this.subscriptions;
+        
+        if(peerConnectionEvents.includes(listener as PeerConnectionEventType)) {
+            subscriptions = this.callSubscriptions;
+        }
+        
         const sub = this.subscriptions.get(listener);
         if (sub) {
             if (sub.has(callback)) {
@@ -205,7 +207,7 @@ class ChatE2EE implements IChatE2EE {
             sub.add(callback);
         } else {
             loggerWithCount.log(`Created: ${listener}`);
-            this.subscriptions.set(listener, new Set([callback]));
+            subscriptions.set(listener, new Set([callback]));
         }
     }
 
@@ -240,19 +242,8 @@ class ChatE2EE implements IChatE2EE {
     public async endCall(): Promise<void> {
         this.call?.endCall();
         this.call = null;
-        this.onCallRemovedHandler?.();
-    }
-
-    public onCallAdded(cb: (call: E2ECall) => void): void {
-        this.onCallAddedHandler = cb
-    }
-
-    public onCallRemoved(cb: () => void): void {
-        this.onCallRemovedHandler = cb
-    }
-
-    public onPCStateChanged(cb: (state: RTCPeerConnectionState) => void) : void {
-        this.onPCStateChangedHandler = cb;
+        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());
+        
     }
 
     //get receiver public key
@@ -268,7 +259,7 @@ class ChatE2EE implements IChatE2EE {
     }
 
     private createSocketSubcription(): void {
-        const subscriptionContext: SubscriptionContextType = () => this.subscriptions;
+        const subscriptionContext = () => this.subscriptions as SubscriptionType;
         this.socket = new SocketInstance(subscriptionContext, logger.createChild('Socket'));
     }
 

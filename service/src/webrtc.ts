@@ -6,9 +6,9 @@ interface SignalData {
     type: RTCSdpType;
     sdp: string;
 }
-
-export class WebRTCCall {
-    private callStateChangeCallback?: (state: RTCPeerConnectionState) => void; 
+export type PeerConnectionEventType = "call-added" | "call-removed" | "pc-state-changed";
+export const peerConnectionEvents: PeerConnectionEventType[] = [ "call-added", "call-removed", "pc-state-changed" ];
+export class WebRTCCall { 
     private peer: Peer;
 
     public static isSupported(): boolean {
