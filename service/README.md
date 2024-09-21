@@ -65,7 +65,13 @@ const call = await chatInstance.startCall();
 
 // end the call
 call.endCall();
+
+// call state change
+call.on('state-changed', () => {
+    console.log('Call state changed', call.state)
+})
 ```
+
 
 ---
 ### Event listeners: 
@@ -83,7 +89,6 @@ chate2ee.on(events, callback);
 `delivered` - a message is delivered to the receiver  callback returns the ID of the message that's delivered.  
 `call-added` - a new incoming call.  
 `call-removed` - an active call is removed/disconnected.  
-`pc-state-changed` - peer connection state changed.
 
 New message:  
 
@@ -131,14 +136,6 @@ chate2ee.on('call-removed', () => {
     console.log('Call removed')
 })
 ```
-
-Call state change:
-```
-chate2ee.on('pc-state-changed', (state: RTCPeerConnectionState) => {
-    console.log('Call state', state)
-})
-```
-
 ---
 
 **chatInstance.getLink():**  

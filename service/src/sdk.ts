@@ -12,6 +12,7 @@ import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
 import { WebRTCCall, E2ECall, peerConnectionEvents, PeerConnectionEventType } from './webrtc';
+export { IE2ECall } from './webrtc';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
@@ -53,12 +54,13 @@ class ChatE2EE implements IChatE2EE {
 
     private symEncryption = new AesGcmEncryption();
 
-    private onPcConnectionChanged(state: RTCPeerConnectionState): void {
-        this.callSubscriptions.get("pc-state-changed")?.forEach((cb) => cb(state));
-        if(state === 'failed' || state === 'closed') {
-            this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
-            this.endCall();
-        }
+    private setupCallSubs(call: WebRTCCall): void {
+        call.on('state-changed', (state) => {
+            if(state === 'failed' || state === 'closed') {
+                this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
+                this.endCall();
+            }
+        })
     }
     constructor(config?: Partial<configType>) {
         config && setConfig(config);
@@ -234,8 +236,9 @@ class ChatE2EE implements IChatE2EE {
         if(this.call) {
             throw new Error('Call already active');
         }
-        const call = new E2ECall(this.getWebRtcCall());
-        await call.startCall();
+        const webrtcCall = this.getWebRtcCall();
+        await webrtcCall.startCall()
+        const call = new E2ECall(webrtcCall);
         return call;
     }
 
@@ -271,12 +274,12 @@ class ChatE2EE implements IChatE2EE {
     private getWebRtcCall(): WebRTCCall {
         this.checkInitialized();
         this.call = new WebRTCCall(
-            this.onPcConnectionChanged.bind(this),
             this.symEncryption,
             this.userId, 
             this.channelId, 
             this.callLogger,
         );
+        this.setupCallSubs(this.call)
         return this.call;
     }
 }

@@ -2,23 +2,44 @@ import { AesGcmEncryption } from "./cryptoAES";
 import { Logger } from "./utils/logger";
 import { webrtcSession } from "./webrtcSession";
 
+export interface IE2ECall {
+    on(event: callEvents, cb: () => void): void;
+    state: RTCPeerConnectionState;
+    endCall(): Promise<void>;
+}
+
 interface SignalData {
     type: RTCSdpType;
     sdp: string;
 }
-export type PeerConnectionEventType = "call-added" | "call-removed" | "pc-state-changed";
-export const peerConnectionEvents: PeerConnectionEventType[] = [ "call-added", "call-removed", "pc-state-changed" ];
+export type callEvents = 'state-changed';
+export type PeerConnectionEventType = "call-added" | "call-removed";
+export const peerConnectionEvents: PeerConnectionEventType[] = [ "call-added", "call-removed" ];
+
 export class WebRTCCall { 
     private peer: Peer;
+    private subs: Map<callEvents, Set<Function>> = new Map()
 
     public static isSupported(): boolean {
         return  !!(RTCRtpSender.prototype as any).createEncodedStreams;
     }
 
-    constructor(onPcConnectionChanged: (state: RTCPeerConnectionState) => void, encryption: AesGcmEncryption, sender: string, channel: string, private logger: Logger) {
+    public on(listener: callEvents, cb: (state: RTCPeerConnectionState) => void): void {
+        const sub = this.subs.get(listener);
+        if (sub) {
+            if (sub.has(cb)) {
+                return;
+            }
+            sub.add(cb);
+        } else {
+            this.subs.set(listener, new Set([cb]));
+        }
+    }
+
+    constructor(encryption: AesGcmEncryption, sender: string, channel: string, private logger: Logger) {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
-            onPcConnectionChanged,
+            () => this.subs,
             encryption, 
             sender, 
             channel, 
@@ -37,7 +58,9 @@ export class WebRTCCall {
 
     public endCall(): void {
         this.logger.log('endCall');
+        this.subs.clear();
         this.peer?.dispose();
+        this.peer = null;
     }
 
     public signal(data: SignalData): void {
@@ -58,7 +81,7 @@ class Peer {
 
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(
-        private onPcConnectionChanged: (state: RTCPeerConnectionState) => void,
+        private subCtx: () => Map<callEvents, Set<Function>>,
         private encryption: AesGcmEncryption, 
         private sender: string, 
         private channel: string, 
@@ -83,7 +106,9 @@ class Peer {
         this.pc.onconnectionstatechange = () => {
             this.logger.log('Peer Connection State: ', this.pc.connectionState);
             this.state = this.pc.connectionState;
-            this.onPcConnectionChanged(this.state);
+            const sub = this.subCtx();
+            const stateChangeHanlder = sub.get('state-changed');
+            stateChangeHanlder?.forEach(cb => cb(this.state));
         };
 
         this.pc.onicecandidate = (event) => {
@@ -165,7 +190,8 @@ class Peer {
             this.audioEl = null;
         }
         this.logger.log('Dispose');
-        this.pc.close();
+        this.pc?.close();
+        this.pc = null;
     }
 
     private async addLocalAudioTracks(): Promise<void> {
@@ -278,13 +304,13 @@ class Peer {
 }
 
 // Public facing class
-export class E2ECall {
+export class E2ECall implements IE2ECall {
     constructor(private readonly webRtcCall: WebRTCCall) {}
+    public on(event: callEvents, cb: () => void): void {
+        this.webRtcCall.on(event, cb);
+    }
     public get state(): RTCPeerConnectionState {
         return this.webRtcCall.callState;
-    }
-    public async startCall(): Promise<void> {
-        return this.webRtcCall.startCall();
     }
     public async endCall(): Promise<void> {
         return this.webRtcCall.endCall();

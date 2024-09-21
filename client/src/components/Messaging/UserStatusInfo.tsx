@@ -4,7 +4,7 @@ import ThemeToggle from "../ThemeToggle/index";
 import imageRetryIcon from "./assets/image-retry.png";
 import DeleteChatLink from "../DeleteChatLink";
 import Button from "../Button";
-import { IChatE2EE } from "@chat-e2ee/service";
+import { IChatE2EE, IE2ECall } from "@chat-e2ee/service";
 
 export const UserStatusInfo = ({
   online,
@@ -19,9 +19,9 @@ export const UserStatusInfo = ({
   handleDeleteLink: any;
   chate2ee: IChatE2EE
 }) => {
-  const [ call, setCall ] = useState(null);
+  const [ call, setCall ] = useState<IE2ECall>(null);
   const [loading, setLoading] = useState(false);
-  const [ callState, setCallState ] = useState(undefined);
+  const [ callState, setCallState ] = useState<RTCPeerConnectionState>(undefined);
 
   useEffect(() => {
     chate2ee.on('call-added', (call) => {
@@ -31,20 +31,27 @@ export const UserStatusInfo = ({
     chate2ee.on('call-removed', () => {
       setCall(null);
     });
-
-    chate2ee.on('pc-state-changed', (state) => {
-      setCallState(state);
-    });
   }, [chate2ee]);
 
+  useEffect(() => {
+    if(call) {
+      call.on('state-changed', () => {
+        setCallState(call.state);
+      })
+    }
+  }, [call])
   const makeCall = async () => {
     if(call) {
       console.error('call is already active');
       return;
     }
 
-    const newCall = await chate2ee.startCall();
-    setCall(newCall);
+    try {
+      const newCall = await chate2ee.startCall();
+      setCall(newCall);
+    }catch(err) {
+      alert('Not supported.');
+    }
   }
 
   const stopCall = async() => {
