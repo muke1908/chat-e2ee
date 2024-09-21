@@ -3,7 +3,7 @@
 </p>
   
   
-This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service. It uses [socket.io](https://socket.io/) for websocket connection.    
+This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service. It uses [socket.io](https://socket.io/) for websocket connection & webRTC technology to establish peer-to-peer connection.    
 
 [![npm version](https://img.shields.io/npm/v/@chat-e2ee/service.svg)](https://www.npmjs.com/package/@chat-e2ee/service)
   [![size](https://img.shields.io/bundlephobia/minzip/@chat-e2ee/service.svg)](https://bundlephobia.com/package/@chat-e2ee/service)
@@ -27,7 +27,7 @@ await chatInstance.init();
 ```
 Note that the config is optional.
 
-#### 2. Setup channel:
+#### 2. Setup a channel:
 First, you have to set up a channel. To set up a channel you need to generate a hash, user ID. 
 
 ```
@@ -40,7 +40,7 @@ Once you set up a channel, user2 can join the channel by passing the same hash t
 Note that userid should be unique.
 
 
-#### 3. Send message:
+#### 3. Send a message:
 When both users have joined the channel, you are ready to send a message. 
 ```
 await chatInstance.encrypt('some message').send();
@@ -54,6 +54,89 @@ chatInstance.on('chat-message', async () => {
     const msgInPlainText = await utils.decryptMessage(msg.message, privateKey);
     console.log(msgInPlainText);
 });
+```
+
+
+#### 4. Audio call:
+
+```
+// start a call
+const call = await chatInstance.startCall();
+
+// end the call
+call.endCall();
+```
+
+---
+### Event listeners: 
+
+```
+chate2ee.on(events, callback);
+```
+
+**List of events:**  
+
+`on-alice-join` - reveiver joined the link  
+`chat-message` - new message received  
+`on-alice-disconnect` - receiver left/disconnected from the link  
+`limit-reached` - 2 users already join a link  
+`delivered` - a message is delivered to the receiver  callback returns the ID of the message that's delivered.  
+`call-added` - a new incoming call.  
+`call-removed` - an active call is removed/disconnected.  
+`pc-state-changed` - peer connection state changed.
+
+New message:  
+
+```
+chate2ee.on('chat-message', (msg) => {
+    console.log('New message received',msg)
+})
+
+// message object:
+{
+    channel: string,
+    sender: string,
+    message: string,
+    id: number,
+    timestamp: number,
+    image?: string
+}
+
+```
+
+Delivered notification: 
+```
+chate2ee.on('delivered', (id) => {
+    console.log('delivered',id)
+})
+```
+
+New call:  
+
+```
+chate2ee.on('call-added', (call) => {
+    console.log('New call received', call)
+})
+
+// call object:
+{
+    state: RTCPeerConnectionState, // state of the active call
+    endCall(): Promise<void> // end the active call
+}
+```
+
+Call removed:  
+```
+chate2ee.on('call-removed', () => {
+    console.log('Call removed')
+})
+```
+
+Call state change:
+```
+chate2ee.on('pc-state-changed', (state: RTCPeerConnectionState) => {
+    console.log('Call state', state)
+})
 ```
 
 ---
@@ -89,42 +172,6 @@ chatInstance.encrypt({ image, text }).send();
 ```
 chatInstance.sendMessage({ image, message: <message> });
 ```
-
----
-### Event listeners: 
-
-```
-chate2ee.on(events, callback);
-```
-
-**Events:**  
-`on-alice-join` - reveiver joined the link  
-`chat-message` - new message received  
-```
-chate2ee.on('chat-message', (msg) => {
-    console.log('message received',msg)
-})
-```
-msg object: 
-```
-{
-    channel: string,
-    sender: string,
-    message: string,
-    id: number,
-    timestamp: number,
-    image?: string
-}
-```
-`on-alice-disconnect` - receiver left/disconnected from the link  
-`limit-reached` - 2 users already join a link  
-`delivered` - a message is delivered to the receiver  callback returns the ID of the message that's delivered.  
-```
-chate2ee.on('delivered', (id) => {
-    console.log('delivered',id)
-})
-```
-  
 
 ---
 
