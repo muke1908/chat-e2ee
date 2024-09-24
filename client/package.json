@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@chat-e2ee/service": "file:../service",
-    "qrcode.react": "^3.1.0",
+    "qrcode.react": "^4.0.1",
     "react": "^16.13.1",
     "react-bootstrap": "^1.5.2",
     "react-dom": "^16.13.1",
