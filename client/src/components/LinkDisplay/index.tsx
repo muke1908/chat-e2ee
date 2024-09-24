@@ -4,7 +4,7 @@ import { MdOutlineQrCode } from "react-icons/md";
 import styles from "./Style.module.css";
 import { ThemeContext } from "../../ThemeContext";
 import { LinkObjType } from "@chat-e2ee/service";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import detectMobile from "../../utils/detectMobile";
 
 const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
@@ -81,7 +81,7 @@ const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
       </div>
       {showQR && (
         <div className={styles.qrCodeContainer}>
-          <QRCode value={chatLink} size={128} />
+          <QRCodeSVG value={chatLink} size={128} />
         </div>
       )}
     </div>
