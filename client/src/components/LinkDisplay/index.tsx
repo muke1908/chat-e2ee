@@ -3,7 +3,7 @@ import { FiLink, FiCopy, FiExternalLink, FiArrowDown, FiArrowUp } from "react-ic
 import styles from "./Style.module.css";
 import { ThemeContext } from "../../ThemeContext";
 import { LinkObjType } from "@chat-e2ee/service";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 
 const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
   const chatLink =
@@ -80,7 +80,7 @@ const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
       </div>
       {showQR && (
         <div className={styles.qrCodeContainer}>
-          <QRCode value={chatLink} size={128} />
+          <QRCodeSVG value={chatLink} size={128} />
         </div>
       )}
     </div>
