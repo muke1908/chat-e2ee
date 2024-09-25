@@ -7,7 +7,7 @@ import ChatLink from "./pages/chatlink";
 import Messaging from "./pages/messaging";
 import { ThemeProvider, ThemeContext } from "./ThemeContext";
 
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const App = () => {
   const [darkMode] = useContext(ThemeContext);
@@ -18,10 +18,10 @@ const App = () => {
     >
       <Router>
         <div className={styles.bodyContent}>
-          <Switch>
-            <Route exact path="/" component={ChatLink} />
-            <Route exact path="/chat/:channelID" component={Messaging} />
-          </Switch>
+          <Routes>
+            <Route path="/" element={<ChatLink />} />
+            <Route path="/chat/:channelID" element={<Messaging />} />
+          </Routes>
         </div>
       </Router>
     </div>

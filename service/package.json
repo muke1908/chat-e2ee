@@ -7,9 +7,9 @@
   "license": "ISC",
   "types": "dist/types/sdk.d.ts",
   "devDependencies": {
-    "ts-loader": "^9.4.2",
-    "webpack": "^5.82.0",
-    "webpack-cli": "^5.0.2",
+    "ts-loader": "^9.5.1",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4",
     "webpack-remove-debug": "^0.1.0"
   },
   "scripts": {
@@ -20,6 +20,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "socket.io-client": "^4.6.1"
+    "socket.io-client": "^4.8.0"
   }
 }

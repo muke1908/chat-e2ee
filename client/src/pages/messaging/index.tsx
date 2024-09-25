@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
     createChatInstance, utils, TypeUsersInChannel, setConfig
@@ -48,12 +48,13 @@ const Chat = () => {
   const [deliveredID, setDeliveredID] = useState<string[]>([]);
   const [darkMode] = useContext(ThemeContext);
   const [linkActive, setLinkActive] = useState(true);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const myKeyRef = useRef<{ privateKey?: string } | null>();
   const notificationTimer = useRef<number | undefined>(undefined);
 
-  const { channelID }: { channelID: string } = useParams();
+  const params = useParams<{ channelID: string }>();
+  const channelID = params.channelID;
 
   let userId = getUserSessionID(channelID);
   // if not in session, lets create one and store.
@@ -163,7 +164,7 @@ const Chat = () => {
   const handleDeleteLink = async () => {
     setLinkActive(false);
     await chate2ee.delete();
-    history.push("/");
+    navigate("/");
   };
 
   const initChat = async () => {
