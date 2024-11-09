@@ -41,7 +41,7 @@
   border-width: 1px;
   font-family: inherit;
   font-size: 18px;
-  width: 50px;
+  width: 60px;
   height: 40px;
   border-radius: 5px;
   cursor: pointer;
@@ -189,11 +189,11 @@
   }
 
   .copyButton {
-    width: 100px;
+    width: 125px;
   }
 
   .qrButton {
-    width: 100px;
+    width: 125px;
     transform: none;
   }
 
