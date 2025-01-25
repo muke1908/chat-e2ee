@@ -11,6 +11,10 @@ const app = express();
 app.disable("x-powered-by");
 app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  next();
+});
 
 // add routes
 app.use("/api", apiController);
