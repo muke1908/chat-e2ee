@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 
-import chatLinkController from './chatLink';
+import chatHashController from './chatHash';
 import chatController from './messaging';
 import sessionController from './call/session';
 
@@ -11,7 +11,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 router.use("/chat", chatController);
-router.use("/chat-link", chatLinkController);
+router.use("/chat-link", chatHashController);
 router.use("/session", sessionController);
 
 export default router;

@@ -1,5 +1,5 @@
 import getClientInstance from "./clients";
-import channelValid from "../api/chatLink/utils/validateChannel";
+import channelValid from "../api/chatHash/utils/validateChannel";
 import { socketEmit, SOCKET_TOPIC , CustomSocket} from "./index";
 
 const clients = getClientInstance();
