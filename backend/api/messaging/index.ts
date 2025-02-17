@@ -5,7 +5,7 @@ import { PUBLIC_KEY_COLLECTION } from '../../db/const';
 import asyncHandler from '../../middleware/asyncHandler';
 import { SOCKET_TOPIC, socketEmit } from '../../socket.io';
 import getClientInstance from '../../socket.io/clients';
-import channelValid from '../chatLink/utils/validateChannel';
+import channelValid from '../chatHash/utils/validateChannel';
 import {
     ChatMessageType, GetPublicKeyResponse, MessageResponse, SharePublicKeyResponse, UsersInChannelResponse
 } from './types';

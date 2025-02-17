@@ -15,8 +15,6 @@ test('chat link generation', () => {
   const generatedLink = generateLink();
   expect(generatedLink).toMatchObject({
     hash: 'hash',
-    link: expect.any(String),
-    absoluteLink: undefined,
     expired: false,
     deleted: false,
     pin: '1234',

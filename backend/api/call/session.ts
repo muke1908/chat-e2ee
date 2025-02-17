@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import asyncHandler from '../../middleware/asyncHandler';
 import { WebrtcSessionResponse } from '../messaging/types';
-import channelValid from '../chatLink/utils/validateChannel';
+import channelValid from '../chatHash/utils/validateChannel';
 import getClientInstance from '../../socket.io/clients';
 import { SOCKET_TOPIC, socketEmit } from '../../socket.io';
 const router = express.Router({ mergeParams: true });
