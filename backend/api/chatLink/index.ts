@@ -3,20 +3,21 @@ import express from 'express';
 import db from '../../db';
 import { LINK_COLLECTION } from '../../db/const';
 import asyncHandler from '../../middleware/asyncHandler';
-import generateLink, { LinkType } from './utils/link';
+import { LinkType } from './utils/link';
 import channelValid, { CHANNEL_STATE } from './utils/validateChannel';
+import generateHash from './utils/link';
 
 const router = express.Router({ mergeParams: true });
 
-const generateUniqueLink = async (): Promise<LinkType> => {
-  const link = generateLink();
+const generateUniqueHash = async (): Promise<LinkType> => {
+  const link = generateHash();
 
   // This ensures, PINs won't clash each other
   // Best case loop is not even executed
   // worst case, loop can take 2 or more iterations
   const pinExists = await db.findOneFromDB<LinkType>({ pin: link.pin }, LINK_COLLECTION);
   if (pinExists) {
-    return generateUniqueLink();
+    return generateUniqueHash();
   }
   return link;
 };
@@ -24,7 +25,7 @@ const generateUniqueLink = async (): Promise<LinkType> => {
 router.post(
   "/",
   asyncHandler(async (req, res) => {
-    const link = await generateUniqueLink();
+    const link = await generateUniqueHash();
     await db.insertInDb(link, LINK_COLLECTION);
     return res.send(link);
   })

@@ -12,7 +12,7 @@ export type LinkType = {
   pinCreatedAt: number,
 }
 
-const generateLink = (): LinkType => {
+const generateHash = (): LinkType => {
   const hash = uuidv4();
 
   if (!CHAT_LINK_DOMAIN) {
@@ -29,4 +29,4 @@ const generateLink = (): LinkType => {
   };
 };
 
-export default generateLink;
+export default generateHash;
