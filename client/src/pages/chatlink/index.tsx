@@ -7,6 +7,7 @@ import ThemeToggle from "../../components/ThemeToggle/index";
 
 import { createChatInstance, LinkObjType } from "@chat-e2ee/service";
 
+
 const App = () => {
   const [chatLink, setChatLink] = useState<LinkObjType>(null);
   const [loading, setLoading] = useState(false);

@@ -8,9 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 import detectMobile from "../../utils/detectMobile";
 
 const LinkDisplay: React.FC<{ content: LinkObjType }> = ({ content }) => {
-  const chatLink =
-    content.absoluteLink ||
-    `${window.location.protocol}//${window.location.host}/chat/${content.hash}`;
+  const chatLink = `${window.location.protocol}//${window.location.host}/chat/${content.hash}`;
   const textAreaRef = useRef<HTMLInputElement | null>(null);
   const [buttonText, setButtonText] = useState("Copy");
   const [showQR, setShowQR] = useState(false);

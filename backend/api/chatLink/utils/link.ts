@@ -6,8 +6,6 @@ const PIN_LENGTH = 4;
 
 export type LinkType = {
   hash: string,
-  link: string,
-  absoluteLink: string | undefined,
   expired: boolean,
   deleted: boolean,
   pin: string,
@@ -24,8 +22,6 @@ const generateLink = (): LinkType => {
 
   return {
     hash,
-    link: `/chat/${hash}`,
-    absoluteLink: CHAT_LINK_DOMAIN && `${CHAT_LINK_DOMAIN}/chat/${hash}`,
     expired: false,
     deleted: false,
     pin: generatePIN(hash, PIN_LENGTH),
