@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 // add routes
 app.use("/api", apiController);
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.APP_ENV === "production") {
   app.use(express.static("client/dist"));
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/dist", "index.html"));

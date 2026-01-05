@@ -16,7 +16,7 @@ const SOCKET_LISTENERS: Record<string, SocketListenerType> = {
 }
 
 const getBaseURL = (): string => {
-    if (process.env.NODE_ENV !== 'production' && !process.env.CHATE2EE_API_URL) {
+    if (!process.env.CHATE2EE_API_URL) {
         console.warn('CHATE2EE_API_URL is not set');
     }
     const BASE_URI = process.env.CHATE2EE_API_URL || 'https://chat-e2ee-2.azurewebsites.net';
