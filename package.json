@@ -12,7 +12,8 @@
     "serve": "node ./dist/index",
     "test": "cross-env NODE_ENV=test jest",
     "postinstall": "npm run build-service-sdk && cd client && npm install",
-    "docker_start": "cross-env NODE_ENV=production node ./dist/index"
+    "docker_start": "cross-env NODE_ENV=production node ./dist/index",
+    "build-service-sdk": "cd service && npm install && npm run build"
   },
   "author": "",
   "license": "ISC",
