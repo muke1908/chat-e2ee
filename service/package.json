@@ -1,6 +1,6 @@
 {
   "name": "@chat-e2ee/service",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "SDK to create realtime messaging with chat-e2ee",
   "main": "dist/index.esm.js",
   "author": "Mukesh",
