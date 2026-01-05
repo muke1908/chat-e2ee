@@ -25,13 +25,8 @@ npm i @chat-e2ee/service
 Create an instance and initialize it to generate encryption keys and prepare the socket connection.
 
 ```javascript
-import { createChatInstance, setConfig } from '@chat-e2ee/service';
+import { createChatInstance } from '@chat-e2ee/service';
 
-// Optional: Override default server URLs
-setConfig({
-    apiURL: 'https://your-api.com',
-    socketURL: 'https://your-socket.com'
-});
 
 const chat = createChatInstance();
 await chat.init();
@@ -74,8 +69,6 @@ chat.on('chat-message', async (msg) => {
 
 ### `setConfig(config: Partial<ConfigType>)`
 Global configuration for the SDK.
-- `apiURL`: Backend API endpoint (Default: handled based on environment).
-- `socketURL`: Socket.io server endpoint.
 - `settings.disableLog`: Boolean to toggle console logging (Default: `false`).
 
 ### `createChatInstance(): IChatE2EE`

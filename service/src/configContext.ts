@@ -2,8 +2,6 @@ import { configType, SetConfigType } from './public/types';
 import { Logger } from './utils/logger';
 
 let chate2eeConfig: configType = {
-    apiURL: null,
-    socketURL: null,
     settings: {
         disableLog: false // true - Disable Logs; false - Enable Logs
     }

@@ -1,9 +1,5 @@
-import { createChatInstance, setConfig, utils } from '@chat-e2ee/service';
+import { createChatInstance, utils } from '@chat-e2ee/service';
 
-setConfig({
-    apiURL: 'http://localhost:3001',
-    socketURL: 'http://localhost:3001'
-});
 // State
 let chat: any = null;
 let userId: string = '';

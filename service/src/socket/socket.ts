@@ -1,7 +1,6 @@
 import socketIOClient, { Socket } from 'socket.io-client';
 import { Logger } from '../utils/logger';
 import { chatJoinPayloadType } from '../sdk';
-import { configContext } from '../configContext';
 export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
 
 export type SubscriptionType = Map<SocketListenerType, Set<Function>>;
@@ -17,8 +16,10 @@ const SOCKET_LISTENERS: Record<string, SocketListenerType> = {
 }
 
 const getBaseURL = (): string => {
-    const { socketURL } = configContext();
-    const BASE_URI = socketURL || (process.env.NODE_ENV === "production" ? 'https://chat-e2ee-2.azurewebsites.net' : '');
+    if (process.env.NODE_ENV !== 'production' && !process.env.CHATE2EE_API_URL) {
+        console.warn('CHATE2EE_API_URL is not set');
+    }
+    const BASE_URI = process.env.CHATE2EE_API_URL || 'https://chat-e2ee-2.azurewebsites.net';
     return BASE_URI;
 }
 

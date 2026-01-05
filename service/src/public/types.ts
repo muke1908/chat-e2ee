@@ -8,12 +8,12 @@ export type LinkObjType = {
     expired: boolean,
     deleted: boolean,
     pin: string,
-    pinCreatedAt:number
+    pinCreatedAt: number
 }
 
 export interface ISendMessageReturn { id: string, timestamp: string };
-export interface IGetPublicKeyReturn { publicKey: string, aesKey: string};
-export type TypeUsersInChannel = { "uuid":string }[];
+export interface IGetPublicKeyReturn { publicKey: string, aesKey: string };
+export type TypeUsersInChannel = { "uuid": string }[];
 
 export interface IChatE2EE {
     init(): Promise<void>;
@@ -39,8 +39,6 @@ export interface IUtils {
 }
 
 export type configType = {
-    apiURL: string | null,
-    socketURL: string | null,
     settings: {
         disableLog: boolean,
     }
