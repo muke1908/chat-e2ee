@@ -7,16 +7,12 @@
     "dev": "concurrently \"npm run client\" \"npm run server\"",
     "build-client": "cd client && npm run build",
     "build": "tsc && npm run build-client",
-    "client": "cd client && npm start",
+    "client": "cd client && npm run dev",
     "server": "cross-env NODE_ENV=development nodemon --watch \"./**\" --ext \"ts,json\" --ignore \"./client\" --ignore \"./service\" --exec \"ts-node index.ts\"",
-    "watch-sdk": "cd service && npm run watch",
     "serve": "node ./dist/index",
     "test": "cross-env NODE_ENV=test jest",
-    "start": "cross-env NODE_ENV=production npm run serve",
     "postinstall": "npm run build-service-sdk && cd client && npm install",
-    "docker_start": "cross-env NODE_ENV=production node ./dist/index",
-    "build-service-sdk": "cd service && npm install && npm run build",
-    "publish-sdk": "cd service && npm run publish-sdk"
+    "docker_start": "cross-env NODE_ENV=production node ./dist/index"
   },
   "author": "",
   "license": "ISC",
@@ -32,7 +28,6 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@types/cors": "^2.8.17",
@@ -49,8 +44,6 @@
     "jest": "^29.7.0",
     "lint-staged": "^15.2.10",
     "nodemon": "^3.1.7",
-    "prettier": "^3.3.3",
-    "react-bootstrap": "^2.10.4",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",

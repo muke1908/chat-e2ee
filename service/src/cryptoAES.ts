@@ -6,7 +6,7 @@ export class AesGcmEncryption {
     private aesKeyRemote?: CryptoKey;
 
     public async int(): Promise<CryptoKey> {
-        if(this.aesKeyLocal) {
+        if (this.aesKeyLocal) {
             return this.aesKeyLocal;
         }
         const key = await window.crypto.subtle.generateKey(
@@ -20,7 +20,7 @@ export class AesGcmEncryption {
     }
 
     public getRemoteAesKey(): CryptoKey {
-        if(!this.aesKeyRemote) {
+        if (!this.aesKeyRemote) {
             throw new Error("AES key from remote not set.");
         }
         return this.aesKeyRemote;
@@ -33,7 +33,7 @@ export class AesGcmEncryption {
      * Use cryptoUtils to encrypt the key and exchange.
      */
     public async getRawAesKeyToExport(): Promise<string> {
-        if(!this.aesKeyLocal) {
+        if (!this.aesKeyLocal) {
             throw new Error('AES key not generated');
         }
         const jsonWebKey = await crypto.subtle.exportKey("jwk", this.aesKeyLocal);
@@ -53,34 +53,34 @@ export class AesGcmEncryption {
     }
 
     public async encryptData(data: ArrayBuffer) {
-            // Generate an Initialization Vector (IV) for AES-GCM (12 bytes)
-            const iv = crypto.getRandomValues(new Uint8Array(12));
-            // Encrypt the frame data using AES-GCM
-            const encryptedData = await crypto.subtle.encrypt(
-              {
+        // Generate an Initialization Vector (IV) for AES-GCM (12 bytes)
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        // Encrypt the frame data using AES-GCM
+        const encryptedData = await crypto.subtle.encrypt(
+            {
                 name: "AES-GCM",
-                iv: iv
-              },
-              this.aesKeyLocal,      // Symmetric key for encryption
-              data    // The frame data to be encrypted
-            );
-          
-          
-            return { encryptedData: new Uint8Array(encryptedData) , iv };
+                iv: iv as any
+            },
+            this.aesKeyLocal,      // Symmetric key for encryption
+            data    // The frame data to be encrypted
+        );
+
+
+        return { encryptedData: new Uint8Array(encryptedData), iv };
     }
 
-    public async decryptData(data: Uint8Array, iv: Uint8Array): Promise<ArrayBuffer> {
-        if(!this.aesKeyRemote) {
+    public async decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer> {
+        if (!this.aesKeyRemote) {
             throw new Error('Remote AES key not set.')
         }
         return crypto.subtle.decrypt(
-          {
-            name: "AES-GCM",
-            iv: iv
-          },
-          this.aesKeyRemote,  // Symmetric key for decryption
-          data  // The encrypted  frame data
+            {
+                name: "AES-GCM",
+                iv
+            },
+            this.aesKeyRemote,  // Symmetric key for decryption
+            data  // The encrypted  frame data
         );
-      }
+    }
 
 }

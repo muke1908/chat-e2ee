@@ -9,9 +9,9 @@ export interface CustomSocket extends Socket {
 
 let io: Server = null;
 export enum SOCKET_TOPIC {
-  CHAT_MESSAGE='chat-message',
-  LIMIT_REACHED='limit-reached',
-  ON_ALICE_JOIN='on-alice-join',
+  CHAT_MESSAGE = 'chat-message',
+  LIMIT_REACHED = 'limit-reached',
+  ON_ALICE_JOIN = 'on-alice-join',
   DELIVERED = 'delivered',
   ON_ALICE_DISCONNECTED = 'on-alice-disconnect',
   MESSAGE = 'message',
@@ -35,7 +35,12 @@ export const initSocket = (server) => {
     return io;
   }
 
-  io = new Server(server, { allowEIO3: true });
+  io = new Server(server, {
+    allowEIO3: true, cors: {
+      origin: "*",
+      credentials: true
+    }
+  });
   // eslint-disable-next-line no-console
   console.log("Websocket is up!");
 
@@ -47,7 +52,7 @@ export const initSocket = (server) => {
 
 export const socketEmit = <T extends keyof emitDataTypes>(topic: T, sid: string, data: emitDataTypes[T]): void => {
   const socket = io.sockets.sockets.get(sid);
-  if(!socket) {
+  if (!socket) {
     console.warn("SKIPPING. No socket found.");
     return;
   }

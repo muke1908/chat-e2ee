@@ -1,54 +1,19 @@
 {
-  "name": "client",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@chat-e2ee/service": "file:../service",
-    "qrcode.react": "^4.0.1",
-    "react": "^18.3.1",
-    "react-bootstrap": "^2.10.4",
-    "react-dom": "^18.3.1",
-    "react-icons": "^5.3.0",
-    "react-router-dom": "^6.26.2"
-  },
-  "devDependencies": {
-    "react-scripts": "^5.0.1",
-    "typescript-plugin-css-modules": "^5.1.0",
-    "@types/jest": "^29.5.13",
-    "@types/node": "^22.6.1",
-    "@types/react": "^18.3.8",
-    "@types/react-dom": "^18.3.0",
-    "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/react": "^16.0.1",
-    "@testing-library/user-event": "^14.5.2",
-    "@types/react-router-dom": "^5.3.3",
-    "eslint-plugin-jsx-a11y": "^6.10.0",
-    "eslint-plugin-promise": "7.1.0",
-    "eslint-plugin-react": "7.36.1",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "html-webpack-plugin": "^5.6.0",
-    "typescript": "^4.9.5"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "proxy": "http://localhost:3001"
+    "name": "chat-e2ee-client",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "start": "vite"
+    },
+    "devDependencies": {
+        "typescript": "^5.6.2",
+        "vite": "^5.4.1"
+    },
+    "dependencies": {
+        "@chat-e2ee/service": "file:../service"
+    }
 }

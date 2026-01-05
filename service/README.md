@@ -1,154 +1,181 @@
 <p align="center">
 <img align="center" width="300" src="https://i.imgur.com/O3Wr6fK.png">  
 </p>
-  
-  
-This is a client-side SDK to interact with chat-e2ee service. It allows dev to build own chat client on top of chate2ee service. It uses [socket.io](https://socket.io/) for websocket connection & webRTC technology to establish peer-to-peer connection.    
+
+# @chat-e2ee/service
+
+`@chat-e2ee/service` is a powerful client-side SDK designed to facilitate end-to-end encrypted (E2EE) real-time messaging. It enables developers to build secure chat applications on top of the chat-e2ee infrastructure using [Socket.io](https://socket.io/) for signaling and WebRTC for peer-to-peer communication.
 
 [![npm version](https://img.shields.io/npm/v/@chat-e2ee/service.svg)](https://www.npmjs.com/package/@chat-e2ee/service)
-  [![size](https://img.shields.io/bundlephobia/minzip/@chat-e2ee/service.svg)](https://bundlephobia.com/package/@chat-e2ee/service)
-```
+[![size](https://img.shields.io/bundlephobia/minzip/@chat-e2ee/service.svg)](https://bundlephobia.com/package/@chat-e2ee/service)
+
+## Installation
+
+Install the package via npm:
+
+```bash
 npm i @chat-e2ee/service
 ```
 
-`@chat-e2ee/service` exports the following modules:  
- - createChatInstance - core chat ops.
- - utils
-   - generateUUID - util func to generate UUID.  
-   - decryptMessage - to decrypt encrypted messages.  
- - setConfig - configuration - set URLs i.e. API endpoints, debugging etc.
+---
 
-### Example and flow:  
-#### 1. Import and initialize the SDK:
-```
-import { createChatInstance, utils, setConfig } from '@chat-e2ee/service';
-const chatInstance = createChatInstance(config);
-await chatInstance.init();
-```
-Note that the config is optional.
+## Quick Start
 
-#### 2. Setup a channel:
-First, you have to set up a channel. To set up a channel you need to generate a hash, user ID. 
+### 1. Initialize the SDK
+Create an instance and initialize it to generate encryption keys and prepare the socket connection.
 
-```
-const userId = utils.generateUUID(); // you can use your own user id.
-const { hash } = await chatInstance.getLink();
+```javascript
+import { createChatInstance, setConfig } from '@chat-e2ee/service';
 
-await chatInstance.setChannel(hash, userId);
-```
-Once you set up a channel, user2 can join the channel by passing the same hash to `setChannel` with their own `userid`.
-Note that userid should be unique.
+// Optional: Override default server URLs
+setConfig({
+    apiURL: 'https://your-api.com',
+    socketURL: 'https://your-socket.com'
+});
 
-
-#### 3. Send a message:
-When both users have joined the channel, you are ready to send a message. 
-```
-await chatInstance.encrypt('some message').send();
+const chat = createChatInstance();
+await chat.init();
 ```
 
-#### 4. Receive messages:
-Setup listener to receive messages from user2 and use your private key to decrypt messages.
+### 2. Setup a Channel
+Create or join a secure communication channel.
+
+```javascript
+// Guest 1: Create a channel
+const { hash } = await chat.getLink();
+const userId = 'user-1'; 
+await chat.setChannel(hash, userId);
+
+// Guest 2: Join the channel using the same hash
+await chat.setChannel(hash, 'user-2');
 ```
-const { privateKey } = chatInstance.getKeyPair();
-chatInstance.on('chat-message', async () => {
-    const msgInPlainText = await utils.decryptMessage(msg.message, privateKey);
-    console.log(msgInPlainText);
+
+### 3. Send and Receive Messages
+Messages are encrypted before leaving the client and must be decrypted upon receipt.
+
+```javascript
+import { utils } from '@chat-e2ee/service';
+
+// Sending an encrypted message
+await chat.encrypt({ text: 'Hello, world!' }).send();
+
+// Listening for incoming messages and decrypting them
+const { privateKey } = chat.getKeyPair();
+
+chat.on('chat-message', async (msg) => {
+    const plainText = await utils.decryptMessage(msg.message, privateKey);
+    console.log('Decrypted Message:', plainText);
 });
 ```
 
-
-#### 4. Audio call:
-
-```
-// start a call
-const call = await chatInstance.startCall();
-
-// end the call
-call.endCall();
-
-// call state change
-call.on('state-changed', () => {
-    console.log('Call state changed', call.state)
-})
-```
-
-
----
-### Event listeners: 
-
-```
-chate2ee.on(events, callback);
-```
-
-**List of events:**  
-
-`on-alice-join` - reveiver joined the link  
-`chat-message` - new message received  
-`on-alice-disconnect` - receiver left/disconnected from the link  
-`limit-reached` - 2 users already join a link  
-`delivered` - a message is delivered to the receiver  callback returns the ID of the message that's delivered.  
-`call-added` - a new incoming call.  
-`call-removed` - an active call is removed/disconnected.  
-
-New message:  
-
-```
-chate2ee.on('chat-message', (msg) => {
-    console.log('New message received',msg)
-})
-
-// message object:
-{
-    channel: string,
-    sender: string,
-    message: string,
-    id: number,
-    timestamp: number,
-    image?: string
-}
-
-```
-
-Delivered notification: 
-```
-chate2ee.on('delivered', (id) => {
-    console.log('delivered',id)
-})
-```
-
-New call:  
-
-```
-chate2ee.on('call-added', (call) => {
-    console.log('New call received', call)
-})
-
-// call object:
-{
-    state: RTCPeerConnectionState, // state of the active call
-    endCall(): Promise<void> // end the active call
-}
-```
-
-Call removed:  
-```
-chate2ee.on('call-removed', () => {
-    console.log('Call removed')
-})
-```
 ---
 
-**chatInstance.getLink():**  
-> One user needs to create a link and share it with other user.  
-Each instance is unique to each link. To create a separate link, another instance needs to be created.
+## API Reference
+
+### `setConfig(config: Partial<ConfigType>)`
+Global configuration for the SDK.
+- `apiURL`: Backend API endpoint (Default: handled based on environment).
+- `socketURL`: Socket.io server endpoint.
+- `settings.disableLog`: Boolean to toggle console logging (Default: `false`).
+
+### `createChatInstance(): IChatE2EE`
+Factory function to create a new chat session instance.
+
+---
+
+### `ChatInstance` (IChatE2EE) Methods
+
+#### `await init(): Promise<void>`
+Initializes the instance:
+- Generates RSA and AES key pairs.
+- Establishes the socket connection.
+- Sets up WebRTC listeners.
+
+#### `await getLink(): Promise<LinkObjType>`
+Requests a new channel link from the server.
+Returns an object containing `hash`, `link`, `absoluteLink`, `pin`, etc.
+
+#### `await setChannel(hash: string, userId: string, userName?: string): Promise<void>`
+Joins a specific channel. Automatically shares the public key with the other peer once they join.
+
+#### `isEncrypted(): boolean`
+Returns `true` if the receiver's public key is present and communication is fully encrypted.
+
+#### `async sendMessage({ text, image }): Promise<ISendMessageReturn>`
+Sends a message without automatic encryption. Use this if you are handling encryption manually or sending plain text.
+
+#### `encrypt({ text, image }): { send: () => Promise<ISendMessageReturn> }`
+Encrypts the `text` content with the receiver's public key and returns an object with a `.send()` method.
+
+#### `await getUsersInChannel(): Promise<TypeUsersInChannel>`
+Returns a list of users currently connected to the active channel.
+
+#### `getKeyPair(): { privateKey: string, publicKey: string }`
+Returns the current session's RSA keys.
+
+#### `dispose(): void`
+Closes socket connections, clears event listeners, and resets the instance state.
+
+---
+
+### Call & WebRTC API
+
+#### `await startCall(): Promise<E2ECall>`
+Initiates an end-to-end encrypted audio call. Throws an error if WebRTC insertable streams are not supported or a call is already active.
+
+#### `await endCall(): void`
+Terminates the active call session.
+
+#### `activeCall: E2ECall | null`
+Getter that returns the current active call object.
+
+---
+
+### Events
+The SDK uses an event-driven architecture. Listen to events using `chat.on(eventName, callback)`.
+
+| Event | Description | Data |
+| :--- | :--- | :--- |
+| `on-alice-join` | Fired when the second user joins the channel. | `null` |
+| `on-alice-disconnect` | Fired when the other user leaves the channel. | `null` |
+| `chat-message` | Fired when a new message is received. | `MessageObject` |
+| `delivered` | Fired when your message is successfully received by the peer. | `messageId` |
+| `limit-reached` | Fired if the channel already has 2 participants. | `null` |
+| `call-added` | Fired when an incoming call is received. | `E2ECall` |
+| `call-removed` | Fired when a call is disconnected/ended. | `null` |
+
+#### Message Object Structure:
+```typescript
+{
+    channel: string;
+    sender: string;
+    message: string; // Ciphertext if encrypted
+    id: number;
+    timestamp: number;
+    image?: string; // Optional base64 image
+}
 ```
-const linkDescription = chatInstance.getLink();
-```
-linkDescription contains basic info:
-```
+
+---
+
+### Utils
+
+#### `utils.generateUUID(): string`
+Helper function to generate a unique user or channel identifier.
+
+#### `async utils.decryptMessage(ciphertext: string, privateKey: string): Promise<string>`
+Helper to decrypt incoming messages using the session's private key.
+
+---
+
+## Data Types
+
+### `LinkObjType`
+```typescript
 {
     hash: string;
     link: string;
+    absoluteLink: string | undefined;
     expired: boolean;
     deleted: boolean;
     pin: string;
@@ -156,48 +183,17 @@ linkDescription contains basic info:
 }
 ```
 
-**Send message:**  
-1 - Auto encryption by @chat-e2ee/service  
-> @chat-e2ee/service will encrypt message with publicKey before sending to network.
-
-```
-chatInstance.encrypt({ image, text }).send();
-```
-
-2 - Custom encryption / No encryption:  
-> Simply call .sendMessage() with encrypted or plain text. 
-```
-chatInstance.sendMessage({ image, message: <message> });
-```
-
----
-
-### Config:
-Call setConfig with config object to override default config parameters.
-
-`config` follows: 
-```
+### `E2ECall`
+```typescript
 {
-    apiURL: string | null,
-    socketURL: string | null,
-    settings: {
-        disableLog: boolean,
-    }
+    state: RTCPeerConnectionState;
+    endCall(): Promise<void>;
+    on(event: 'state-changed', cb: (state: RTCPeerConnectionState) => void): void;
 }
 ```
-Note that `@chat-e2ee/service` will make request to `/` in local env and to [hosted server](https://chat-e2ee-2.azurewebsites.net) in production env by default. If you want to use a custom server, use `setConfig({ apiURL, socketURL });`
 
 ---
-### Debugging: 
-Open the browser console and filter your logs by @chat-e2ee/service  
 
-<img width="722" alt="Screenshot 2023-06-06 at 10 11 49" src="https://github.com/muke1908/chat-e2ee/assets/20297989/78a6b894-0ffa-45d3-a572-417e92494d93">
+## Debugging
+Filter browser console logs by `@chat-e2ee/service` to see internal operations. To disable logs, use `setConfig({ settings: { disableLog: true } })`.
 
-to disable logging set the `settings.disableLog` to `true` in configContext: 
-```
-setConfig({
-    settings: {
-        disableLog: boolean
-    }
-})
-```
