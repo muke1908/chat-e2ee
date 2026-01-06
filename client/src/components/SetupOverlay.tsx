@@ -8,6 +8,14 @@ interface SetupOverlayProps {
 
 type ViewType = 'initial' | 'create' | 'join';
 
+/**
+ * Setup overlay component for channel creation and joining
+ * 
+ * Handles the initial setup flow:
+ * - Creating a new channel with generated hash
+ * - Joining an existing channel with user-provided hash
+ * - URL hash parameter handling for direct joins
+ */
 function SetupOverlay({ chat, onJoinChannel, error }: SetupOverlayProps) {
   const [view, setView] = useState<ViewType>('initial');
   const [generatedHash, setGeneratedHash] = useState<string>('');

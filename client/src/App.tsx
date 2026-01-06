@@ -1,3 +1,16 @@
+/**
+ * Chat E2EE - React Client Application
+ * 
+ * A modern React-based client for end-to-end encrypted chat.
+ * Uses @chat-e2ee/service SDK for backend communication and encryption.
+ * 
+ * Key features:
+ * - End-to-end encrypted messaging using RSA and AES
+ * - Audio calling with WebRTC
+ * - Channel-based communication with shareable hashes
+ * - No user registration required
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { createChatInstance, utils } from '@chat-e2ee/service';
 import SetupOverlay from './components/SetupOverlay';
@@ -12,6 +25,15 @@ interface Message {
   timestamp: Date;
 }
 
+/**
+ * Main application component for Chat E2EE
+ * 
+ * Manages the overall application state including:
+ * - Chat initialization and connection
+ * - Message handling and display
+ * - Audio call functionality
+ * - User interface state (setup vs chat view)
+ */
 function App() {
   const [chat, setChat] = useState<any>(null);
   const [userId, setUserId] = useState<string>('');

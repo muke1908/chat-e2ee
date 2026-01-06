@@ -16,6 +16,15 @@ interface ChatContainerProps {
   onStartCall: () => void;
 }
 
+/**
+ * Main chat container component
+ * 
+ * Displays:
+ * - Chat header with connection status and channel hash
+ * - Message list
+ * - Message input and send functionality
+ * - Audio call button
+ */
 function ChatContainer({
   channelHash,
   messages,

@@ -7,6 +7,15 @@ interface MessageProps {
   };
 }
 
+/**
+ * Individual message component
+ * 
+ * Displays a single chat message with:
+ * - Message text
+ * - Sender information
+ * - Timestamp
+ * - Styling based on sent/received type
+ */
 function Message({ message }: MessageProps) {
   const time = message.timestamp.toLocaleTimeString([], {
     hour: '2-digit',

@@ -5,6 +5,15 @@ interface CallOverlayProps {
   onEndCall: () => void;
 }
 
+/**
+ * Call overlay component for audio call interface
+ * 
+ * Manages:
+ * - Call status display
+ * - Call duration timer
+ * - End call functionality
+ * - Visual feedback during active calls
+ */
 function CallOverlay({ status, onEndCall }: CallOverlayProps) {
   const [callDuration, setCallDuration] = useState<string>('00:00');
   const [callStartTime, setCallStartTime] = useState<number>(0);
