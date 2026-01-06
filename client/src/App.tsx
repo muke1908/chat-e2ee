@@ -83,12 +83,7 @@ function App() {
     chat.on('chat-message', handleChatMessage);
     chat.on('call-added', handleCallAdded);
 
-    return () => {
-      chat.off('on-alice-join', handleAliceJoin);
-      chat.off('on-alice-disconnect', handleAliceDisconnect);
-      chat.off('chat-message', handleChatMessage);
-      chat.off('call-added', handleCallAdded);
-    };
+    // Note: The chat SDK doesn't support removing listeners
   }, [chat, privateKey]);
 
   const setupCallListeners = (call: any) => {
