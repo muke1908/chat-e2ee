@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createChatInstance, utils } from '@chat-e2ee/service';
+import type { IChatE2EE, IE2ECall } from '@chat-e2ee/service';
 import SetupOverlay from './components/SetupOverlay';
 import ChatContainer from './components/ChatContainer';
 import CallOverlay from './components/CallOverlay';
@@ -35,7 +36,7 @@ interface Message {
  * - User interface state (setup vs chat view)
  */
 function App() {
-  const [chat, setChat] = useState<any>(null);
+  const [chat, setChat] = useState<IChatE2EE | null>(null);
   const [userId, setUserId] = useState<string>('');
   const [channelHash, setChannelHash] = useState<string>('');
   const [privateKey, setPrivateKey] = useState<string>('');
@@ -44,7 +45,7 @@ function App() {
   const [peerConnected, setPeerConnected] = useState<boolean>(false);
   const [callActive, setCallActive] = useState<boolean>(false);
   const [callStatus, setCallStatus] = useState<string>('');
-  const [currentCall, setCurrentCall] = useState<any>(null);
+  const [currentCall, setCurrentCall] = useState<IE2ECall | null>(null);
   const [setupError, setSetupError] = useState<string>('');
 
   // Initialize chat on mount
@@ -108,14 +109,16 @@ function App() {
     // Note: The chat SDK doesn't support removing listeners
   }, [chat, privateKey]);
 
-  const setupCallListeners = (call: any) => {
-    call.on('state-changed', (state: string) => {
-      setCallStatus(state.charAt(0).toUpperCase() + state.slice(1));
+  const setupCallListeners = (call: IE2ECall) => {
+    call.on('state-changed', (() => {
+      const state = call.state;
+      const stateStr = state.toString();
+      setCallStatus(stateStr.charAt(0).toUpperCase() + stateStr.slice(1));
 
       if (state === 'closed' || state === 'failed') {
         setCallActive(false);
       }
-    });
+    }) as any);
   };
 
   const handleJoinChannel = async (hash: string) => {
@@ -162,7 +165,7 @@ function App() {
       ]);
 
       try {
-        await chat.encrypt({ text }).send();
+        await chat.encrypt({ image: '', text }).send();
       } catch (err) {
         console.error('Send error:', err);
       }

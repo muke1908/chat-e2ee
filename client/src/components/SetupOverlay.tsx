@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import type { IChatE2EE } from '@chat-e2ee/service';
 
 interface SetupOverlayProps {
-  chat: any;
+  chat: IChatE2EE | null;
   onJoinChannel: (hash: string) => Promise<void>;
   error: string;
 }
@@ -33,6 +34,8 @@ function SetupOverlay({ chat, onJoinChannel, error }: SetupOverlayProps) {
   }, []);
 
   const handleShowCreate = async () => {
+    if (!chat) return;
+    
     setView('create');
     try {
       setGeneratedHash('Generating...');
