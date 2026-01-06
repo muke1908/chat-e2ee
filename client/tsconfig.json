@@ -15,6 +15,8 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
+        /* React */
+        "jsx": "react-jsx",
         /* Linting */
         "strict": true,
         "noUnusedLocals": true,
@@ -23,6 +25,7 @@
     },
     "include": [
         "src/**/*.ts",
+        "src/**/*.tsx",
         "app.ts"
     ]
 }

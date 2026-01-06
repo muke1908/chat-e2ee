@@ -5,128 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat E2EE - Minimal & Secure</title>
-    <link rel="stylesheet" href="./style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div id="app">
-        <!-- Setup Overlay -->
-        <div id="setup-overlay" class="overlay">
-            <div class="overlay-content glass">
-                <h1>Secure Messenger</h1>
-                <p>Simple. End-to-End Encrypted. Private.</p>
-
-                <div id="initial-actions" class="button-group-vertical">
-                    <button id="show-create-hash" class="primary large">Create New Channel</button>
-                    <button id="show-join-hash" class="secondary large">Already have a Hash?</button>
-                </div>
-
-                <div id="create-hash-view" class="hidden">
-                    <div class="input-group">
-                        <label>Your Channel Hash</label>
-                        <div class="copy-input">
-                            <input type="text" id="generated-hash-display" readonly placeholder="Generating...">
-                            <button id="copy-hash-btn" class="icon-btn small">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="join-hash-view" class="hidden">
-                    <div class="input-group">
-                        <label for="channel-hash">Channel Hash</label>
-                        <input type="text" id="channel-hash" placeholder="Enter hash to join...">
-                    </div>
-                </div>
-
-                <div id="final-actions" class="hidden">
-                    <div class="button-group">
-                        <button id="back-btn" class="secondary">Back</button>
-                        <button id="join-btn" class="primary">Connect Securely</button>
-                    </div>
-                </div>
-
-                <div id="setup-status" class="status-text"></div>
-            </div>
-        </div>
-
-        <!-- Main Chat UI -->
-        <div id="chat-container" class="hidden">
-            <header class="glass">
-                <div class="header-info">
-                    <div class="title-row">
-                        <span class="dot" id="status-dot"></span>
-                        <h2 id="channel-title">Secure Channel</h2>
-                        <span id="encryption-badge" class="badge">E2EE</span>
-                    </div>
-                    <div id="channel-hash-display" class="hash-badge-container hidden">
-                        <span id="header-hash" class="hash-text"></span>
-                        <button id="copy-header-hash" class="icon-btn tiny" title="Copy Hash">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <p id="participant-info">Waiting for someone to join...</p>
-                </div>
-                <div class="header-actions">
-                    <button id="start-call-btn" title="Start Audio Call" class="icon-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-            </header>
-
-            <main id="messages-area">
-                <!-- Messages will appear here -->
-            </main>
-
-            <footer class="glass">
-                <div class="input-container">
-                    <input type="text" id="msg-input" placeholder="Type a secure message...">
-                    <button id="send-btn" class="primary circle">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </button>
-                </div>
-            </footer>
-        </div>
-
-        <!-- Call Status Overlay -->
-        <div id="call-overlay" class="hidden glass blur-overlay">
-            <div class="call-info">
-                <div class="call-avatar shimmer"></div>
-                <h3 id="call-status">Calling...</h3>
-                <p id="call-duration">00:00</p>
-                <button id="end-call-btn" class="danger circle large">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path
-                            d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
-    <script type="module" src="./app.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
 </body>
 
 </html>
