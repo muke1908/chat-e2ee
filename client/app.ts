@@ -6,6 +6,10 @@ let userId: string = '';
 let channelHash: string = '';
 let privateKey: string = '';
 
+// Audio notification settings
+let audioNotificationsEnabled: boolean = true;
+const AUDIO_SETTINGS_KEY = 'chat-e2ee-audio-notifications';
+
 // DOM Elements
 // DOM Elements
 const setupOverlay = document.getElementById('setup-overlay')!;
@@ -34,12 +38,78 @@ const participantInfo = document.getElementById('participant-info')!;
 const headerHashDisplay = document.getElementById('channel-hash-display')!;
 const headerHashText = document.getElementById('header-hash')!;
 const copyHeaderHashBtn = document.getElementById('copy-header-hash') as HTMLButtonElement;
+const audioToggleBtn = document.getElementById('audio-toggle-btn') as HTMLButtonElement;
 
 // Call Elements
 const callOverlay = document.getElementById('call-overlay')!;
 const callStatusText = document.getElementById('call-status')!;
 const endCallBtn = document.getElementById('end-call-btn') as HTMLButtonElement;
 const callDuration = document.getElementById('call-duration')!;
+
+// Audio Notification Functions
+function loadAudioSettings() {
+    const saved = localStorage.getItem(AUDIO_SETTINGS_KEY);
+    audioNotificationsEnabled = saved === null ? true : saved === 'true';
+    updateAudioToggleButton();
+}
+
+function saveAudioSettings() {
+    localStorage.setItem(AUDIO_SETTINGS_KEY, audioNotificationsEnabled.toString());
+}
+
+function updateAudioToggleButton() {
+    if (audioToggleBtn) {
+        const icon = audioToggleBtn.querySelector('svg');
+        if (audioNotificationsEnabled) {
+            audioToggleBtn.title = 'Mute join notifications';
+            if (icon) {
+                icon.innerHTML = `<path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>`;
+            }
+        } else {
+            audioToggleBtn.title = 'Unmute join notifications';
+            if (icon) {
+                icon.innerHTML = `<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>`;
+            }
+        }
+    }
+}
+
+function playJoinBeep() {
+    if (!audioNotificationsEnabled) return;
+    
+    try {
+        // Create AudioContext
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        
+        // Create oscillator for beep sound
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        // Configure beep: pleasant notification sound
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz
+        
+        // Envelope for smooth sound
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        
+        // Connect nodes
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Play beep
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+        
+        // Cleanup
+        oscillator.onended = () => {
+            audioContext.close();
+        };
+    } catch (err) {
+        console.error('Audio notification error:', err);
+    }
+}
 
 // Initialize Chat
 async function initChat() {
@@ -51,6 +121,9 @@ async function initChat() {
         const keys = chat.getKeyPair();
         privateKey = keys.privateKey;
         setupStatus.textContent = '';
+
+        // Load audio settings
+        loadAudioSettings();
 
         // Check for URL hash on load
         handleUrlHash();
@@ -183,6 +256,7 @@ function setupChatListeners() {
     chat.on('on-alice-join', () => {
         chatHeader.classList.add('active');
         participantInfo.textContent = 'Peer joined. Communication is encrypted.';
+        playJoinBeep(); // Play notification sound
     });
 
     chat.on('on-alice-disconnect', () => {
@@ -297,6 +371,27 @@ function showCallOverlay(status: string) {
 
 function hideCallOverlay() {
     callOverlay.classList.add('hidden');
+}
+
+// Audio Toggle Button Handler
+if (audioToggleBtn) {
+    audioToggleBtn.addEventListener('click', () => {
+        audioNotificationsEnabled = !audioNotificationsEnabled;
+        saveAudioSettings();
+        updateAudioToggleButton();
+        
+        // Show feedback
+        const originalText = participantInfo.textContent;
+        participantInfo.textContent = audioNotificationsEnabled 
+            ? 'Join notifications enabled' 
+            : 'Join notifications muted';
+        setTimeout(() => {
+            if (participantInfo.textContent === 'Join notifications enabled' || 
+                participantInfo.textContent === 'Join notifications muted') {
+                participantInfo.textContent = originalText || 'Waiting for someone to join...';
+            }
+        }, 2000);
+    });
 }
 
 // Start
