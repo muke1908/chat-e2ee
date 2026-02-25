@@ -6,18 +6,33 @@ let userId: string = '';
 let channelHash: string = '';
 let privateKey: string = '';
 let joinAudio: HTMLAudioElement | null = null;
+
 let isMuted: boolean = false;
-isMuted = localStorage.getItem('mute') === 'true';
 
-const toggleSoundBtn = document.getElementById('toggle-sound-btn') as HTMLButtonElement;
+try {
+    isMuted = localStorage.getItem('mute') === 'true';
+} catch {
+    isMuted = false;
+}
 
-toggleSoundBtn.textContent = isMuted ? '🔕' : '🔔';
+const toggleSoundBtn = document.getElementById('toggle-sound-btn');
 
-toggleSoundBtn.addEventListener('click', () => {
-    isMuted = !isMuted;
-    localStorage.setItem('mute', String(isMuted));
+if (toggleSoundBtn instanceof HTMLButtonElement) {
     toggleSoundBtn.textContent = isMuted ? '🔕' : '🔔';
-});
+
+    toggleSoundBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+
+        try {
+            localStorage.setItem('mute', String(isMuted));
+        } catch (err) {
+            console.warn('Unable to persist mute preference', err);
+        }
+
+        toggleSoundBtn.textContent = isMuted ? '🔕' : '🔔';
+    });
+}
+
 
 // DOM Elements
 // DOM Elements
@@ -60,8 +75,8 @@ function playJoinBeep() {
 
     try {
         joinAudio.currentTime = 0;
-        joinAudio.play().catch(() => {
-            console.warn('Audio playback prevented:');
+        joinAudio.play().catch((err) => {
+            console.warn('Audio playback prevented:',err);
         });
     } catch (err) {
         console.error('Audio play error:', err);
@@ -75,7 +90,7 @@ async function initChat() {
         chat = createChatInstance();
         await chat.init();
         joinAudio = new Audio('/sound/beep.mp3');
-        joinAudio.volume = 0.7;
+        joinAudio.volume = 0.5;
 
         const keys = chat.getKeyPair();
         privateKey = keys.privateKey;
