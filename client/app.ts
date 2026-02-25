@@ -61,7 +61,7 @@ function playJoinBeep() {
     try {
         joinAudio.currentTime = 0;
         joinAudio.play().catch(() => {
-            
+            console.warn('Audio playback prevented:');
         });
     } catch (err) {
         console.error('Audio play error:', err);
