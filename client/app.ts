@@ -5,6 +5,19 @@ let chat: any = null;
 let userId: string = '';
 let channelHash: string = '';
 let privateKey: string = '';
+let joinAudio: HTMLAudioElement | null = null;
+let isMuted: boolean = false;
+isMuted = localStorage.getItem('mute') === 'true';
+
+const toggleSoundBtn = document.getElementById('toggle-sound-btn') as HTMLButtonElement;
+
+toggleSoundBtn.textContent = isMuted ? '🔕' : '🔔';
+
+toggleSoundBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+    localStorage.setItem('mute', String(isMuted));
+    toggleSoundBtn.textContent = isMuted ? '🔕' : '🔔';
+});
 
 // DOM Elements
 // DOM Elements
@@ -41,12 +54,28 @@ const callStatusText = document.getElementById('call-status')!;
 const endCallBtn = document.getElementById('end-call-btn') as HTMLButtonElement;
 const callDuration = document.getElementById('call-duration')!;
 
+
+function playJoinBeep() {
+    if (!joinAudio || isMuted) return;
+
+    try {
+        joinAudio.currentTime = 0;
+        joinAudio.play().catch(() => {
+            
+        });
+    } catch (err) {
+        console.error('Audio play error:', err);
+    }
+}
+
 // Initialize Chat
 async function initChat() {
     try {
         setupStatus.textContent = 'Initializing secure keys...';
         chat = createChatInstance();
         await chat.init();
+        joinAudio = new Audio('/sound/beep.mp3');
+        joinAudio.volume = 0.7;
 
         const keys = chat.getKeyPair();
         privateKey = keys.privateKey;
@@ -183,6 +212,7 @@ function setupChatListeners() {
     chat.on('on-alice-join', () => {
         chatHeader.classList.add('active');
         participantInfo.textContent = 'Peer joined. Communication is encrypted.';
+        playJoinBeep();
     });
 
     chat.on('on-alice-disconnect', () => {
