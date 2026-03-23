@@ -59,7 +59,7 @@ export class AesGcmEncryption {
         const encryptedData = await crypto.subtle.encrypt(
             {
                 name: "AES-GCM",
-                iv: iv as any
+                iv: iv
             },
             this.aesKeyLocal,      // Symmetric key for encryption
             data    // The frame data to be encrypted

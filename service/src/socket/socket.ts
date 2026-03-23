@@ -52,14 +52,14 @@ export class SocketInstance {
         this.socket.disconnect();
     }
 
-    private handler(listener: SocketListenerType, args) {
+    private handler(listener: SocketListenerType, args: unknown[]): void {
         const loggerWithCount = this.eventHandlerLogger.count();
         loggerWithCount.log(`handler called for ${listener}`);
         const callbacks = this.subscriptionContext().get(listener);
         callbacks?.forEach(fn => fn(...args));
     }
 
-    private markDelivered(msg) {
+    private markDelivered(msg: { channel: string; sender: string; id: string }): void {
         this.logger.log(`markDelivered()`);
         this.socket.emit('received', { channel: msg.channel, sender: msg.sender, id: msg.id })
     }

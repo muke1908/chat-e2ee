@@ -77,9 +77,13 @@ class ChatE2EE implements IChatE2EE {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
 
-        this.on('on-alice-join', () => {
+        this.on('on-alice-join', async () => {
             evetLogger.log("Receiver connected.");
-            this.getPublicKey(initLogger);
+            await this.getPublicKey(initLogger);
+            // Now that we have the receiver's RSA public key, share AES key encrypted with it
+            if (this.receiverPublicKey) {
+                await this.shareEncryptedAesKey();
+            }
         })
 
         this.on("on-alice-disconnect", () => {
@@ -145,11 +149,14 @@ class ChatE2EE implements IChatE2EE {
         this.channelId = channelId;
         this.userId = userId;
 
-        const aesPlain = await this.symEncryption.getRawAesKeyToExport();
-
-        await sharePublicKey({ aesKey: aesPlain, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
+        // Share RSA public key (without AES key until we have receiver's RSA public key)
+        await sharePublicKey({ aesKey: null, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
         this.socket.joinChat({ publicKey: this.publicKey, userID: this.userId, channelID: this.channelId})
         await this.getPublicKey(logger);
+        // If the receiver's RSA public key is now known, share AES key encrypted with it
+        if (this.receiverPublicKey) {
+            await this.shareEncryptedAesKey();
+        }
         return;
     }
 
@@ -255,9 +262,18 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
         this.receiverPublicKey = receiverPublicKey?.publicKey;
         if(receiverPublicKey.aesKey) {
-            await this.symEncryption.setRemoteAesKey(receiverPublicKey.aesKey)
+            // AES key is RSA-encrypted ciphertext; decrypt it with our RSA private key
+            const decryptedAesKeyJwk = await _cryptoUtils.decryptMessage(receiverPublicKey.aesKey, this.privateKey);
+            await this.symEncryption.setRemoteAesKey(decryptedAesKeyJwk);
         }
         return;
+    }
+
+    // Encrypt local AES key with receiver's RSA public key and share it
+    private async shareEncryptedAesKey(): Promise<void> {
+        const aesKeyJwk = await this.symEncryption.getRawAesKeyToExport();
+        const encryptedAesKey = await _cryptoUtils.encryptMessage(aesKeyJwk, this.receiverPublicKey);
+        await sharePublicKey({ aesKey: encryptedAesKey, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
     }
 
     private createSocketSubcription(): void {

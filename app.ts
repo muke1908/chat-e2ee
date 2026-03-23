@@ -10,7 +10,8 @@ require("dotenv").config();
 const app = express();
 app.disable("x-powered-by");
 app.use(cors());
-app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.json({ limit: '64kb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '64kb' }));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   next();

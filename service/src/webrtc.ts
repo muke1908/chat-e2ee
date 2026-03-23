@@ -12,16 +12,43 @@ interface SignalData {
     type: RTCSdpType;
     sdp: string;
 }
+
+/** Signal data shape for an ICE candidate (extends the base SignalData union). */
+interface IceCandidateSignalData {
+    type: 'candidate';
+    candidate: RTCIceCandidateInit;
+}
+
+/**
+ * The non-standard `encodedInsertableStreams` option used when constructing
+ * RTCPeerConnection for insertable-streams support.
+ */
+interface RTCPeerConnectionWithInsertableStreams extends RTCPeerConnection {
+    // Non-standard extension – kept as explicit interface rather than `any`
+}
+
+/**
+ * RTCRtpSender / RTCRtpReceiver extended with the non-standard
+ * `createEncodedStreams()` method (Insertable Streams API).
+ */
+interface RTCRtpSenderWithStreams extends RTCRtpSender {
+    createEncodedStreams(): { readable: ReadableStream; writable: WritableStream };
+}
+
+interface RTCRtpReceiverWithStreams extends RTCRtpReceiver {
+    createEncodedStreams(): { readable: ReadableStream; writable: WritableStream };
+}
+
 export type callEvents = 'state-changed';
 export type PeerConnectionEventType = "call-added" | "call-removed";
 export const peerConnectionEvents: PeerConnectionEventType[] = [ "call-added", "call-removed" ];
 
-export class WebRTCCall { 
+export class WebRTCCall {
     private peer: Peer;
     private subs: Map<callEvents, Set<Function>> = new Map()
 
     public static isSupported(): boolean {
-        return  !!(RTCRtpSender.prototype as any).createEncodedStreams;
+        return  !!(RTCRtpSender.prototype as RTCRtpSenderWithStreams).createEncodedStreams;
     }
 
     public on(listener: callEvents, cb: (state: RTCPeerConnectionState) => void): void {
@@ -40,9 +67,9 @@ export class WebRTCCall {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
             () => this.subs,
-            encryption, 
-            sender, 
-            channel, 
+            encryption,
+            sender,
+            channel,
             this.logger.createChild('Peer')
         );
     }
@@ -63,7 +90,7 @@ export class WebRTCCall {
         this.peer = null;
     }
 
-    public signal(data: SignalData): void {
+    public signal(data: SignalData | IceCandidateSignalData): void {
         this.logger.log('handling signal data');
         if(!this.peer) {
             throw new Error('No peer connection');
@@ -74,7 +101,7 @@ export class WebRTCCall {
 
 class Peer {
     private state: RTCPeerConnectionState;
-    private pc: RTCPeerConnection;
+    private pc: RTCPeerConnectionWithInsertableStreams;
 
     private audioEl?: HTMLAudioElement;
     private audioStream?: MediaStream;
@@ -82,12 +109,14 @@ class Peer {
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(
         private subCtx: () => Map<callEvents, Set<Function>>,
-        private encryption: AesGcmEncryption, 
-        private sender: string, 
-        private channel: string, 
+        private encryption: AesGcmEncryption,
+        private sender: string,
+        private channel: string,
         private logger: Logger
     ) {
-        this.pc = new (RTCPeerConnection as any)({
+        // RTCPeerConnection is cast via the interface because `encodedInsertableStreams`
+        // is a non-standard constructor option not present in the lib.dom types.
+        this.pc = new (RTCPeerConnection as unknown as new (config: RTCConfiguration & { encodedInsertableStreams: boolean }) => RTCPeerConnectionWithInsertableStreams)({
             encodedInsertableStreams: true,
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
@@ -111,10 +140,10 @@ class Peer {
             stateChangeHanlder?.forEach(cb => cb(this.state));
         };
 
-        this.pc.onicecandidate = (event) => {
+        this.pc.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
             if (event.candidate) {
                 this.logger.log('ICE Candidate (Caller) gathered.');
-                webrtcSession({ 
+                webrtcSession({
                     description: {
                         candidate: event.candidate,
                         type: 'candidate'
@@ -125,11 +154,11 @@ class Peer {
             }
         };
 
-        this.pc.ontrack = (event) => {
+        this.pc.ontrack = (event: RTCTrackEvent) => {
             event.streams[0].getAudioTracks().forEach(() => {
                 this.logger.log('Adding remote audio track');
                 this.applyDecryption('audio', event.receiver);
-                this.appendAudioStreamToDom(event.streams[0], 'remote');    
+                this.appendAudioStreamToDom(event.streams[0], 'remote');
             })
         };
 
@@ -147,7 +176,7 @@ class Peer {
         // await this.addLocalAudioTracks();
         const offer = await this.pc.createOffer();
         await this.pc.setLocalDescription(offer);
-        await webrtcSession({ 
+        await webrtcSession({
             description: offer,
             sender: this.sender,
             channelId: this.channel
@@ -156,24 +185,25 @@ class Peer {
     }
 
 
-    public async signal(data: SignalData) {
+    public async signal(data: SignalData | IceCandidateSignalData) {
         if (data.type === 'offer') {
             await this.localStreamAcquisatonPromise;
             this.logger.log('Signal, offer');
-            await this.pc.setRemoteDescription(new RTCSessionDescription(data));
+            await this.pc.setRemoteDescription(new RTCSessionDescription(data as SignalData));
             const answer = await this.pc.createAnswer();
             await this.pc.setLocalDescription(answer);
-            await webrtcSession({ 
+            await webrtcSession({
                 description: answer,
                 sender: this.sender,
                 channelId: this.channel
             });
         } else if (data.type === 'answer') {
             this.logger.log('Signal, answer');
-            await this.pc.setRemoteDescription(new RTCSessionDescription(data));
-        } else if ((data as any).type === 'candidate') {
+            await this.pc.setRemoteDescription(new RTCSessionDescription(data as SignalData));
+        } else if (data.type === 'candidate') {
             this.logger.log('Signal, candidate');
-            const candidate = new RTCIceCandidate((data as any).candidate);
+            const iceCandidateData = data as IceCandidateSignalData;
+            const candidate = new RTCIceCandidate(iceCandidateData.candidate);
             this.pc.addIceCandidate(candidate).catch(e => console.error('Error adding ICE candidate:', e));
         }
     }
@@ -206,7 +236,7 @@ class Peer {
         this.logger.log('addLocalTracks');
         // const stream = await this.getAudioStream();
         const stream = await this.getVideoStream();
-        this.appenVideoStreamToDom(stream, 'local');
+        this.appendVideoStreamToDom(stream, 'local');
         stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
         this.applyEncryption('video');
     }
@@ -242,7 +272,7 @@ class Peer {
         document.body.appendChild(this.audioEl);
     }
 
-    private appenVideoStreamToDom(stream: MediaStream, tag: string): void {
+    private appendVideoStreamToDom(stream: MediaStream, tag: string): void {
         this.logger.log('Adding remote video track');
         const videoEl = document.createElement('video');
         document.body.appendChild(videoEl);
@@ -255,7 +285,7 @@ class Peer {
     private applyDecryption(mediaType: 'audio' | 'video', receiver: RTCRtpReceiver): void {
         const transformer = new TransformStream({
             transform: async (chunk: RTCEncodedAudioFrame, controller) => {
-                
+
                 try {
                     const data = new Uint8Array(chunk.data);
                     const iv = data.slice(0, 12);  // Assuming 12-byte IV
@@ -270,7 +300,7 @@ class Peer {
             }
         });
 
-        const receiverStreams =  (receiver as any).createEncodedStreams();
+        const receiverStreams = (receiver as RTCRtpReceiverWithStreams).createEncodedStreams();
         receiverStreams.readable
             .pipeThrough(transformer)
             .pipeTo(receiverStreams.writable);
@@ -283,11 +313,11 @@ class Peer {
             transform: async (chunk: RTCEncodedAudioFrame, controller) => {
                 try {
                     const { encryptedData, iv } = await this.encryption.encryptData(chunk.data);
-                    
+
                     const combinedData = new Uint8Array(iv.length + encryptedData.byteLength);
                     combinedData.set(iv, 0);
                     combinedData.set(encryptedData, iv.length);
-                    
+
                     chunk.data = combinedData.buffer;
                     controller.enqueue(chunk);
                 } catch (error) {
@@ -296,7 +326,7 @@ class Peer {
             }
         });
 
-        const senderStreams = (sender as any).createEncodedStreams();
+        const senderStreams = (sender as RTCRtpSenderWithStreams).createEncodedStreams();
         senderStreams.readable
             .pipeThrough(transformer)
             .pipeTo(senderStreams.writable);

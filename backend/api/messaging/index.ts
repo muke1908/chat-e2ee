@@ -66,7 +66,10 @@ router.post(
     if (!valid) {
       return res.sendStatus(404);
     }
-    // TODO: do not store if already exists
+    const existing = await db.findOneFromDB({ channel, user: sender }, PUBLIC_KEY_COLLECTION);
+    if (existing) {
+      return res.status(409).send({ error: "Key already registered for this session" });
+    }
     await db.insertInDb({ aesKey, publicKey, user: sender, channel }, PUBLIC_KEY_COLLECTION);
     return res.send({ status: "ok" });
   })
