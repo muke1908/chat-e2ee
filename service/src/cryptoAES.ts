@@ -26,12 +26,6 @@ export class AesGcmEncryption {
         return this.aesKeyRemote;
     }
 
-    /**
-     * To Do: 
-     * this key is plain text, can be used to decrypt data.
-     * Should not be transmitted over network.
-     * Use cryptoUtils to encrypt the key and exchange.
-     */
     public async getRawAesKeyToExport(): Promise<string> {
         if (!this.aesKeyLocal) {
             throw new Error('AES key not generated');
