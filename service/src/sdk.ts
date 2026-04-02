@@ -4,15 +4,15 @@ import { cryptoUtils as _cryptoUtils } from './cryptoRSA';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
-import { configType, IChatE2EE, ISendMessageReturn, LinkObjType, TypeUsersInChannel } from './public/types';
+import { configType, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
 import { getPublicKey, sharePublicKey } from './publicKey';
 import sendMessage from './sendMessage';
-import { SocketInstance, SubscriptionType } from './socket/socket';
+import { SocketInstance, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
-import { WebRTCCall, E2ECall, peerConnectionEvents, PeerConnectionEventType } from './webrtc';
-export { IE2ECall } from './webrtc';
+import { WebRTCCall, E2ECall, peerConnectionEvents, type PeerConnectionEventType } from './webrtc';
+export type { IE2ECall } from './webrtc';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
@@ -20,9 +20,9 @@ export const utils = {
 }
 
 const logger = new Logger();
-export const createChatInstance = (): IChatE2EE => {
+export const createChatInstance = (config?: Partial<configType>): IChatE2EE => {
     logger.log('Creating new instance');
-    return new ChatE2EE();
+    return new ChatE2EE(config);
 }
 
 export type chatJoinPayloadType = {
@@ -43,14 +43,14 @@ class ChatE2EE implements IChatE2EE {
     //To Do: Fix types
     private subscriptions: Map<string, Set<Function>> = new Map();
     private callSubscriptions: Map<string, Set<Function>> = new Map();
-    private socket: SocketInstance;
+    private socket!: SocketInstance;
 
     private subscriptionLogger = logger.createChild('Subscription');
     private callLogger = logger.createChild('Call');
 
     private initialized = false;
     private call?: WebRTCCall;
-    private iceCandidates = [];
+    private iceCandidates: any[] = [];
 
     private symEncryption = new AesGcmEncryption();
 
@@ -88,14 +88,14 @@ class ChatE2EE implements IChatE2EE {
 
         this.on("on-alice-disconnect", () => {
             evetLogger.log("Receiver disconnected");
-            this.receiverPublicKey = null;
+            this.receiverPublicKey = undefined;
         });
 
         /**
          * Related to webrtc connection,
          * Move it to WebRTC class?
          */
-        this.on('webrtc-session-description', (data) => {
+        this.on('webrtc-session-description', (data: any) => {
             evetLogger.log("New session description");
             if(data.type === 'offer') {
                 evetLogger.log("New offer");
@@ -105,13 +105,13 @@ class ChatE2EE implements IChatE2EE {
 
                 // add ICE from buffer
                 this.iceCandidates.forEach((ice) => {
-                    this.call.signal(ice);
+                    this.call!.signal(ice);
                 })
                 this.iceCandidates = [];
 
             }else if(data.type === 'answer') {
                 evetLogger.log("New answer");
-                this.call.signal(data);
+                this.call!.signal(data);
             }else if(data.type === 'candidate') {
                 evetLogger.log('ICE Candidate received.');
                 if(!this.call) {
@@ -151,7 +151,7 @@ class ChatE2EE implements IChatE2EE {
 
         // Share RSA public key (without AES key until we have receiver's RSA public key)
         await sharePublicKey({ aesKey: null, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
-        this.socket.joinChat({ publicKey: this.publicKey, userID: this.userId, channelID: this.channelId})
+        this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId!})
         await this.getPublicKey(logger);
         // If the receiver's RSA public key is now known, share AES key encrypted with it
         if (this.receiverPublicKey) {
@@ -179,17 +179,17 @@ class ChatE2EE implements IChatE2EE {
         return getUsersInChannel({ channelID: this.channelId });
     }
 
-    public async sendMessage({ image, text }): Promise<ISendMessageReturn> {
+    public async sendMessage({ image, text }: { image: string, text: string }): Promise<ISendMessageReturn> {
         logger.log(`sendMessage()`);
         this.checkInitialized();
         return sendMessage({ channelID: this.channelId, userId: this.userId, image, text })
     }
 
-    public encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> } {
+    public encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> } {
         logger.log(`encrypt()`);
         this.checkInitialized();
 
-        const encryptedTextPromise = _cryptoUtils.encryptMessage(text, this.receiverPublicKey);
+        const encryptedTextPromise = _cryptoUtils.encryptMessage(text, this.receiverPublicKey!);
         return ({
             send: async () => {
                 const encryptedText = await encryptedTextPromise;
@@ -198,7 +198,7 @@ class ChatE2EE implements IChatE2EE {
         })
     }
 
-    public on(listener: string, callback): void {
+    public on(listener: string, callback: (...args: any[]) => void): void {
         const loggerWithCount = this.subscriptionLogger.count();
         let subscriptions = this.subscriptions;
         
@@ -231,8 +231,8 @@ class ChatE2EE implements IChatE2EE {
     public getKeyPair(): { privateKey: string, publicKey: string } {
         this.checkInitialized();
         return {
-            privateKey: this.privateKey,
-            publicKey: this.publicKey
+            privateKey: this.privateKey!,
+            publicKey: this.publicKey!
         }
     }
 
@@ -251,7 +251,7 @@ class ChatE2EE implements IChatE2EE {
 
     public async endCall(): Promise<void> {
         this.call?.endCall();
-        this.call = null;
+        this.call = undefined;
         this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());   
     }
 
@@ -263,7 +263,7 @@ class ChatE2EE implements IChatE2EE {
         this.receiverPublicKey = receiverPublicKey?.publicKey;
         if(receiverPublicKey.aesKey) {
             // AES key is RSA-encrypted ciphertext; decrypt it with our RSA private key
-            const decryptedAesKeyJwk = await _cryptoUtils.decryptMessage(receiverPublicKey.aesKey, this.privateKey);
+            const decryptedAesKeyJwk = await _cryptoUtils.decryptMessage(receiverPublicKey.aesKey, this.privateKey!);
             await this.symEncryption.setRemoteAesKey(decryptedAesKeyJwk);
         }
         return;
@@ -272,7 +272,7 @@ class ChatE2EE implements IChatE2EE {
     // Encrypt local AES key with receiver's RSA public key and share it
     private async shareEncryptedAesKey(): Promise<void> {
         const aesKeyJwk = await this.symEncryption.getRawAesKeyToExport();
-        const encryptedAesKey = await _cryptoUtils.encryptMessage(aesKeyJwk, this.receiverPublicKey);
+        const encryptedAesKey = await _cryptoUtils.encryptMessage(aesKeyJwk, this.receiverPublicKey!);
         await sharePublicKey({ aesKey: encryptedAesKey, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
     }
 
@@ -291,8 +291,8 @@ class ChatE2EE implements IChatE2EE {
         this.checkInitialized();
         this.call = new WebRTCCall(
             this.symEncryption,
-            this.userId, 
-            this.channelId, 
+            this.userId!,
+            this.channelId!,
             this.callLogger,
         );
         this.setupCallSubs(this.call)

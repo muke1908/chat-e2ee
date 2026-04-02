@@ -27,8 +27,10 @@ Create an instance and initialize it to generate encryption keys and prepare the
 ```javascript
 import { createChatInstance } from '@chat-e2ee/service';
 
-
-const chat = createChatInstance();
+const chat = createChatInstance({
+    baseUrl: 'https://your-api.example.com',
+    settings: { disableLog: true },
+});
 await chat.init();
 ```
 
@@ -70,9 +72,26 @@ chat.on('chat-message', async (msg) => {
 ### `setConfig(config: Partial<ConfigType>)`
 Global configuration for the SDK.
 - `settings.disableLog`: Boolean to toggle console logging (Default: `false`).
+- `baseUrl`: Base URL of the chat-e2ee backend API (Default: `'http://localhost:3001'`).
 
-### `createChatInstance(): IChatE2EE`
-Factory function to create a new chat session instance.
+```javascript
+import { setConfig } from '@chat-e2ee/service';
+
+setConfig({
+    baseUrl: 'https://your-api.example.com',
+    settings: { disableLog: true },
+});
+```
+
+### `createChatInstance(config?: Partial<ConfigType>): IChatE2EE`
+Factory function to create a new chat session instance. Accepts an optional config to set `baseUrl` and `settings` inline, as an alternative to calling `setConfig()` separately.
+
+```javascript
+const chat = createChatInstance({
+    baseUrl: 'https://your-api.example.com',
+    settings: { disableLog: true },
+});
+```
 
 ---
 

@@ -25,7 +25,7 @@ export interface IChatE2EE {
     getUsersInChannel(): Promise<TypeUsersInChannel>;
     sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
     dispose(): void;
-    encrypt({ image, text }): { send: () => Promise<ISendMessageReturn> };
+    encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType | PeerConnectionEventType, callback: (...args: any) => void): void;
     // webrtc call 
     startCall(): Promise<E2ECall>;
@@ -41,7 +41,8 @@ export interface IUtils {
 export type configType = {
     settings: {
         disableLog: boolean,
-    }
+    },
+    baseUrl?: string,
 }
 export type SetConfigType = (config: Partial<configType>) => void;
 

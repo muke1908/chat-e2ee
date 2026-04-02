@@ -1,16 +1,11 @@
+import { configContext } from './configContext';
+
 type CustomError = Error & {
   status: number
 }
 
-const getBaseURI = (): string => {
-  if (!process.env.CHATE2EE_API_URL) {
-    console.warn('CHATE2EE_API_URL is not set');
-  }
-  const BASE_URI = process.env.CHATE2EE_API_URL || 'https://chat-e2ee-2.azurewebsites.net';
-  return BASE_URI;
-}
-const baseUri = getBaseURI();
 const makeRequest = async (url: string, { method = 'GET', body }: { method: string, body?: any }) => {
+  const baseUri = configContext().baseUrl;
   const res = await window.fetch(`${baseUri}/api/${url}`, {
     method,
     headers: {
@@ -20,7 +15,7 @@ const makeRequest = async (url: string, { method = 'GET', body }: { method: stri
   });
 
   if (!res.ok) {
-    const json = res.headers.get('Content-Type').includes('application/json')
+    const json = res.headers.get('Content-Type')?.includes('application/json')
       ? await res.json()
       : await res.text();
 

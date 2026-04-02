@@ -45,7 +45,7 @@ const callDuration = document.getElementById('call-duration')!;
 async function initChat() {
     try {
         setupStatus.textContent = 'Initializing secure keys...';
-        chat = createChatInstance();
+        chat = createChatInstance({ baseUrl: process.env.CHATE2EE_API_URL || 'http://localhost:3001' });
         await chat.init();
 
         const keys = chat.getKeyPair();

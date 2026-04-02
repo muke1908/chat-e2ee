@@ -53,6 +53,9 @@ export class AesGcmEncryption {
     }
 
     public async encryptData(data: ArrayBuffer) {
+        if(!this.aesKeyLocal) {
+            throw new Error('Local AES key not generated.')
+        };
         // Generate an Initialization Vector (IV) for AES-GCM (12 bytes)
         const iv = crypto.getRandomValues(new Uint8Array(12));
         // Encrypt the frame data using AES-GCM

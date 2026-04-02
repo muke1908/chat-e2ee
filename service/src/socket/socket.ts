@@ -1,4 +1,5 @@
 import socketIOClient, { Socket } from 'socket.io-client';
+import { configContext } from '../configContext';
 import { Logger } from '../utils/logger';
 import { chatJoinPayloadType } from '../sdk';
 export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
@@ -15,20 +16,13 @@ const SOCKET_LISTENERS: Record<string, SocketListenerType> = {
     "WEBRTC_SESSION_DESCRIPTION": "webrtc-session-description"
 }
 
-const getBaseURL = (): string => {
-    if (!process.env.CHATE2EE_API_URL) {
-        console.warn('CHATE2EE_API_URL is not set');
-    }
-    const BASE_URI = process.env.CHATE2EE_API_URL || 'https://chat-e2ee-2.azurewebsites.net';
-    return BASE_URI;
-}
-
 export class SocketInstance {
     private socket: Socket;
+    private eventHandlerLogger: Logger;
 
-    private eventHandlerLogger = this.logger.createChild('eventHandlerLogger');
     constructor(private subscriptionContext: () => SubscriptionType, private logger: Logger) {
-        this.socket = socketIOClient(`${getBaseURL()}/`);
+        this.eventHandlerLogger = this.logger.createChild('eventHandlerLogger');
+        this.socket = socketIOClient(`${configContext().baseUrl}/`);
         this.socket.on(SOCKET_LISTENERS.LIMIT_REACHED, (...args) => this.handler(SOCKET_LISTENERS.LIMIT_REACHED, args));
         this.socket.on(SOCKET_LISTENERS.DELIVERED, (...args) => this.handler(SOCKET_LISTENERS.DELIVERED, args));
         this.socket.on(SOCKET_LISTENERS.ON_ALICE_JOIN, (...args) => this.handler(SOCKET_LISTENERS.ON_ALICE_JOIN, args));

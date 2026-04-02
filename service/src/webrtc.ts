@@ -44,7 +44,7 @@ export type PeerConnectionEventType = "call-added" | "call-removed";
 export const peerConnectionEvents: PeerConnectionEventType[] = [ "call-added", "call-removed" ];
 
 export class WebRTCCall {
-    private peer: Peer;
+    private peer: Peer | undefined;
     private subs: Map<callEvents, Set<Function>> = new Map()
 
     public static isSupported(): boolean {
@@ -75,19 +75,19 @@ export class WebRTCCall {
     }
 
     public get callState(): RTCPeerConnectionState {
-        return this.peer.callState;
+        return this.peer!.callState;
     }
 
     async startCall(): Promise<void> {
         this.logger.log('startCall');
-        return this.peer.createAndSendOffer();
+        return this.peer!.createAndSendOffer();
     }
 
     public endCall(): void {
         this.logger.log('endCall');
         this.subs.clear();
         this.peer?.dispose();
-        this.peer = null;
+        this.peer = undefined;
     }
 
     public signal(data: SignalData | IceCandidateSignalData): void {
@@ -213,21 +213,21 @@ class Peer {
             this.audioStream.getTracks().forEach(track => {
                 track.stop() ;
             });
-            this.audioStream = null;
+            this.audioStream = undefined;
         }
         if(this.audioEl) {
             this.audioEl.srcObject = null;
-            this.audioEl = null;
+            this.audioEl = undefined;
         }
         this.logger.log('Dispose');
         this.pc?.close();
-        this.pc = null;
+        this.pc = undefined as unknown as RTCPeerConnectionWithInsertableStreams;
     }
 
     private async addLocalAudioTracks(): Promise<void> {
         this.logger.log('addLocalAudioTracks, adding local track to Peer Connection');
         this.audioStream = await this.getAudioStream();
-        this.audioStream.getTracks().forEach(track => this.pc.addTrack(track, this.audioStream));
+        this.audioStream.getTracks().forEach(track => this.pc.addTrack(track, this.audioStream!));
         this.applyEncryption('audio');
     }
 
@@ -247,11 +247,6 @@ class Peer {
         return navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     }
 
-    private async getVideoStream(): Promise<MediaStream> {
-        this.logger.log('getAudioStream');
-        return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    }
-
     private async appendAudioStreamToDom(stream: MediaStream, tag: string): Promise<void> {
         this.logger.log('Adding remote audio track');
         this.audioEl = document.createElement('audio');
@@ -266,23 +261,13 @@ class Peer {
             this.audioEl.setAttribute('controls', 'true');
             setTimeout(() => {
                 this.logger.log('Scheduling delay play');
-                this.audioEl.play();
+                this.audioEl?.play();
             }, 1000)
         }
         document.body.appendChild(this.audioEl);
     }
 
-    private appendVideoStreamToDom(stream: MediaStream, tag: string): void {
-        this.logger.log('Adding remote video track');
-        const videoEl = document.createElement('video');
-        document.body.appendChild(videoEl);
-        videoEl.setAttribute('controls', 'true');
-        videoEl.setAttribute('autoplay', 'true');
-        videoEl.setAttribute('id', tag);
-        videoEl.srcObject = stream
-    }
-
-    private applyDecryption(mediaType: 'audio' | 'video', receiver: RTCRtpReceiver): void {
+    private applyDecryption(_mediaType: 'audio' | 'video', receiver: RTCRtpReceiver): void {
         const transformer = new TransformStream({
             transform: async (chunk: RTCEncodedAudioFrame, controller) => {
 
@@ -307,7 +292,7 @@ class Peer {
     }
 
     private applyEncryption( mediaType: 'audio' | 'video'): void {
-        const sender = this.pc.getSenders().find(r => r.track.kind === mediaType);
+        const sender = this.pc.getSenders().find(r => r.track?.kind === mediaType);
 
         const transformer = new TransformStream({
             transform: async (chunk: RTCEncodedAudioFrame, controller) => {

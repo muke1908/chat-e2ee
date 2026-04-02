@@ -1,7 +1,7 @@
 import makeRequest from './makeRequest';
 import { IGetPublicKeyReturn } from './public/types';
 
-export const sharePublicKey = ({ aesKey, publicKey, sender, channelId }) => {
+export const sharePublicKey = ({ aesKey, publicKey, sender, channelId }: { aesKey: string | null, publicKey?: string, sender?: string, channelId?: string }) => {
   return makeRequest('chat/share-public-key', {
     method: 'POST',
     body: {
@@ -13,7 +13,7 @@ export const sharePublicKey = ({ aesKey, publicKey, sender, channelId }) => {
   });
 };
 
-export const getPublicKey = ({ userId, channelId }): Promise<IGetPublicKeyReturn> => {
+export const getPublicKey = ({ userId, channelId }: { userId?: string, channelId?: string }): Promise<IGetPublicKeyReturn> => {
   return makeRequest(`chat/get-public-key/?userId=${userId}&channel=${channelId}&timeStamp=${Date.now()}`, {
     method: 'GET'
   });
