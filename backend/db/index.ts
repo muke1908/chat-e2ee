@@ -1,4 +1,4 @@
-import { Db, MongoClient } from 'mongodb';
+import { Db, MongoClient, ServerApiVersion } from 'mongodb';
 
 import {
     findOneFromDB as _findOneFromDB, insertInDb as _insertInDb, updateOneFromDb as _updateOneFromDb
@@ -6,13 +6,20 @@ import {
 
 const uri = process.env.MONGO_URI;
 const dbName = process.env.MONGO_DB_NAME;
-const client = uri ? new MongoClient(uri) : null;
 
 let db: Db = null;
 let inMem = uri ? false : true;
 
 const connectDb = async (): Promise<void> => {
   try {
+    if (!uri) throw new Error("No URI");
+    const client = new MongoClient(uri, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      }
+    });
     if (!client) throw new Error("No client");
     await client.connect();
     db = client.db(dbName);
