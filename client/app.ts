@@ -41,6 +41,27 @@ const callStatusText = document.getElementById('call-status')!;
 const endCallBtn = document.getElementById('end-call-btn') as HTMLButtonElement;
 const callDuration = document.getElementById('call-duration')!;
 
+// Audio notification
+function playBeep() {
+    try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContextClass) return;
+        const ctx = new AudioContextClass();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.4);
+    } catch (err) {
+        console.warn('Audio notification not available:', err);
+    }
+}
+
 // Initialize Chat
 async function initChat() {
     try {
@@ -120,6 +141,7 @@ async function checkExistingUsers() {
     try {
         const users = await chat.getUsersInChannel();
         if (users && users.length > 1) {
+            playBeep();
             chatHeader.classList.add('active');
             participantInfo.textContent = 'Peer is already here. Communication is encrypted.';
         }
@@ -181,6 +203,7 @@ joinBtn.addEventListener('click', async () => {
 
 function setupChatListeners() {
     chat.on('on-alice-join', () => {
+        playBeep();
         chatHeader.classList.add('active');
         participantInfo.textContent = 'Peer joined. Communication is encrypted.';
     });
