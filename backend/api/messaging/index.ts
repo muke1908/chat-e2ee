@@ -66,9 +66,14 @@ router.post(
     if (!valid) {
       return res.sendStatus(404);
     }
-    const existing = await db.findOneFromDB({ channel, user: sender }, PUBLIC_KEY_COLLECTION);
+    const existing = await db.findOneFromDB<{ aesKey: string | null }>({ channel, user: sender }, PUBLIC_KEY_COLLECTION);
     if (existing) {
-      return res.status(409).send({ error: "Key already registered for this session" });
+      if (existing.aesKey) {
+        return res.status(409).send({ error: "Key already registered for this session" });
+      }
+      // First call registered publicKey with aesKey: null; this call adds the encrypted AES key
+      await db.updateOneFromDb({ channel, user: sender }, { aesKey }, PUBLIC_KEY_COLLECTION);
+      return res.send({ status: "ok" });
     }
     await db.insertInDb({ aesKey, publicKey, user: sender, channel }, PUBLIC_KEY_COLLECTION);
     return res.send({ status: "ok" });
