@@ -22,6 +22,7 @@ body {
     background-color: var(--bg);
     color: var(--text);
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     background-image:
         radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
@@ -408,4 +409,101 @@ button.danger {
 button.large svg {
     width: 32px;
     height: 32px;
+}
+
+/* ── Mobile responsive (≤ 480 px, e.g. iPhone 13 at 390 px) ─────────────── */
+@media (max-width: 480px) {
+    /* Fill the entire viewport – no card-on-background look */
+    #app {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    /* Chat container: full-screen, flush edges */
+    #chat-container {
+        max-width: 100%;
+        max-height: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+
+    /* Header: tighter padding + honour iOS notch */
+    header {
+        padding: 0.875rem 1rem;
+        padding-top: calc(0.875rem + env(safe-area-inset-top));
+    }
+
+    .header-info h2 {
+        font-size: 1.05rem;
+    }
+
+    /* Hide the long hash badge in the header to save space */
+    .hash-badge-container {
+        display: none;
+    }
+
+    /* Messages area: slimmer padding */
+    #messages-area {
+        padding: 0.875rem 0.75rem;
+        gap: 0.75rem;
+    }
+
+    /* Bubbles can expand wider on a narrow screen */
+    .message {
+        max-width: 85%;
+        font-size: 0.9rem;
+    }
+
+    /* Footer: tighter padding + honour iOS home indicator */
+    footer {
+        padding: 0.75rem;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    /* 16 px minimum prevents iOS Safari from zooming the page on input focus */
+    input {
+        font-size: 16px;
+    }
+
+    /* Setup overlay: bottom-sheet style on mobile */
+    .overlay {
+        align-items: flex-end;
+    }
+
+    .overlay-content {
+        max-width: 100%;
+        border-radius: 1.75rem 1.75rem 0 0;
+        padding: 1.75rem 1.25rem;
+        padding-bottom: calc(1.75rem + env(safe-area-inset-bottom));
+    }
+
+    .overlay-content h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Large buttons: reduce vertical padding so they don't feel too bulky */
+    button.large {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    /* Keep the two-column button group but with a tighter gap */
+    .button-group {
+        gap: 0.625rem;
+    }
+
+    /* Call overlay: fit content to screen width */
+    .blur-overlay {
+        padding: 1rem;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+
+    .call-avatar {
+        width: 90px;
+        height: 90px;
+    }
+
+    #call-status {
+        font-size: 1.25rem;
+    }
 }
