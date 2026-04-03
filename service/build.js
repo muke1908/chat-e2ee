@@ -18,9 +18,6 @@ async function build() {
         minify: isProduction,
         logLevel: 'info',
         metafile: true,
-        define: {
-            'process.env.CHATE2EE_API_URL': JSON.stringify(process.env.CHATE2EE_API_URL) || 'undefined',
-        },
     };
 
     if (watch) {
