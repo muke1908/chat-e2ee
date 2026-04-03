@@ -34,6 +34,7 @@ const participantInfo = document.getElementById('participant-info')!;
 const headerHashDisplay = document.getElementById('channel-hash-display')!;
 const headerHashText = document.getElementById('header-hash')!;
 const copyHeaderHashBtn = document.getElementById('copy-header-hash') as HTMLButtonElement;
+const shareBtn = document.getElementById('share-btn') as HTMLButtonElement;
 
 // Call Elements
 const callOverlay = document.getElementById('call-overlay')!;
@@ -132,11 +133,22 @@ copyHashBtn.addEventListener('click', () => {
 });
 
 copyHeaderHashBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(headerHashText.textContent || '');
+    navigator.clipboard.writeText(window.location.href);
     const originalText = setupStatus.textContent;
-    setupStatus.textContent = 'Hash copied to clipboard!';
+    setupStatus.textContent = 'URL copied to clipboard!';
     setTimeout(() => setupStatus.textContent = originalText, 2000);
 });
+
+if ('share' in navigator) {
+    shareBtn.classList.remove('hidden');
+    shareBtn.addEventListener('click', () => {
+        navigator.share({
+            title: 'Chat E2EE',
+            text: 'Join my end-to-end encrypted chat',
+            url: window.location.href,
+        }).catch(() => { /* user cancelled or share failed */ });
+    });
+}
 
 async function checkExistingUsers() {
     try {
