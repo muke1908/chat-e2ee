@@ -3,15 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "workspaces": [
+    "client",
+    "service"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run client:dev\" \"npm run serve:dev\"",
     "build": "npm run client:build",
-    "client:dev": "cd client && npm run dev",
-    "client:build": "cd client && npm run build",
+    "client:dev": "npm run dev --workspace=client",
+    "client:build": "npm run build --workspace=client",
     "serve:dev": "cross-env NODE_ENV=development nodemon --ext ts,json --ignore client --ignore service --exec ts-node index.ts",
     "serve": "cross-env NODE_ENV=production ts-node index.ts",
     "test": "cross-env NODE_ENV=test jest",
-    "build-service-sdk": "cd service && npm install && npm run build"
+    "build-service-sdk": "npm run build --workspace=service"
   },
   "author": "",
   "license": "ISC",
@@ -32,7 +36,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.13",
-    "@types/node": "^22.6.1",
+    "@types/node": "^22.19.15",
     "@types/node-fetch": "^2.6.11",
     "@types/socket.io": "^3.0.2",
     "concurrently": "^9.0.1",
