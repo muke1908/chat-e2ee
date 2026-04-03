@@ -14,6 +14,6 @@
         "vite": "^5.4.1"
     },
     "dependencies": {
-        "@chat-e2ee/service": "file:../service"
+        "@chat-e2ee/service": "*"
     }
 }
