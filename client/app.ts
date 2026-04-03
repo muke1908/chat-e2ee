@@ -121,6 +121,7 @@ backBtn.addEventListener('click', () => {
     showView('initial');
     channelHash = '';
     hashInput.value = '';
+    userId = '';
 });
 
 copyHashBtn.addEventListener('click', () => {
