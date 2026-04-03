@@ -11,7 +11,8 @@
     },
     "devDependencies": {
         "typescript": "^5.6.2",
-        "vite": "^5.4.1"
+        "vite": "^5.4.1",
+        "vite-plugin-pwa": "^1.2.0"
     },
     "dependencies": {
         "@chat-e2ee/service": "*"
