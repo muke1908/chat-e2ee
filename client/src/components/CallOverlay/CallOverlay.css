@@ -1,0 +1,90 @@
+/**
+ * Call overlay styles
+ */
+
+.blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.call-info {
+  text-align: center;
+}
+
+.call-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--glass);
+  margin: 0 auto 1.5rem;
+  border: 2px solid var(--primary);
+}
+
+.shimmer {
+  background: linear-gradient(90deg, var(--glass) 25%, rgba(99, 102, 241, 0.2) 50%, var(--glass) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.call-status {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.call-duration {
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .blur-overlay {
+    padding: 1rem;
+  }
+
+  .call-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .call-status {
+    font-size: 1.25rem;
+  }
+
+  .call-duration {
+    margin-bottom: 1.5rem;
+  }
+}

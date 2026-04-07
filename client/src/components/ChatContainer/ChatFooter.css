@@ -1,0 +1,57 @@
+/**
+ * Chat footer styles
+ */
+
+.chat-footer {
+  padding: 1.5rem;
+}
+
+.input-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.75rem;
+  color: white;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.message-input::placeholder {
+  color: var(--text-muted);
+}
+
+.message-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .chat-footer {
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+
+  .input-container {
+    gap: 0.5rem;
+  }
+
+  .message-input {
+    font-size: 16px;
+    /* Prevents zoom on iOS */
+  }
+}

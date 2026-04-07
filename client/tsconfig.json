@@ -9,6 +9,7 @@
             "DOM.Iterable"
         ],
         "skipLibCheck": true,
+        "jsx": "react-jsx",
         /* Bundler mode */
         "moduleResolution": "bundler",
         "allowImportingTsExtensions": true,
@@ -23,6 +24,7 @@
     },
     "include": [
         "src/**/*.ts",
+        "src/**/*.tsx",
         "app.ts"
     ]
 }

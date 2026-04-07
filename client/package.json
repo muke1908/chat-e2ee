@@ -11,9 +11,14 @@
     },
     "devDependencies": {
         "typescript": "^5.6.2",
-        "vite": "^5.4.1"
+        "vite": "^5.4.1",
+        "@vitejs/plugin-react": "^4.2.1",
+        "@types/react": "^18.2.37",
+        "@types/react-dom": "^18.2.15"
     },
     "dependencies": {
-        "@chat-e2ee/service": "*"
+        "@chat-e2ee/service": "*",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
     }
 }

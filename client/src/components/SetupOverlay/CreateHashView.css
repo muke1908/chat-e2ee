@@ -1,0 +1,23 @@
+/**
+ * Create hash view styles
+ */
+
+.create-hash-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.copy-feedback {
+  font-size: 0.85rem;
+  color: var(--success);
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}

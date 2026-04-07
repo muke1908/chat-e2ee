@@ -1,0 +1,15 @@
+/**
+ * Join hash view styles
+ */
+
+.join-hash-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}

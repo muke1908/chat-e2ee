@@ -1,0 +1,120 @@
+/**
+ * Button component styles
+ */
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 1rem;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Variants */
+.btn--primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.btn--secondary {
+  background: var(--glass);
+  color: white;
+  border: 1px solid var(--glass-border);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn--danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+/* Sizes */
+.btn--small {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn--large {
+  padding: 1.25rem 2rem;
+  font-size: 1.1rem;
+}
+
+/* Circle button */
+.btn--circle {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn--circle.btn--large {
+  width: 64px;
+  height: 64px;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn--circle svg {
+  width: 24px;
+  height: 24px;
+}
+
+.btn--circle.btn--large svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Icon button */
+.btn--icon {
+  background: none;
+  color: var(--text-muted);
+  padding: 8px;
+}
+
+.btn--icon:hover:not(:disabled) {
+  color: var(--text);
+  transform: none;
+}
+
+.btn--icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn--icon.btn--tiny {
+  padding: 2px;
+}
+
+.btn--icon.btn--tiny svg {
+  width: 14px;
+  height: 14px;
+}

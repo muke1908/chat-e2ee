@@ -1,0 +1,9 @@
+/**
+ * Initial actions styles
+ */
+
+.initial-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

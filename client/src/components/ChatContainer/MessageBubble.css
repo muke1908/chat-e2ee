@@ -1,0 +1,62 @@
+/**
+ * Message bubble styles
+ */
+
+.message {
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.sent {
+  align-self: flex-end;
+  background: var(--primary);
+  border-bottom-right-radius: 0.25rem;
+  color: white;
+  margin-left: auto;
+}
+
+.message.received {
+  align-self: flex-start;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-bottom-left-radius: 0.25rem;
+}
+
+.message-text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.message-meta {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .message {
+    max-width: 85%;
+    font-size: 0.9rem;
+  }
+}
