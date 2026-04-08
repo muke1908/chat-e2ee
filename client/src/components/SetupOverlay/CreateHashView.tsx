@@ -10,7 +10,6 @@ import './CreateHashView.css';
 
 interface CreateHashViewProps {
   hash: string;
-  onHashGenerated: (hash: string) => void;
   onCopyClick: () => void;
   onBack: () => void;
   onNext: () => void;
@@ -18,7 +17,6 @@ interface CreateHashViewProps {
 
 export const CreateHashView: React.FC<CreateHashViewProps> = ({
   hash,
-  onHashGenerated,
   onCopyClick,
   onBack,
   onNext,

@@ -6,11 +6,11 @@ import React, { useEffect, useState } from 'react';
 import { useChat } from './context/ChatContext';
 import { SetupOverlay } from './components/SetupOverlay/SetupOverlay';
 import { ChatContainer } from './components/ChatContainer/ChatContainer';
-import { updateUrlHash } from './utils/callTimer';
+import { updateUrlHash } from './utils/urlHash';
 import './styles/global.css';
 
 const AppContent: React.FC = () => {
-  const { initializeChat, joinChannel, channelHash } = useChat();
+  const { initializeChat, joinChannel } = useChat();
   const [showSetup, setShowSetup] = useState(true);
   const [error, setError] = useState<string>('');
 

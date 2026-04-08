@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { getUrlHash, updateUrlHash, hasValidHash } from '../utils/callTimer';
+import { getUrlHash, updateUrlHash, hasValidHash } from '../utils/urlHash';
 
 export const useUrlHash = () => {
   const [hash, setHash] = useState<string>('');

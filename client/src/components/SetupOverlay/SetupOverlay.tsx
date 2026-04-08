@@ -2,7 +2,7 @@
  * Main SetupOverlay component
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { InitialActions } from './InitialActions';
 import { CreateHashView } from './CreateHashView';
@@ -22,16 +22,10 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
   const [generatedHash, setGeneratedHash] = useState<string>('');
   const [joinHash, setJoinHash] = useState<string>('');
   const [status, setStatus] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [, setIsLoading] = useState<boolean>(false);
 
   // Generate hash when entering create view
-  useEffect(() => {
-    if (view === 'create' && !generatedHash) {
-      generateHash();
-    }
-  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const generateHash = async () => {
+  const generateHash = useCallback(async () => {
     try {
       setStatus('Generating secure hash...');
       const hash = await createNewChannel();
@@ -41,7 +35,13 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
       setStatus('Failed to generate hash. Please try again.');
       console.error('Hash generation error:', err);
     }
-  };
+  }, [createNewChannel]);
+
+  useEffect(() => {
+    if (view === 'create' && !generatedHash) {
+      generateHash();
+    }
+  }, [view, generatedHash, generateHash]);
 
   const handleCreateClick = () => {
     setView('create');
@@ -112,7 +112,6 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
         {view === 'create' && (
           <CreateHashView
             hash={generatedHash}
-            onHashGenerated={setGeneratedHash}
             onCopyClick={handleCopyHash}
             onBack={handleBack}
             onNext={handleCreateNext}

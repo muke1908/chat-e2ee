@@ -2,17 +2,7 @@
  * Type definitions for Chat E2EE application
  */
 
-// Chat instance type from @chat-e2ee/service
-export interface ChatInstance {
-  init: () => Promise<void>;
-  getKeyPair: () => { privateKey: string; publicKey: string };
-  getLink: () => Promise<{ hash: string }>;
-  setChannel: (hash: string, userId: string) => Promise<void>;
-  getUsersInChannel: () => Promise<any[]>;
-  startCall: () => Promise<Call>;
-  on: (event: string, callback: Function) => void;
-  encrypt: (data: { text: string }) => { send: () => Promise<void> };
-}
+import type { IChatE2EE } from '@chat-e2ee/service';
 
 // Message type
 export interface Message {
@@ -22,19 +12,12 @@ export interface Message {
   timestamp: Date;
 }
 
-// Call type
-export interface Call {
-  on: (event: string, callback: Function) => void;
-  endCall: () => Promise<void>;
-  state?: string;
-}
-
 // Setup view states
 export type SetupView = 'initial' | 'create' | 'join';
 
 // Chat app state
 export interface AppState {
-  chat: ChatInstance | null;
+  chat: IChatE2EE | null;
   userId: string;
   channelHash: string;
   privateKey: string;
@@ -47,7 +30,7 @@ export interface AppState {
 // Chat context type
 export interface ChatContextType {
   // State
-  chat: ChatInstance | null;
+  chat: IChatE2EE | null;
   userId: string;
   channelHash: string;
   privateKey: string;
@@ -69,16 +52,12 @@ export interface ChatContextType {
 }
 
 // Common component props
-export interface ButtonProps {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger';
-  size?: 'small' | 'large';
-  onClick: () => void;
-  disabled?: boolean;
+  size?: 'tiny' | 'small' | 'medium' | 'large';
   icon?: boolean;
   circle?: boolean;
   children: React.ReactNode;
-  className?: string;
-  title?: string;
 }
 
 export interface InputProps {

@@ -47,7 +47,7 @@ export const ChatFooter: React.FC = () => {
           placeholder="Type a secure message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           disabled={isSending}
         />
         <Button

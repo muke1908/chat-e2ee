@@ -16,7 +16,7 @@ interface ChatContainerProps {
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({ isHidden }) => {
   const { startCall } = useChat();
-  const [isStartingCall, setIsStartingCall] = useState<boolean>(false);
+  const [, setIsStartingCall] = useState<boolean>(false);
 
   const handleStartCall = async () => {
     try {

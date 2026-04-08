@@ -11,13 +11,15 @@ import './CallOverlay.css';
 
 export const CallOverlay: React.FC = () => {
   const { callActive, callStatus, endCall } = useChat();
-  const { duration, formatDuration, startTimer } = useCallTimer();
+  const { duration, formatDuration, startTimer, stopTimer } = useCallTimer();
 
   useEffect(() => {
     if (callActive && callStatus === 'Connected') {
       startTimer();
+    } else {
+      stopTimer();
     }
-  }, [callActive, callStatus, startTimer]);
+  }, [callActive, callStatus, startTimer, stopTimer]);
 
   if (!callActive) return null;
 

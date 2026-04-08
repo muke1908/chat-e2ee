@@ -14,9 +14,9 @@ FROM node:lts-alpine
 
 WORKDIR /chat-e2ee
 COPY package*.json /chat-e2ee/
-RUN mkdir -p /chat-e2ee/client/build
+RUN mkdir -p /chat-e2ee/client/dist
 COPY --from=BUILD  /chat-e2ee/dist /chat-e2ee/dist
-COPY --from=BUILD /chat-e2ee/client/build /chat-e2ee/client/build
+COPY --from=BUILD /chat-e2ee/client/dist /chat-e2ee/client/dist
 
 # dont install dev deps
 ENV NODE_ENV "production"
@@ -27,4 +27,4 @@ EXPOSE 3001
 USER node
 #Set production mode deployment
 
-ENTRYPOINT [ "npm", "run", "docker_start" ]
+CMD [ "npm", "run", "serve" ]

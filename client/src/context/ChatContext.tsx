@@ -3,16 +3,17 @@
  * No modifications to the service itself
  */
 
-import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { createChatInstance, utils } from '@chat-e2ee/service';
-import { ChatContextType, ChatInstance, Message } from '../types/index';
+import type { IChatE2EE, IE2ECall } from '@chat-e2ee/service';
+import { ChatContextType, Message } from '../types/index';
 import { createMessage } from '../utils/messageHandling';
 import { playBeep } from '../utils/audioNotification';
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [chat, setChat] = useState<ChatInstance | null>(null);
+  const [chat, setChat] = useState<IChatE2EE | null>(null);
   const [userId, setUserId] = useState<string>('');
   const [channelHash, setChannelHash] = useState<string>('');
   const [privateKey, setPrivateKey] = useState<string>('');
@@ -60,12 +61,13 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const newUserId = (utils as any).generateUUID();
         setUserId(newUserId);
 
-        await chat.setChannel(hash, newUserId);
+        // setChannel returns void but has async operations inside
+        chat.setChannel(hash, newUserId);
         setChannelHash(hash);
         setIsConnected(true);
 
         // Setup listeners
-        setupChatListeners(chat, newUserId);
+        setupChatListeners(chat);
 
         // Check for existing users
         await checkExistingUsers(chat);
@@ -84,7 +86,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const message = createMessage(userId, text, 'sent');
         addMessage(message);
-        await chat.encrypt({ text }).send();
+        await chat.encrypt({ text, image: '' }).send();
       } catch (err) {
         console.error('Failed to send message:', err);
         throw err;
@@ -108,9 +110,16 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // End call
   const endCall = useCallback(async () => {
-    setCallActive(false);
-    setCallDuration(0);
-  }, []);
+    try {
+      if (chat) {
+        chat.endCall();
+      }
+      setCallActive(false);
+      setCallDuration(0);
+    } catch (err) {
+      console.error('Failed to end call:', err);
+    }
+  }, [chat]);
 
   // Add message to state
   const addMessage = useCallback((message: Message) => {
@@ -118,7 +127,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   // Setup chat listeners
-  const setupChatListeners = (chatInstance: ChatInstance, currentUserId: string) => {
+  const setupChatListeners = (chatInstance: IChatE2EE) => {
     chatInstance.on('on-alice-join', () => {
       playBeep();
       setIsConnected(true);
@@ -138,7 +147,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     });
 
-    chatInstance.on('call-added', (call: any) => {
+    chatInstance.on('call-added', (call: IE2ECall) => {
       setCallActive(true);
       setCallStatus('Incoming Call...');
       setupCallListeners(call);
@@ -146,8 +155,9 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Setup call listeners
-  const setupCallListeners = (call: any) => {
-    call.on('state-changed', (state: string) => {
+  const setupCallListeners = (call: IE2ECall) => {
+    call.on('state-changed', async () => {
+      const state = call.state;
       setCallStatus(state.charAt(0).toUpperCase() + state.slice(1));
 
       if (state === 'closed' || state === 'failed') {
@@ -159,7 +169,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Check for existing users
-  const checkExistingUsers = async (chatInstance: ChatInstance) => {
+  const checkExistingUsers = async (chatInstance: IChatE2EE) => {
     try {
       const users = await chatInstance.getUsersInChannel();
       if (users && users.length > 1) {
