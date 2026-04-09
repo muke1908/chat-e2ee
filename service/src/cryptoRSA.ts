@@ -1,7 +1,11 @@
-interface ICryptoUtils {
-    generateKeypairs(): Promise<{privateKey: string, publicKey: string}>,
-    encryptMessage(plaintext: string, publicKey: string): Promise<string>,
-    decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
+/**
+ * Interface for pluggable asymmetric encryption strategies.
+ * Implement this to swap in any asymmetric cipher (e.g. RSA-OAEP, ECDH, X25519).
+ */
+export interface IAsymmetricEncryption {
+    generateKeypairs(): Promise<{ privateKey: string; publicKey: string }>;
+    encryptMessage(plaintext: string, publicKey: string): Promise<string>;
+    decryptMessage(ciphertext: string, privateKey: string): Promise<string>;
 }
 
 // Generate an RSA key pair
@@ -45,7 +49,7 @@ async function decryptMessage(ciphertext: ArrayBuffer, privateKey: CryptoKey): P
     return plaintext;
 }
 
-export const cryptoUtils: ICryptoUtils = {
+export const cryptoUtils: IAsymmetricEncryption = {
     generateKeypairs: async (): Promise<{privateKey: string, publicKey: string}> => {
         const { privateKey, publicKey } = await generateRSAKeyPair();
         return {

@@ -1,4 +1,4 @@
-import { AesGcmEncryption } from "./cryptoAES";
+import { type ISymmetricEncryption, AesGcmEncryption } from "./cryptoAES";
 import { Logger } from "./utils/logger";
 import { webrtcSession } from "./webrtcSession";
 import { WEBRTC_TRANSFORM_WORKER_SCRIPT } from "./webrtcTransformWorker";
@@ -98,7 +98,7 @@ export class WebRTCCall {
         }
     }
 
-    constructor(encryption: AesGcmEncryption, sender: string, channel: string, private logger: Logger, private encryptionApi: EncryptionApi = 'createEncodedStreams') {
+    constructor(encryption: ISymmetricEncryption, sender: string, channel: string, private logger: Logger, private encryptionApi: EncryptionApi = 'createEncodedStreams') {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
             () => this.subs,
@@ -149,7 +149,7 @@ class Peer {
 
     constructor(
         private subCtx: () => Map<callEvents, Set<Function>>,
-        private encryption: AesGcmEncryption,
+        private encryption: ISymmetricEncryption,
         private sender: string,
         private channel: string,
         private logger: Logger,
@@ -331,6 +331,10 @@ class Peer {
     /** Sends the AES-GCM keys to the transform worker so it can encrypt/decrypt frames. */
     private initTransformWorkerKeys(): void {
         if (!this.transformWorker) return;
+        if (!(this.encryption instanceof AesGcmEncryption)) {
+            this.logger.log('Insertable Streams transform requires AesGcmEncryption; worker keys not initialised');
+            return;
+        }
         this.transformWorker.postMessage({
             type: 'init',
             localKey: this.encryption.getLocalAesKey(),
