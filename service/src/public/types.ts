@@ -1,7 +1,7 @@
 import { SocketListenerType } from "../socket/socket";
-import { E2ECall, PeerConnectionEventType, EncryptionMethod } from "../webrtc";
+import { E2ECall, PeerConnectionEventType, EncryptionApi } from "../webrtc";
 
-export type { EncryptionMethod };
+export type { EncryptionApi };
 
 export type LinkObjType = {
     hash: string,
@@ -30,7 +30,7 @@ export interface IChatE2EE {
     encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType | PeerConnectionEventType, callback: (...args: any) => void): void;
     // webrtc call 
-    startCall(options?: { encryptionMethod?: EncryptionMethod }): Promise<E2ECall>;
+    startCall(options?: { encryptionApi?: EncryptionApi }): Promise<E2ECall>;
     endCall(): void;
     activeCall: E2ECall | null
 }

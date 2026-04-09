@@ -1,5 +1,5 @@
-import { createChatInstance, utils, getSupportedEncryptionMethods } from '@chat-e2ee/service';
-import type { EncryptionMethod } from '@chat-e2ee/service';
+import { createChatInstance, utils, getSupportedEncryptionApis } from '@chat-e2ee/service';
+import type { EncryptionApi } from '@chat-e2ee/service';
 
 // State
 let chat: any = null;
@@ -284,9 +284,9 @@ function appendMessage(sender: string, text: string, type: 'sent' | 'received') 
 let callTimer: any = null;
 let callStartTime: number = 0;
 
-// Detect and configure encryption method toggle
+// Detect and configure encryption API toggle
 function initEncryptionToggle(): void {
-    const { insertableStreams } = getSupportedEncryptionMethods();
+    const { insertableStreams } = getSupportedEncryptionApis();
     if (!insertableStreams) {
         insertableStreamsToggle.disabled = true;
         insertableStreamsLabel.title = 'RTCRtpScriptTransform (Insertable Streams) is not supported in this browser';
@@ -295,14 +295,14 @@ function initEncryptionToggle(): void {
     }
 }
 
-function getSelectedEncryptionMethod(): EncryptionMethod {
+function getSelectedEncryptionApi(): EncryptionApi {
     return insertableStreamsToggle.checked ? 'insertableStreams' : 'createEncodedStreams';
 }
 
 startCallBtn.addEventListener('click', async () => {
     try {
-        const encryptionMethod = getSelectedEncryptionMethod();
-        const call = await chat.startCall({ encryptionMethod });
+        const encryptionApi = getSelectedEncryptionApi();
+        const call = await chat.startCall({ encryptionApi });
         showCallOverlay('Calling...');
         setupCallListeners(call);
     } catch (err: any) {
