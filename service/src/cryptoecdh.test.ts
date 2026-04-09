@@ -5,13 +5,13 @@
  * in both Node.js and browser environments.
  */
 
-import { webcrypto } from 'crypto';
+import { webcrypto } from 'node:crypto';
 
 if (!globalThis.crypto) {
     (globalThis as any).crypto = webcrypto;
 }
 
-if (typeof window === 'undefined') {
+if (typeof globalThis.window === 'undefined') {
     (globalThis as any).window = globalThis;
 }
 

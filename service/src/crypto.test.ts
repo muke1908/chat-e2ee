@@ -8,7 +8,7 @@
  * without any mocking.
  */
 
-import { webcrypto } from 'crypto';
+import { webcrypto } from 'node:crypto';
 
 // Polyfill for Node versions < 19 that do not expose globalThis.crypto
 if (!globalThis.crypto) {
@@ -18,7 +18,7 @@ if (!globalThis.crypto) {
 // cryptoRSA.ts accesses `window.crypto`, `window.btoa`, and `window.atob`.
 // In a Node (non-jsdom) environment `window` is undefined, so we point it at
 // globalThis which already has btoa/atob (Node 16+) and crypto (Node 19+).
-if (typeof window === 'undefined') {
+if (typeof globalThis.window === 'undefined') {
     (globalThis as any).window = globalThis;
 }
 
