@@ -1,5 +1,7 @@
 import { SocketListenerType } from "../socket/socket";
 import { E2ECall, PeerConnectionEventType } from "../webrtc";
+import { ISymmetricEncryption } from "../cryptoAES";
+import { IAsymmetricEncryption } from "../cryptoRSA";
 
 export type LinkObjType = {
     hash: string,
@@ -37,6 +39,17 @@ export interface IUtils {
     decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
     generateUUID(): string,
 }
+
+/**
+ * Pluggable encryption strategy passed to createChatInstance().
+ * Omit either field to keep the default implementation.
+ */
+export interface EncryptionStrategy {
+    symmetric?: ISymmetricEncryption;
+    asymmetric?: IAsymmetricEncryption;
+}
+
+export type { ISymmetricEncryption, IAsymmetricEncryption };
 
 export type configType = {
     settings: {

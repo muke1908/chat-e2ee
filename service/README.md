@@ -83,14 +83,123 @@ setConfig({
 });
 ```
 
-### `createChatInstance(config?: Partial<ConfigType>): IChatE2EE`
-Factory function to create a new chat session instance. Accepts an optional config to set `baseUrl` and `settings` inline, as an alternative to calling `setConfig()` separately.
+### `createChatInstance(config?, encryptionStrategy?): IChatE2EE`
+Factory function to create a new chat session instance.
 
-```javascript
-const chat = createChatInstance({
-    baseUrl: 'https://your-api.example.com',
-    settings: { disableLog: true },
-});
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `config` | `Partial<ConfigType>` | Optional. Sets `baseUrl` and `settings` inline. |
+| `encryptionStrategy` | `EncryptionStrategy` | Optional. Plug in custom symmetric / asymmetric ciphers. Use `EncryptionFactory.create()` to produce this value (see [Pluggable Encryption](#pluggable-encryption)). |
+
+```typescript
+import { createChatInstance, EncryptionFactory } from '@chat-e2ee/service';
+
+// Default — AES-256-GCM + RSA-OAEP
+const chat = createChatInstance({ baseUrl: 'https://your-api.example.com' });
+
+// Explicit strategy via factory
+const chat = createChatInstance(config, EncryptionFactory.create({ symmetric: 'AES-GCM' }));
+```
+
+---
+
+## Pluggable Encryption
+
+The SDK ships with two built-in ciphers:
+
+| Layer | Default | Purpose |
+| :--- | :--- | :--- |
+| Asymmetric | `RSA-OAEP` (2048-bit, SHA-256) | Key-pair generation, message encryption, symmetric key wrapping |
+| Symmetric | `AES-GCM` (256-bit) | Frame-by-frame WebRTC audio/video encryption |
+
+Both are swappable at construction time via `EncryptionFactory`.
+
+### EncryptionFactory
+
+`EncryptionFactory` is a registry-based singleton. Register a cipher once under a name, then reference it by that name anywhere.
+
+#### Built-in strategies
+
+| Name | Type |
+| :--- | :--- |
+| `'AES-GCM'` | symmetric |
+| `'RSA-OAEP'` | asymmetric |
+
+#### `EncryptionFactory.create(config?)`
+
+Returns an `EncryptionStrategy` ready to pass to `createChatInstance`. Omit either field to keep its built-in default.
+
+```typescript
+// Both defaults
+EncryptionFactory.create()
+
+// Override one layer, keep the other default
+EncryptionFactory.create({ symmetric: 'ChaCha20' })
+EncryptionFactory.create({ asymmetric: 'X25519' })
+
+// Override both
+EncryptionFactory.create({ symmetric: 'ChaCha20', asymmetric: 'X25519' })
+```
+
+Requesting an unregistered name throws immediately:
+> `Unknown symmetric strategy: "ChaCha20". Register it first with EncryptionFactory.registerSymmetric().`
+
+#### `EncryptionFactory.registerSymmetric(name, factory)`
+#### `EncryptionFactory.registerAsymmetric(name, factory)`
+
+Register a custom implementation under a name. Both methods return `this` for chaining.
+
+```typescript
+EncryptionFactory
+    .registerSymmetric('ChaCha20', () => new ChaCha20Encryption())
+    .registerAsymmetric('X25519',  () => new X25519Exchange());
+```
+
+### Implementing a custom strategy
+
+#### `ISymmetricEncryption`
+
+```typescript
+import type { ISymmetricEncryption } from '@chat-e2ee/service';
+
+class ChaCha20Encryption implements ISymmetricEncryption {
+    async init(): Promise<void> { /* generate local key */ }
+    async encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array<ArrayBuffer>; iv: Uint8Array<ArrayBuffer> }> { /* … */ }
+    async decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer> { /* … */ }
+    async exportKey(): Promise<string> { /* serialise local key for transmission */ }
+    async importRemoteKey(key: string): Promise<void> { /* import peer's key */ }
+}
+```
+
+#### `IAsymmetricEncryption`
+
+```typescript
+import type { IAsymmetricEncryption } from '@chat-e2ee/service';
+
+class X25519Exchange implements IAsymmetricEncryption {
+    async generateKeypairs(): Promise<{ privateKey: string; publicKey: string }> { /* … */ }
+    async encryptMessage(plaintext: string, publicKey: string): Promise<string> { /* … */ }
+    async decryptMessage(ciphertext: string, privateKey: string): Promise<string> { /* … */ }
+}
+```
+
+#### Full example
+
+```typescript
+import { createChatInstance, EncryptionFactory } from '@chat-e2ee/service';
+
+// 1. Register at app startup
+EncryptionFactory
+    .registerSymmetric('ChaCha20', () => new ChaCha20Encryption())
+    .registerAsymmetric('X25519',  () => new X25519Exchange());
+
+// 2. Use by name
+const chat = createChatInstance(config, EncryptionFactory.create({
+    symmetric:  'ChaCha20',
+    asymmetric: 'X25519',
+}));
+
+await chat.init();
 ```
 
 ---
