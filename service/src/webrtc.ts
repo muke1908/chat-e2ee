@@ -63,7 +63,7 @@ export class WebRTCCall {
         }
     }
 
-    constructor(encryption: ISymmetricEncryptionProtocol, sender: string, channel: string, private logger: Logger) {
+    constructor(encryption: ISymmetricEncryptionProtocol, sender: string, channel: string, private readonly logger: Logger) {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
             () => this.subs,
@@ -108,11 +108,11 @@ class Peer {
 
     private localStreamAcquisatonPromise?: Promise<void>
         constructor(
-            private subCtx: () => Map<callEvents, Set<Function>>,
-            private encryption: ISymmetricEncryptionProtocol,
-            private sender: string,
-            private channel: string,
-            private logger: Logger
+            private readonly subCtx: () => Map<callEvents, Set<Function>>,
+            private readonly encryption: ISymmetricEncryptionProtocol,
+            private readonly sender: string,
+            private readonly channel: string,
+            private readonly logger: Logger
         ) {
         // RTCPeerConnection is cast via the interface because `encodedInsertableStreams`
         // is a non-standard constructor option not present in the lib.dom types.

@@ -12,8 +12,8 @@ export interface ISymmetricEncryption {
 }
 
 /**
- * AES-GCM encryption using ECDH for key exchange.
- * Implements ISymmetricEncryptionProtocol for WebRTC media encryption.
+ * AES-GCM encryption using ECDH X25519 for key exchange.
+ * Both peers derive the same AES-256-GCM key independently — the raw key is never transmitted.
  */
 export class AesGcmEncryption implements ISymmetricEncryption {
     private ecdhPrivateKey?: CryptoKey;
@@ -25,7 +25,7 @@ export class AesGcmEncryption implements ISymmetricEncryption {
             return;
         }
         // Generate ECDH key pair
-        const keyPair = await window.crypto.subtle.generateKey(
+        const keyPair = await globalThis.crypto.subtle.generateKey(
             { name: "X25519" },
             true, // extractable
             ["deriveKey", "deriveBits"]
@@ -46,7 +46,7 @@ export class AesGcmEncryption implements ISymmetricEncryption {
         if (!this.ecdhPublicKey) {
             throw new Error('ECDH keys not generated');
         }
-        const jsonWebKey = await window.crypto.subtle.exportKey("jwk", this.ecdhPublicKey);
+        const jsonWebKey = await globalThis.crypto.subtle.exportKey("jwk", this.ecdhPublicKey);
         return JSON.stringify(jsonWebKey);
     }
 
@@ -60,7 +60,7 @@ export class AesGcmEncryption implements ISymmetricEncryption {
             throw new Error('Local ECDH private key not generated');
         }
         const jsonWebKey = JSON.parse(key);
-        const remotePublicKey = await window.crypto.subtle.importKey(
+        const remotePublicKey = await globalThis.crypto.subtle.importKey(
             "jwk",
             jsonWebKey,
             { name: "X25519" },
@@ -68,12 +68,12 @@ export class AesGcmEncryption implements ISymmetricEncryption {
             [] // public keys don't require key usages for derivation
         );
 
-        // Derive shared AES-GCM key
-        this.sharedAesKey = await window.crypto.subtle.deriveKey(
+        // Derive shared AES-GCM key — never leaves the device
+        this.sharedAesKey = await globalThis.crypto.subtle.deriveKey(
             { name: "X25519", public: remotePublicKey },
             this.ecdhPrivateKey,
             { name: "AES-GCM", length: 256 },
-            false, // AES key is never extracted/transmitted
+            false, // AES key is never extractable/transmitted
             ["encrypt", "decrypt"]
         );
     }
@@ -85,33 +85,27 @@ export class AesGcmEncryption implements ISymmetricEncryption {
 
     public async encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array<ArrayBuffer>; iv: Uint8Array<ArrayBuffer> }> {
         if (!this.sharedAesKey) {
-            throw new Error('Shared AES key not derived.')
-        };
+            throw new Error('Shared AES key not derived.');
+        }
         // Generate an Initialization Vector (IV) for AES-GCM (12 bytes)
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
         // Encrypt the frame data using AES-GCM
-        const encryptedData = await window.crypto.subtle.encrypt(
-            {
-                name: "AES-GCM",
-                iv: iv
-            },
-            this.sharedAesKey,      // Symmetric key for encryption
-            data    // The frame data to be encrypted
+        const encryptedData = await globalThis.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv },
+            this.sharedAesKey,
+            data
         );
         return { encryptedData: new Uint8Array(encryptedData), iv };
     }
 
     public async decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer> {
         if (!this.sharedAesKey) {
-            throw new Error('Shared AES key not derived.')
+            throw new Error('Shared AES key not derived.');
         }
-        return window.crypto.subtle.decrypt(
-            {
-                name: "AES-GCM",
-                iv
-            },
-            this.sharedAesKey,  // Symmetric key for decryption
-            data  // The encrypted  frame data
+        return globalThis.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv },
+            this.sharedAesKey,
+            data
         );
     }
 }

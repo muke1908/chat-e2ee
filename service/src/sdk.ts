@@ -1,5 +1,4 @@
-import { AesGcmEncryption } from './cryptoAES';
-export { AesGcmEncryption };
+export { AesGcmEncryption } from './cryptoAES';
 import { setConfig } from './configContext';
 import { cryptoUtils } from './cryptoRSA';
 import deleteLink from './deleteLink';
@@ -53,8 +52,8 @@ class ChatE2EE implements IChatE2EE {
     private call?: WebRTCCall;
     private iceCandidates: any[] = [];
 
-    private symEncryption: import('./public/types').ISymmetricEncryptionProtocol;
-    private asymEncryption = cryptoUtils;
+    private readonly symEncryption: ISymmetricEncryptionProtocol;
+    private readonly asymEncryption = cryptoUtils;
 
     private setupCallSubs(call: WebRTCCall): void {
         call.on('state-changed', (state) => {
