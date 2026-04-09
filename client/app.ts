@@ -4,7 +4,6 @@ import { createChatInstance, utils } from '@chat-e2ee/service';
 let chat: any = null;
 let userId: string = '';
 let channelHash: string = '';
-let privateKey: string = '';
 
 // DOM Elements
 // DOM Elements
@@ -69,9 +68,6 @@ async function initChat() {
         setupStatus.textContent = 'Initializing secure keys...';
         chat = createChatInstance({ baseUrl: process.env.CHATE2EE_API_URL || 'http://localhost:3001' });
         await chat.init();
-
-        const keys = chat.getKeyPair();
-        privateKey = keys.privateKey;
         setupStatus.textContent = '';
 
         // Check for URL hash on load
@@ -227,8 +223,12 @@ function setupChatListeners() {
     });
 
     chat.on('chat-message', async (msg: any) => {
-        const plainText = await (utils as any).decryptMessage(msg.message, privateKey);
-        appendMessage(msg.sender, plainText, 'received');
+        try {
+            const plainText = await chat.decrypt(msg.message);
+            appendMessage(msg.sender, plainText, 'received');
+        } catch (err) {
+            console.error('Failed to decrypt message:', err);
+        }
     });
 
     chat.on('call-added', (call: any) => {

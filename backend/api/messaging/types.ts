@@ -13,5 +13,4 @@ export type ChatMessageType = {
     message: string,
     id: number,
     timestamp: number,
-    image?: string
 }

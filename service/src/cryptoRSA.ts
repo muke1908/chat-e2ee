@@ -6,7 +6,7 @@ interface ICryptoUtils {
 
 // Generate an RSA key pair
 async function generateRSAKeyPair(): Promise<CryptoKeyPair> {
-    const modulusLength = 2048;
+    const modulusLength = 4096;
     const publicExponent = new Uint8Array([0x01, 0x00, 0x01]); // 65537
 
     const algorithm: RsaHashedKeyGenParams = {

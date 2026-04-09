@@ -126,6 +126,64 @@ describe('AesGcmEncryption (AES-GCM) – real Web Crypto', () => {
 });
 
 // ---------------------------------------------------------------------------
+// AES-GCM text encryption round-trip tests
+// ---------------------------------------------------------------------------
+describe('AesGcmEncryption.encryptText / decryptText', () => {
+    it('encryptText() + decryptText() recover the original text', async () => {
+        const aes = new AesGcmEncryption();
+        await aes.int();
+
+        const exported = await aes.getRawAesKeyToExport();
+        await aes.setRemoteAesKey(exported);
+
+        const original = 'Hello AES-GCM text encryption! 🔐';
+        const ciphertext = await aes.encryptText(original);
+
+        expect(typeof ciphertext).toBe('string');
+        expect(ciphertext).not.toBe(original);
+
+        const recovered = await aes.decryptText(ciphertext);
+        expect(recovered).toBe(original);
+    });
+
+    it('encryptText() produces different ciphertexts for the same plaintext (random IV)', async () => {
+        const aes = new AesGcmEncryption();
+        await aes.int();
+
+        const c1 = await aes.encryptText('same text');
+        const c2 = await aes.encryptText('same text');
+
+        expect(c1).not.toBe(c2);
+    });
+
+    it('decryptText() throws when remote key has not been set', async () => {
+        const aes = new AesGcmEncryption();
+        await aes.int();
+
+        const exported = await aes.getRawAesKeyToExport();
+        const sender = new AesGcmEncryption();
+        await sender.int();
+        const ciphertext = await sender.encryptText('secret');
+
+        await expect(aes.decryptText(ciphertext)).rejects.toThrow('Remote AES key not set.');
+    });
+
+    it('encryptText() handles long messages beyond the RSA-OAEP 245-byte limit', async () => {
+        const aes = new AesGcmEncryption();
+        await aes.int();
+
+        const exported = await aes.getRawAesKeyToExport();
+        await aes.setRemoteAesKey(exported);
+
+        const longText = 'A'.repeat(10_000);
+        const ciphertext = await aes.encryptText(longText);
+        const recovered = await aes.decryptText(ciphertext);
+
+        expect(recovered).toBe(longText);
+    });
+});
+
+// ---------------------------------------------------------------------------
 // AES key exchange via RSA-encrypted channel
 // ---------------------------------------------------------------------------
 describe('AES key exchange via RSA-encrypted channel', () => {
@@ -181,5 +239,45 @@ describe('AES key exchange via RSA-encrypted channel', () => {
         await expect(
             cryptoUtils.decryptMessage(encryptedAesKey, evePrivateKey)
         ).rejects.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Replay-attack nonce protection
+// ---------------------------------------------------------------------------
+describe('Nonce-based replay attack protection', () => {
+    it('a replayed message ciphertext is detected via its nonce', async () => {
+        // Simulate the sender side
+        const senderAes = new AesGcmEncryption();
+        await senderAes.int();
+
+        // Simulate the receiver side: share the sender AES key as the "remote" key
+        const receiverAes = new AesGcmEncryption();
+        await receiverAes.setRemoteAesKey(await senderAes.getRawAesKeyToExport());
+
+        // Helper that mimics sdk.ts decrypt() nonce tracking
+        const seenNonces = new Set<string>();
+        async function sdkDecrypt(ciphertext: string): Promise<string> {
+            const envelopeJson = await receiverAes.decryptText(ciphertext);
+            const envelope = JSON.parse(envelopeJson) as { text: string; nonce: string };
+            if (seenNonces.has(envelope.nonce)) {
+                throw new Error('Replay attack detected: duplicate message nonce.');
+            }
+            seenNonces.add(envelope.nonce);
+            return envelope.text;
+        }
+
+        const nonce = 'fixed-nonce-for-test';
+        const envelope = JSON.stringify({ text: 'Hello!', nonce });
+        const ciphertext = await senderAes.encryptText(envelope);
+
+        // First delivery succeeds
+        const plaintext = await sdkDecrypt(ciphertext);
+        expect(plaintext).toBe('Hello!');
+
+        // Replaying the exact same ciphertext is rejected
+        await expect(sdkDecrypt(ciphertext)).rejects.toThrow(
+            'Replay attack detected: duplicate message nonce.'
+        );
     });
 });

@@ -16,7 +16,7 @@ const clients = getClientInstance();
 router.post(
   "/message",
   asyncHandler(async (req: Request, res: Response): Promise<Response<MessageResponse>> => {
-    const { message, sender, channel, image } = req.body;
+    const { message, sender, channel } = req.body;
 
     if (!message) {
       return res.send(400);
@@ -48,9 +48,6 @@ router.post(
       timestamp
     };
 
-    if (image) {
-      return res.status(400).send({ message: "Image not supported" });
-    }
     const receiverSid = clients.getSIDByIDs(receiver, channel).sid;
     socketEmit<SOCKET_TOPIC.CHAT_MESSAGE>(SOCKET_TOPIC.CHAT_MESSAGE, receiverSid, dataToPublish);
     return res.send({ message: "message sent", id, timestamp });

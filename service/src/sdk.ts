@@ -53,6 +53,8 @@ class ChatE2EE implements IChatE2EE {
     private iceCandidates: any[] = [];
 
     private symEncryption = new AesGcmEncryption();
+    private seenNonces: Set<string> = new Set();
+    private static readonly MAX_SEEN_NONCES = 10_000;
 
     private setupCallSubs(call: WebRTCCall): void {
         call.on('state-changed', (state) => {
@@ -89,6 +91,7 @@ class ChatE2EE implements IChatE2EE {
         this.on("on-alice-disconnect", () => {
             evetLogger.log("Receiver disconnected");
             this.receiverPublicKey = undefined;
+            this.seenNonces.clear();
         });
 
         /**
@@ -179,23 +182,56 @@ class ChatE2EE implements IChatE2EE {
         return getUsersInChannel({ channelID: this.channelId });
     }
 
-    public async sendMessage({ image, text }: { image: string, text: string }): Promise<ISendMessageReturn> {
+    public async sendMessage({ text }: { text: string }): Promise<ISendMessageReturn> {
         logger.log(`sendMessage()`);
         this.checkInitialized();
-        return sendMessage({ channelID: this.channelId, userId: this.userId, image, text })
+        return sendMessage({ channelID: this.channelId, userId: this.userId, text })
     }
 
-    public encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> } {
+    public encrypt({ text }: { text: string }): { send: () => Promise<ISendMessageReturn> } {
         logger.log(`encrypt()`);
         this.checkInitialized();
 
-        const encryptedTextPromise = _cryptoUtils.encryptMessage(text, this.receiverPublicKey!);
+        const nonce = generateUUID();
+        const envelope = JSON.stringify({ text, nonce });
+        const encryptedPromise = this.symEncryption.encryptText(envelope);
         return ({
             send: async () => {
-                const encryptedText = await encryptedTextPromise;
-                return this.sendMessage({ image, text: encryptedText })
+                const encryptedText = await encryptedPromise;
+                return this.sendMessage({ text: encryptedText })
             }
         })
+    }
+
+    public async decrypt(ciphertext: string): Promise<string> {
+        logger.log(`decrypt()`);
+        this.checkInitialized();
+        const envelopeJson = await this.symEncryption.decryptText(ciphertext);
+        let envelope: unknown;
+        try {
+            envelope = JSON.parse(envelopeJson);
+        } catch {
+            throw new Error('Invalid message envelope: failed to parse JSON.');
+        }
+        if (
+            typeof envelope !== 'object' ||
+            envelope === null ||
+            typeof (envelope as Record<string, unknown>).text !== 'string' ||
+            typeof (envelope as Record<string, unknown>).nonce !== 'string'
+        ) {
+            throw new Error('Invalid message envelope: missing text or nonce field.');
+        }
+        const { text, nonce } = envelope as { text: string; nonce: string };
+        if (this.seenNonces.has(nonce)) {
+            throw new Error('Replay attack detected: duplicate message nonce.');
+        }
+        if (this.seenNonces.size >= ChatE2EE.MAX_SEEN_NONCES) {
+            // Evict the oldest entry to keep memory bounded
+            const oldest = this.seenNonces.values().next().value;
+            this.seenNonces.delete(oldest);
+        }
+        this.seenNonces.add(nonce);
+        return text;
     }
 
     public on(listener: string, callback: (...args: any[]) => void): void {
