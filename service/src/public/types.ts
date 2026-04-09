@@ -35,14 +35,7 @@ export interface IChatE2EE {
     activeCall: E2ECall | null
 }
 
-export interface ISymmetricEncryptionProtocol {
-    init(): Promise<void>;
-    getRemoteAesKey(): CryptoKey;
-    getRawAesKeyToExport(): Promise<string>;
-    setRemoteAesKey(key: string): Promise<void>;
-    encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array, iv: Uint8Array }>;
-    decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer>;
-}
+export interface ISymmetricEncryptionProtocol extends ISymmetricEncryption {}
 
 export interface IUtils {
     decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
@@ -65,7 +58,7 @@ export type configType = {
         disableLog: boolean,
     },
     baseUrl?: string,
-    encryptionProtocol?: ISymmetricEncryptionProtocol,
+    encryptionProtocol?: ISymmetricEncryption;
 }
 export type SetConfigType = (config: Partial<configType>) => void;
 

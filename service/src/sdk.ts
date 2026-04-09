@@ -1,10 +1,11 @@
 export { AesGcmEncryption } from './cryptoAES';
 import { setConfig } from './configContext';
 import { cryptoUtils } from './cryptoRSA';
+import { EncryptionFactory } from './encryptionFactory';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
-import { configType, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
+import { configType, type IChatE2EE, type ISendMessageReturn, type ISymmetricEncryption, type LinkObjType, type TypeUsersInChannel } from './public/types';
 import { getPublicKey, sharePublicKey } from './publicKey';
 import sendMessage from './sendMessage';
 import { SocketInstance, type SubscriptionType } from './socket/socket';
@@ -52,7 +53,7 @@ class ChatE2EE implements IChatE2EE {
     private call?: WebRTCCall;
     private iceCandidates: any[] = [];
 
-    private readonly symEncryption: ISymmetricEncryptionProtocol;
+    private readonly symEncryption: ISymmetricEncryption;
     private readonly asymEncryption = cryptoUtils;
 
     private setupCallSubs(call: WebRTCCall): void {
@@ -65,7 +66,8 @@ class ChatE2EE implements IChatE2EE {
     }
     constructor(config?: Partial<configType>) {
         config && setConfig(config);
-        this.symEncryption = config?.encryptionProtocol || new AesGcmEncryption();
+        // If an explicit protocol instance is provided, use it; otherwise, use the factory with defaults
+        this.symEncryption = config?.encryptionProtocol || EncryptionFactory.create().symmetric;
     }
 
     public async init(): Promise<void> {
@@ -265,14 +267,14 @@ class ChatE2EE implements IChatE2EE {
         this.receiverPublicKey = receiverPublicKey?.publicKey;
         if(receiverPublicKey.aesKey) {
             // ECDH public key is sent unencrypted in the aesKey field
-            await this.symEncryption.setRemoteAesKey(receiverPublicKey.aesKey);
+            await this.symEncryption.importRemoteKey(receiverPublicKey.aesKey);
         }
         return;
     }
 
     // Share ECDH public key unencrypted in the aesKey field
     private async shareSymmetricKeyMaterial(): Promise<void> {
-        const publicEcdhKeyJwk = await this.symEncryption.getRawAesKeyToExport();
+        const publicEcdhKeyJwk = await this.symEncryption.exportKey();
         await sharePublicKey({ aesKey: publicEcdhKeyJwk, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
     }
 

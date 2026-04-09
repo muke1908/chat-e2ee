@@ -90,13 +90,59 @@ Custom encryption protocol allows you to implement your own symmetric encryption
 
 ```javascript
 import { createChatInstance, AesGcmEncryption } from '@chat-e2ee/service';
-
 const chat = createChatInstance({
     baseUrl: 'https://your-api.example.com',
     settings: { disableLog: true },
     encryptionProtocol: new AesGcmEncryption(), // optional custom implementation
 });
 ```
+
+---
+
+## Pluggable Encryption
+
+The SDK supports pluggable symmetric encryption strategies via the `EncryptionFactory`. This allows you to swap the underlying encryption logic used for WebRTC media streams.
+
+### Available Strategies
+
+- **`AES-GCM`** (Default): Standard AES-256-GCM encryption where the key is generated locally and shared via the signaling channel.
+- **`ECDH-X25519`**: Uses Ephemeral X25519 ECDH to derive a shared AES-256-GCM key. The secret key material never leaves the device.
+
+### Switching Strategies
+
+You can specify the encryption strategy when creating a chat instance:
+
+```javascript
+import { createChatInstance, EncryptionFactory } from '@chat-e2ee/service';
+
+// Use the high-security ECDH-X25519 strategy
+const strategy = EncryptionFactory.create({ symmetric: 'ECDH-X25519' });
+
+const chat = createChatInstance({
+    encryptionProtocol: strategy.symmetric
+});
+```
+
+### Registering Custom Strategies
+
+You can register your own implementation by implementing the `ISymmetricEncryption` interface:
+
+```javascript
+import { EncryptionFactory } from '@chat-e2ee/service';
+
+class MySymmetricCipher {
+    async init() { ... }
+    async exportKey() { ... }
+    async importRemoteKey(key) { ... }
+    async encryptData(data) { ... }
+    async decryptData(data, iv) { ... }
+}
+
+EncryptionFactory.registerSymmetric('MY-CIPHER', () => new MySymmetricCipher());
+
+const chat = createChatInstance({
+    encryptionProtocol: EncryptionFactory.create({ symmetric: 'MY-CIPHER' }).symmetric
+});
 ```
 
 ---
@@ -109,8 +155,6 @@ Initializes the instance:
 - Generates ECDH key pairs for WebRTC encryption.
 - Establishes the socket connection.
 - Sets up WebRTC listeners.
-
-#### `await getLink(): Promise<LinkObjType>`
 Requests a new channel link from the server.
 Returns an object containing `hash`, `link`, `absoluteLink`, `pin`, etc.
 

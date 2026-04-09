@@ -76,9 +76,9 @@ describe('AesGcmEncryption (AES-GCM) – real Web Crypto', () => {
     it('init() generates ECDH key pair and is idempotent on subsequent calls', async () => {
         const aes = new AesGcmEncryption();
         await aes.init();
-        const key1Export = await aes.getRawAesKeyToExport();
+        const key1Export = await aes.exportKey();
         await aes.init();
-        const key2Export = await aes.getRawAesKeyToExport();
+        const key2Export = await aes.exportKey();
 
         expect(key1Export).toBeDefined();
         // Second call should return the same cached instance
@@ -92,8 +92,8 @@ describe('AesGcmEncryption (AES-GCM) – real Web Crypto', () => {
         await aes.init();
 
         // Export the local ECDH public key and set it as the "remote" key to derive shared key for loopback test
-        const exportedKey = await aes.getRawAesKeyToExport();
-        await aes.setRemoteAesKey(exportedKey);
+        const exportedKey = await aes.exportKey();
+        await aes.importRemoteKey(exportedKey);
 
         const originalText = 'AES test payload 🔒';
         const originalData = new TextEncoder().encode(originalText).buffer;
@@ -110,18 +110,19 @@ describe('AesGcmEncryption (AES-GCM) – real Web Crypto', () => {
         expect(decryptedText).toBe(originalText);
     });
 
-    it('encryptData() and decryptData() throw when remote key has not been set', async () => {
+    it('encryptData() and decryptData() throw before initialisation/key import', async () => {
         const aes = new AesGcmEncryption();
-        await aes.init();
 
-        // No setRemoteAesKey() call → should throw for encrypt
+        // No init() call → should throw for encrypt
         await expect(aes.encryptData(
             new TextEncoder().encode('data').buffer
-        )).rejects.toThrow('Shared AES key not derived.');
+        )).rejects.toThrow('Local AES key not generated.');
 
-        // No setRemoteAesKey() call → should throw for decrypt
+        await aes.init();
+
+        // No importRemoteKey() call → should throw for decrypt
         await expect(aes.decryptData(new ArrayBuffer(10), new Uint8Array(12))).rejects.toThrow(
-            'Shared AES key not derived.'
+            'Remote AES key not set.'
         );
     });
 });
@@ -134,16 +135,16 @@ describe('ECDH symmetric key exchange', () => {
         // Simulate Bob (receiver)
         const bobAes = new AesGcmEncryption();
         await bobAes.init();
-        const bobEcdhKeyJwk = await bobAes.getRawAesKeyToExport();
+        const bobEcdhKeyJwk = await bobAes.exportKey();
 
         // Simulate Alice (sender)
         const aliceAes = new AesGcmEncryption();
         await aliceAes.init();
-        const aliceEcdhKeyJwk = await aliceAes.getRawAesKeyToExport();
+        const aliceEcdhKeyJwk = await aliceAes.exportKey();
 
         // Exchange keys (in plaintext over the wire)
-        await aliceAes.setRemoteAesKey(bobEcdhKeyJwk);
-        await bobAes.setRemoteAesKey(aliceEcdhKeyJwk);
+        await aliceAes.importRemoteKey(bobEcdhKeyJwk);
+        await bobAes.importRemoteKey(aliceEcdhKeyJwk);
 
         // Alice encrypts some data with her derived AES key
         const originalText = 'Secret message over ECDH derived AES-GCM 🔐';

@@ -1,9 +1,10 @@
 import { AesGcmEncryption, type ISymmetricEncryption } from './cryptoAES';
+import { ECDHEncryption } from './cryptoecdh';
 import { cryptoUtils, type IAsymmetricEncryption } from './cryptoRSA';
 import type { EncryptionStrategy } from './public/types';
 
 /** Names of built-in symmetric encryption strategies. */
-export type BuiltinSymmetricStrategy = 'AES-GCM';
+export type BuiltinSymmetricStrategy = 'AES-GCM' | 'ECDH-X25519';
 
 /** Names of built-in asymmetric encryption strategies. */
 export type BuiltinAsymmetricStrategy = 'RSA-OAEP';
@@ -29,6 +30,7 @@ export interface EncryptionStrategyConfig {
 class EncryptionStrategyFactory {
     private readonly symmetricRegistry = new Map<string, () => ISymmetricEncryption>([
         ['AES-GCM', () => new AesGcmEncryption()],
+        ['ECDH-X25519', () => new ECDHEncryption()],
     ]);
 
     private readonly asymmetricRegistry = new Map<string, () => IAsymmetricEncryption>([
