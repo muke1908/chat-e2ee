@@ -35,6 +35,11 @@ export interface IChatE2EE {
     activeCall: E2ECall | null
 }
 
+/**
+ * Interface for symmetric encryption protocols used for media stream security.
+ * Extensions of this interface are used by the SDK to encrypt/decrypt WebRTC packets.
+ * Strictly follows the maintainer's ISymmetricEncryption definition in cryptoAES.ts.
+ */
 export interface ISymmetricEncryptionProtocol extends ISymmetricEncryption {}
 
 export interface IUtils {

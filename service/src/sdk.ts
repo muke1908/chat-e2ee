@@ -58,7 +58,7 @@ class ChatE2EE implements IChatE2EE {
 
     private setupCallSubs(call: WebRTCCall): void {
         call.on('state-changed', (state) => {
-            if(state === 'failed' || state === 'closed') {
+            if (state === 'failed' || state === 'closed') {
                 this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
                 this.endCall();
             }
@@ -101,7 +101,7 @@ class ChatE2EE implements IChatE2EE {
          */
         this.on('webrtc-session-description', (data: any) => {
             evetLogger.log("New session description");
-            if(data.type === 'offer') {
+            if (data.type === 'offer') {
                 evetLogger.log("New offer");
                 this.call = this.getWebRtcCall();
                 this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
@@ -113,15 +113,15 @@ class ChatE2EE implements IChatE2EE {
                 })
                 this.iceCandidates = [];
 
-            }else if(data.type === 'answer') {
+            } else if (data.type === 'answer') {
                 evetLogger.log("New answer");
                 this.call!.signal(data);
-            }else if(data.type === 'candidate') {
+            } else if (data.type === 'candidate') {
                 evetLogger.log('ICE Candidate received.');
-                if(!this.call) {
+                if (!this.call) {
                     evetLogger.log("call not created yet, storing ICE candidate");
                     this.iceCandidates.push(data);
-                }else {
+                } else {
                     this.call.signal(data);
                 }
             }
@@ -136,7 +136,7 @@ class ChatE2EE implements IChatE2EE {
     }
 
     public get activeCall(): E2ECall | null {
-        if(!this.call) {
+        if (!this.call) {
             return null;
         }
         return new E2ECall(this.call);
@@ -149,13 +149,13 @@ class ChatE2EE implements IChatE2EE {
 
     public async setChannel(channelId: string, userId: string, userName?: string): Promise<void> {
         this.checkInitialized();
-        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId,userName })}`);
+        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId, userName })}`);
         this.channelId = channelId;
         this.userId = userId;
 
         // Share RSA public key (without AES key until we have receiver's RSA public key)
-        await sharePublicKey({ aesKey: null, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
-        this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId!})
+        await sharePublicKey({ aesKey: null, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
+        this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId! })
         await this.getPublicKey(logger);
         // If the receiver's RSA public key is now known, share symmetric key material
         if (this.receiverPublicKey) {
@@ -205,11 +205,11 @@ class ChatE2EE implements IChatE2EE {
     public on(listener: string, callback: (...args: any[]) => void): void {
         const loggerWithCount = this.subscriptionLogger.count();
         let subscriptions = this.subscriptions;
-        
-        if(peerConnectionEvents.includes(listener as PeerConnectionEventType)) {
+
+        if (peerConnectionEvents.includes(listener as PeerConnectionEventType)) {
             subscriptions = this.callSubscriptions;
         }
-        
+
         const sub = this.subscriptions.get(listener);
         if (sub) {
             if (sub.has(callback)) {
@@ -241,10 +241,10 @@ class ChatE2EE implements IChatE2EE {
     }
 
     public async startCall(): Promise<E2ECall> {
-        if(!WebRTCCall.isSupported()) {
+        if (!WebRTCCall.isSupported()) {
             throw new Error('createEncodedStreams not supported.');
         }
-        if(this.call) {
+        if (this.call) {
             throw new Error('Call already active');
         }
         const webrtcCall = this.getWebRtcCall();
@@ -256,7 +256,7 @@ class ChatE2EE implements IChatE2EE {
     public async endCall(): Promise<void> {
         this.call?.endCall();
         this.call = undefined;
-        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());   
+        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());
     }
 
     //get receiver public key
@@ -265,7 +265,7 @@ class ChatE2EE implements IChatE2EE {
         const receiverPublicKey = await getPublicKey({ userId: this.userId, channelId: this.channelId });
         logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
         this.receiverPublicKey = receiverPublicKey?.publicKey;
-        if(receiverPublicKey.aesKey) {
+        if (receiverPublicKey.aesKey) {
             // ECDH public key is sent unencrypted in the aesKey field
             await this.symEncryption.importRemoteKey(receiverPublicKey.aesKey);
         }
@@ -284,7 +284,7 @@ class ChatE2EE implements IChatE2EE {
     }
 
     private checkInitialized(): void {
-        if(!this.initialized) {
+        if (!this.initialized) {
             throw new Error('ChatE2EE is not initialized, call init()');
         }
     }
