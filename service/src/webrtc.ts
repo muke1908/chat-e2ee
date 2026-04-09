@@ -39,6 +39,88 @@ interface RTCRtpReceiverWithStreams extends RTCRtpReceiver {
     createEncodedStreams(): { readable: ReadableStream; writable: WritableStream };
 }
 
+/**
+ * RTCRtpSender/RTCRtpReceiver extended with the standardized
+ * `transform` property (RTCRtpScriptTransform / Insertable Streams API).
+ */
+interface RTCRtpSenderWithTransform extends RTCRtpSender {
+    transform: RTCRtpScriptTransform;
+}
+
+interface RTCRtpReceiverWithTransform extends RTCRtpReceiver {
+    transform: RTCRtpScriptTransform;
+}
+
+/**
+ * The two encryption methods supported for WebRTC media:
+ * - `createEncodedStreams`: older, main-thread stream-piping approach (Chrome/Edge)
+ * - `insertableStreams`: standardized RTCRtpScriptTransform worker-based approach
+ */
+export type EncryptionMethod = 'createEncodedStreams' | 'insertableStreams';
+
+/**
+ * Inline worker script for RTCRtpScriptTransform-based encryption/decryption.
+ * The worker receives the CryptoKey objects via postMessage and handles the
+ * `rtctransform` event to encrypt or decrypt each encoded frame.
+ */
+const WEBRTC_TRANSFORM_WORKER_SCRIPT = `
+let localKey = null;
+let remoteKey = null;
+
+self.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'init') {
+        localKey = event.data.localKey;
+        remoteKey = event.data.remoteKey;
+    }
+});
+
+async function processTransform(transformer) {
+    const operation = transformer.options.operation;
+    const reader = transformer.readable.getReader();
+    const writer = transformer.writable.getWriter();
+    try {
+        while (true) {
+            const result = await reader.read();
+            if (result.done) break;
+            const frame = result.value;
+            try {
+                if (operation === 'encrypt' && localKey) {
+                    const iv = crypto.getRandomValues(new Uint8Array(12));
+                    const encrypted = await crypto.subtle.encrypt(
+                        { name: 'AES-GCM', iv },
+                        localKey,
+                        frame.data
+                    );
+                    const combined = new Uint8Array(12 + encrypted.byteLength);
+                    combined.set(iv, 0);
+                    combined.set(new Uint8Array(encrypted), 12);
+                    frame.data = combined.buffer;
+                } else if (operation === 'decrypt' && remoteKey) {
+                    const data = new Uint8Array(frame.data);
+                    const frameIv = data.slice(0, 12);
+                    const encryptedData = data.slice(12);
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv: frameIv },
+                        remoteKey,
+                        encryptedData
+                    );
+                    frame.data = decrypted;
+                }
+                writer.write(frame);
+            } catch (err) {
+                // Skip frames that cannot be processed (e.g. decryption failure)
+            }
+        }
+    } finally {
+        writer.releaseLock();
+    }
+}
+
+self.addEventListener('rtctransform', function(event) {
+    processTransform(event.transformer).catch(function() {});
+});
+`;
+
 export type callEvents = 'state-changed';
 export type PeerConnectionEventType = "call-added" | "call-removed";
 export const peerConnectionEvents: PeerConnectionEventType[] = [ "call-added", "call-removed" ];
@@ -47,8 +129,23 @@ export class WebRTCCall {
     private peer: Peer | undefined;
     private subs: Map<callEvents, Set<Function>> = new Map()
 
+    /**
+     * Returns which encryption methods are supported by the current browser.
+     */
+    public static getSupportedEncryptionMethods(): { createEncodedStreams: boolean; insertableStreams: boolean } {
+        return {
+            createEncodedStreams: !!(RTCRtpSender.prototype as RTCRtpSenderWithStreams).createEncodedStreams,
+            insertableStreams: typeof RTCRtpScriptTransform !== 'undefined',
+        };
+    }
+
+    /**
+     * Returns true if at least one encryption method is available.
+     * Preserved for backwards compatibility.
+     */
     public static isSupported(): boolean {
-        return  !!(RTCRtpSender.prototype as RTCRtpSenderWithStreams).createEncodedStreams;
+        const methods = WebRTCCall.getSupportedEncryptionMethods();
+        return methods.createEncodedStreams || methods.insertableStreams;
     }
 
     public on(listener: callEvents, cb: (state: RTCPeerConnectionState) => void): void {
@@ -63,14 +160,15 @@ export class WebRTCCall {
         }
     }
 
-    constructor(encryption: AesGcmEncryption, sender: string, channel: string, private logger: Logger) {
+    constructor(encryption: AesGcmEncryption, sender: string, channel: string, private logger: Logger, private encryptionMethod: EncryptionMethod = 'createEncodedStreams') {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
             () => this.subs,
             encryption,
             sender,
             channel,
-            this.logger.createChild('Peer')
+            this.logger.createChild('Peer'),
+            this.encryptionMethod
         );
     }
 
@@ -107,17 +205,29 @@ class Peer {
     private audioStream?: MediaStream;
 
     private localStreamAcquisatonPromise?: Promise<void>
+
+    /** Worker instance used when encryptionMethod === 'insertableStreams' */
+    private transformWorker?: Worker;
+
     constructor(
         private subCtx: () => Map<callEvents, Set<Function>>,
         private encryption: AesGcmEncryption,
         private sender: string,
         private channel: string,
-        private logger: Logger
+        private logger: Logger,
+        private encryptionMethod: EncryptionMethod
     ) {
+        const useEncodedInsertableStreams = this.encryptionMethod === 'createEncodedStreams';
+
+        if (this.encryptionMethod === 'insertableStreams') {
+            this.transformWorker = this.createTransformWorker();
+        }
+
         // RTCPeerConnection is cast via the interface because `encodedInsertableStreams`
         // is a non-standard constructor option not present in the lib.dom types.
-        this.pc = new (RTCPeerConnection as unknown as new (config: RTCConfiguration & { encodedInsertableStreams: boolean }) => RTCPeerConnectionWithInsertableStreams)({
-            encodedInsertableStreams: true,
+        // It is only needed for the createEncodedStreams path.
+        this.pc = new (RTCPeerConnection as unknown as new (config: RTCConfiguration & { encodedInsertableStreams?: boolean }) => RTCPeerConnectionWithInsertableStreams)({
+            ...(useEncodedInsertableStreams ? { encodedInsertableStreams: true } : {}),
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
                 { urls: "stun:stun.l.google.com:5349" },
@@ -219,6 +329,10 @@ class Peer {
             this.audioEl.srcObject = null;
             this.audioEl = undefined;
         }
+        if (this.transformWorker) {
+            this.transformWorker.terminate();
+            this.transformWorker = undefined;
+        }
         this.logger.log('Dispose');
         this.pc?.close();
         this.pc = undefined as unknown as RTCPeerConnectionWithInsertableStreams;
@@ -267,7 +381,44 @@ class Peer {
         document.body.appendChild(this.audioEl);
     }
 
+    /** Creates the inline Blob worker used for RTCRtpScriptTransform encryption. */
+    private createTransformWorker(): Worker {
+        const blob = new Blob([WEBRTC_TRANSFORM_WORKER_SCRIPT], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        const worker = new Worker(url);
+        URL.revokeObjectURL(url);
+        return worker;
+    }
+
+    /** Sends the AES-GCM keys to the transform worker so it can encrypt/decrypt frames. */
+    private initTransformWorkerKeys(): void {
+        if (!this.transformWorker) return;
+        this.transformWorker.postMessage({
+            type: 'init',
+            localKey: this.encryption.getLocalAesKey(),
+            remoteKey: this.encryption.getRemoteAesKey(),
+        });
+    }
+
     private applyDecryption(_mediaType: 'audio' | 'video', receiver: RTCRtpReceiver): void {
+        if (this.encryptionMethod === 'insertableStreams') {
+            this.applyDecryptionWithInsertableStreams(receiver);
+        } else {
+            this.applyDecryptionWithEncodedStreams(receiver);
+        }
+    }
+
+    private applyEncryption(mediaType: 'audio' | 'video'): void {
+        if (this.encryptionMethod === 'insertableStreams') {
+            this.applyEncryptionWithInsertableStreams(mediaType);
+        } else {
+            this.applyEncryptionWithEncodedStreams(mediaType);
+        }
+    }
+
+    // ── createEncodedStreams path ──────────────────────────────────────────────
+
+    private applyDecryptionWithEncodedStreams(receiver: RTCRtpReceiver): void {
         const transformer = new TransformStream({
             transform: async (chunk: RTCEncodedAudioFrame, controller) => {
 
@@ -291,7 +442,7 @@ class Peer {
             .pipeTo(receiverStreams.writable);
     }
 
-    private applyEncryption( mediaType: 'audio' | 'video'): void {
+    private applyEncryptionWithEncodedStreams(mediaType: 'audio' | 'video'): void {
         const sender = this.pc.getSenders().find(r => r.track?.kind === mediaType);
 
         const transformer = new TransformStream({
@@ -315,6 +466,26 @@ class Peer {
         senderStreams.readable
             .pipeThrough(transformer)
             .pipeTo(senderStreams.writable);
+    }
+
+    // ── RTCRtpScriptTransform / Insertable Streams path ───────────────────────
+
+    private applyDecryptionWithInsertableStreams(receiver: RTCRtpReceiver): void {
+        this.initTransformWorkerKeys();
+        (receiver as RTCRtpReceiverWithTransform).transform = new RTCRtpScriptTransform(
+            this.transformWorker!,
+            { operation: 'decrypt' }
+        );
+    }
+
+    private applyEncryptionWithInsertableStreams(mediaType: 'audio' | 'video'): void {
+        const sender = this.pc.getSenders().find(r => r.track?.kind === mediaType);
+        if (!sender) return;
+        this.initTransformWorkerKeys();
+        (sender as RTCRtpSenderWithTransform).transform = new RTCRtpScriptTransform(
+            this.transformWorker!,
+            { operation: 'encrypt' }
+        );
     }
 }
 

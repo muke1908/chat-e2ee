@@ -11,13 +11,19 @@ import { SocketInstance, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
-import { WebRTCCall, E2ECall, peerConnectionEvents, type PeerConnectionEventType } from './webrtc';
-export type { IE2ECall } from './webrtc';
+import { WebRTCCall, E2ECall, peerConnectionEvents, type PeerConnectionEventType, type EncryptionMethod } from './webrtc';
+export type { IE2ECall, EncryptionMethod } from './webrtc';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
     generateUUID
 }
+
+/**
+ * Returns which WebRTC encryption methods are supported by the current browser.
+ * Use this to conditionally enable the Insertable Streams toggle in the UI.
+ */
+export const getSupportedEncryptionMethods = WebRTCCall.getSupportedEncryptionMethods.bind(WebRTCCall);
 
 const logger = new Logger();
 export const createChatInstance = (config?: Partial<configType>): IChatE2EE => {
@@ -51,6 +57,7 @@ class ChatE2EE implements IChatE2EE {
     private initialized = false;
     private call?: WebRTCCall;
     private iceCandidates: any[] = [];
+    private encryptionMethod: EncryptionMethod = 'createEncodedStreams';
 
     private symEncryption = new AesGcmEncryption();
 
@@ -99,7 +106,7 @@ class ChatE2EE implements IChatE2EE {
             evetLogger.log("New session description");
             if(data.type === 'offer') {
                 evetLogger.log("New offer");
-                this.call = this.getWebRtcCall();
+                this.call = this.getWebRtcCall(this.encryptionMethod);
                 this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
                 this.call.signal(data);
 
@@ -236,14 +243,20 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
-    public async startCall(): Promise<E2ECall> {
-        if(!WebRTCCall.isSupported()) {
-            throw new Error('createEncodedStreams not supported.');
+    public async startCall(options?: { encryptionMethod?: EncryptionMethod }): Promise<E2ECall> {
+        const method = options?.encryptionMethod ?? 'createEncodedStreams';
+        const supported = WebRTCCall.getSupportedEncryptionMethods();
+        if (method === 'insertableStreams' && !supported.insertableStreams) {
+            throw new Error('RTCRtpScriptTransform (Insertable Streams) is not supported in this browser.');
+        }
+        if (method === 'createEncodedStreams' && !supported.createEncodedStreams) {
+            throw new Error('createEncodedStreams is not supported in this browser.');
         }
         if(this.call) {
             throw new Error('Call already active');
         }
-        const webrtcCall = this.getWebRtcCall();
+        this.encryptionMethod = method;
+        const webrtcCall = this.getWebRtcCall(method);
         await webrtcCall.startCall()
         const call = new E2ECall(webrtcCall);
         return call;
@@ -287,13 +300,14 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
-    private getWebRtcCall(): WebRTCCall {
+    private getWebRtcCall(encryptionMethod: EncryptionMethod = 'createEncodedStreams'): WebRTCCall {
         this.checkInitialized();
         this.call = new WebRTCCall(
             this.symEncryption,
             this.userId!,
             this.channelId!,
             this.callLogger,
+            encryptionMethod,
         );
         this.setupCallSubs(this.call)
         return this.call;

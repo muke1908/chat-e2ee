@@ -19,6 +19,13 @@ export class AesGcmEncryption {
         return this.aesKeyLocal;
     }
 
+    public getLocalAesKey(): CryptoKey {
+        if (!this.aesKeyLocal) {
+            throw new Error('Local AES key not generated.');
+        }
+        return this.aesKeyLocal;
+    }
+
     public getRemoteAesKey(): CryptoKey {
         if (!this.aesKeyRemote) {
             throw new Error("AES key from remote not set.");

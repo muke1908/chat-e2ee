@@ -1,4 +1,5 @@
-import { createChatInstance, utils } from '@chat-e2ee/service';
+import { createChatInstance, utils, getSupportedEncryptionMethods } from '@chat-e2ee/service';
+import type { EncryptionMethod } from '@chat-e2ee/service';
 
 // State
 let chat: any = null;
@@ -35,6 +36,10 @@ const headerHashDisplay = document.getElementById('channel-hash-display')!;
 const headerHashText = document.getElementById('header-hash')!;
 const copyHeaderHashBtn = document.getElementById('copy-header-hash') as HTMLButtonElement;
 const shareBtn = document.getElementById('share-btn') as HTMLButtonElement;
+
+// Encryption method toggle
+const insertableStreamsToggle = document.getElementById('use-insertable-streams') as HTMLInputElement;
+const insertableStreamsLabel = document.getElementById('insertable-streams-label') as HTMLLabelElement;
 
 // Call Elements
 const callOverlay = document.getElementById('call-overlay')!;
@@ -279,9 +284,25 @@ function appendMessage(sender: string, text: string, type: 'sent' | 'received') 
 let callTimer: any = null;
 let callStartTime: number = 0;
 
+// Detect and configure encryption method toggle
+function initEncryptionToggle(): void {
+    const { insertableStreams } = getSupportedEncryptionMethods();
+    if (!insertableStreams) {
+        insertableStreamsToggle.disabled = true;
+        insertableStreamsLabel.title = 'RTCRtpScriptTransform (Insertable Streams) is not supported in this browser';
+        insertableStreamsLabel.style.opacity = '0.4';
+        insertableStreamsLabel.style.cursor = 'not-allowed';
+    }
+}
+
+function getSelectedEncryptionMethod(): EncryptionMethod {
+    return insertableStreamsToggle.checked ? 'insertableStreams' : 'createEncodedStreams';
+}
+
 startCallBtn.addEventListener('click', async () => {
     try {
-        const call = await chat.startCall();
+        const encryptionMethod = getSelectedEncryptionMethod();
+        const call = await chat.startCall({ encryptionMethod });
         showCallOverlay('Calling...');
         setupCallListeners(call);
     } catch (err: any) {
@@ -336,4 +357,5 @@ function hideCallOverlay() {
 }
 
 // Start
+initEncryptionToggle();
 initChat();
