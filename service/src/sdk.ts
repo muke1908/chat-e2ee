@@ -1,10 +1,12 @@
-import { AesGcmEncryption } from './cryptoAES';
+import { type ISymmetricEncryption } from './cryptoAES';
 import { setConfig } from './configContext';
-import { cryptoUtils as _cryptoUtils } from './cryptoRSA';
+import { cryptoUtils } from './cryptoRSA';
+import { type IAsymmetricEncryption } from './cryptoRSA';
+import { EncryptionFactory } from './encryptionFactory';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
-import { configType, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
+import { configType, type EncryptionStrategy, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
 import { getPublicKey, sharePublicKey } from './publicKey';
 import sendMessage from './sendMessage';
 import { SocketInstance, type SubscriptionType } from './socket/socket';
@@ -15,14 +17,14 @@ import { WebRTCCall, E2ECall, peerConnectionEvents, type PeerConnectionEventType
 export type { IE2ECall } from './webrtc';
 
 export const utils = {
-    decryptMessage: (ciphertext: string, privateKey: string) => _cryptoUtils.decryptMessage(ciphertext, privateKey),
+    decryptMessage: (ciphertext: string, privateKey: string) => cryptoUtils.decryptMessage(ciphertext, privateKey),
     generateUUID
 }
 
 const logger = new Logger();
-export const createChatInstance = (config?: Partial<configType>): IChatE2EE => {
+export const createChatInstance = (config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy): IChatE2EE => {
     logger.log('Creating new instance');
-    return new ChatE2EE(config);
+    return new ChatE2EE(config, encryptionStrategy);
 }
 
 export type chatJoinPayloadType = {
@@ -37,7 +39,7 @@ class ChatE2EE implements IChatE2EE {
 
     private privateKey?: string;
     private publicKey?: string;
-    
+
     private receiverPublicKey?: string;
 
     //To Do: Fix types
@@ -52,7 +54,8 @@ class ChatE2EE implements IChatE2EE {
     private call?: WebRTCCall;
     private iceCandidates: any[] = [];
 
-    private symEncryption = new AesGcmEncryption();
+    private symEncryption: ISymmetricEncryption;
+    private asymEncryption: IAsymmetricEncryption;
 
     private setupCallSubs(call: WebRTCCall): void {
         call.on('state-changed', (state) => {
@@ -62,8 +65,11 @@ class ChatE2EE implements IChatE2EE {
             }
         })
     }
-    constructor(config?: Partial<configType>) {
+    constructor(config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy) {
         config && setConfig(config);
+        const defaults = EncryptionFactory.create();
+        this.symEncryption = encryptionStrategy?.symmetric ?? defaults.symmetric;
+        this.asymEncryption = encryptionStrategy?.asymmetric ?? defaults.asymmetric;
     }
 
     public async init(): Promise<void> {
@@ -72,7 +78,7 @@ class ChatE2EE implements IChatE2EE {
         initLogger.log(`Started.`);
 
         this.createSocketSubcription();
-        const { privateKey, publicKey } = await _cryptoUtils.generateKeypairs();
+        const { privateKey, publicKey } = await this.asymEncryption.generateKeypairs();
 
         this.privateKey = privateKey;
         this.publicKey = publicKey;
@@ -124,9 +130,9 @@ class ChatE2EE implements IChatE2EE {
         });
 
 
-        initLogger.log(`Initializing AES Encryption for webrtc`);
-        await this.symEncryption.int();
-        initLogger.log(`Initialized AES Encryption for webrtc`);
+        initLogger.log(`Initializing symmetric Encryption for webrtc`);
+        await this.symEncryption.init();
+        initLogger.log(`Initialized symmetric Encryption for webrtc`);
         initLogger.log(`Finished.`);
         this.initialized = true;
     }
@@ -189,7 +195,7 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`encrypt()`);
         this.checkInitialized();
 
-        const encryptedTextPromise = _cryptoUtils.encryptMessage(text, this.receiverPublicKey!);
+        const encryptedTextPromise = this.asymEncryption.encryptMessage(text, this.receiverPublicKey!);
         return ({
             send: async () => {
                 const encryptedText = await encryptedTextPromise;
@@ -262,17 +268,17 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
         this.receiverPublicKey = receiverPublicKey?.publicKey;
         if(receiverPublicKey.aesKey) {
-            // AES key is RSA-encrypted ciphertext; decrypt it with our RSA private key
-            const decryptedAesKeyJwk = await _cryptoUtils.decryptMessage(receiverPublicKey.aesKey, this.privateKey!);
-            await this.symEncryption.setRemoteAesKey(decryptedAesKeyJwk);
+            // symmetric key is asymmetrically-encrypted ciphertext; decrypt it with our private key
+            const decryptedKeyMaterial = await this.asymEncryption.decryptMessage(receiverPublicKey.aesKey, this.privateKey!);
+            await this.symEncryption.importRemoteKey(decryptedKeyMaterial);
         }
         return;
     }
 
     // Encrypt local AES key with receiver's RSA public key and share it
     private async shareEncryptedAesKey(): Promise<void> {
-        const aesKeyJwk = await this.symEncryption.getRawAesKeyToExport();
-        const encryptedAesKey = await _cryptoUtils.encryptMessage(aesKeyJwk, this.receiverPublicKey!);
+        const exportedKey = await this.symEncryption.exportKey();
+        const encryptedAesKey = await this.asymEncryption.encryptMessage(exportedKey, this.receiverPublicKey!);
         await sharePublicKey({ aesKey: encryptedAesKey, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
     }
 
@@ -301,3 +307,4 @@ class ChatE2EE implements IChatE2EE {
 }
 
 export * from './public/types';
+export { EncryptionFactory, type EncryptionStrategyConfig, type BuiltinSymmetricStrategy, type BuiltinAsymmetricStrategy } from './encryptionFactory';

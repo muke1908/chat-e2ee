@@ -1,4 +1,4 @@
-import { AesGcmEncryption } from "./cryptoAES";
+import { type ISymmetricEncryption } from "./cryptoAES";
 import { Logger } from "./utils/logger";
 import { webrtcSession } from "./webrtcSession";
 
@@ -63,7 +63,7 @@ export class WebRTCCall {
         }
     }
 
-    constructor(encryption: AesGcmEncryption, sender: string, channel: string, private logger: Logger) {
+    constructor(encryption: ISymmetricEncryption, sender: string, channel: string, private logger: Logger) {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
             () => this.subs,
@@ -109,7 +109,7 @@ class Peer {
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(
         private subCtx: () => Map<callEvents, Set<Function>>,
-        private encryption: AesGcmEncryption,
+        private encryption: ISymmetricEncryption,
         private sender: string,
         private channel: string,
         private logger: Logger
