@@ -30,13 +30,13 @@ export class AesGcmEncryption {
         if (!this.aesKeyLocal) {
             throw new Error('AES key not generated');
         }
-        const jsonWebKey = await crypto.subtle.exportKey("jwk", this.aesKeyLocal);
+        const jsonWebKey = await window.crypto.subtle.exportKey("jwk", this.aesKeyLocal);
         return JSON.stringify(jsonWebKey);
     }
 
     public async setRemoteAesKey(key: string): Promise<void> {
         const jsonWebKey = JSON.parse(key);
-        this.aesKeyRemote = await crypto.subtle.importKey(
+        this.aesKeyRemote = await window.crypto.subtle.importKey(
             "jwk",
             jsonWebKey,
             { name: "AES-GCM" },
@@ -47,13 +47,13 @@ export class AesGcmEncryption {
     }
 
     public async encryptData(data: ArrayBuffer) {
-        if(!this.aesKeyLocal) {
+        if (!this.aesKeyLocal) {
             throw new Error('Local AES key not generated.')
         };
         // Generate an Initialization Vector (IV) for AES-GCM (12 bytes)
-        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
         // Encrypt the frame data using AES-GCM
-        const encryptedData = await crypto.subtle.encrypt(
+        const encryptedData = await window.crypto.subtle.encrypt(
             {
                 name: "AES-GCM",
                 iv: iv
@@ -70,7 +70,7 @@ export class AesGcmEncryption {
         if (!this.aesKeyRemote) {
             throw new Error('Remote AES key not set.')
         }
-        return crypto.subtle.decrypt(
+        return window.crypto.subtle.decrypt(
             {
                 name: "AES-GCM",
                 iv
