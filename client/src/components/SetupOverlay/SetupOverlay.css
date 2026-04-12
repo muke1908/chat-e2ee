@@ -1,19 +1,16 @@
 /**
- * SetupOverlay styles
+ * SetupOverlay styles – terminal theme
  */
 
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
-  opacity: 1;
+  background: rgba(0, 0, 0, 0.6);
   transition: opacity 0.3s ease;
 }
 
@@ -24,38 +21,62 @@
 
 .overlay-content {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   padding: 2.5rem;
-  border-radius: 2rem;
+  border-radius: 0.25rem;
   text-align: center;
 }
 
+/* Terminal "window chrome" top bar */
+.overlay-content::before {
+  content: '■ ■ ■  SECURE_TERMINAL v2';
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  background: rgba(0, 255, 65, 0.05);
+  border-bottom: 1px solid var(--glass-border);
+  margin: -2.5rem -2.5rem 2rem -2.5rem;
+  padding: 0.5rem 1rem;
+  text-align: left;
+}
+
 .overlay-content h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+  text-shadow: var(--glow-md);
 }
 
 .overlay-content p {
   color: var(--text-muted);
   margin-bottom: 2rem;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
 }
 
 .setup-status {
   margin-top: 1.5rem;
-  padding: 0.75rem 1rem;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid var(--primary);
-  border-radius: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  border-radius: 0.2rem;
   color: var(--primary);
-  font-size: 0.9rem;
-  text-align: center;
+  font-size: 0.8rem;
+  text-align: left;
+  font-family: inherit;
+}
+
+.setup-status::before {
+  content: '$ ';
+  opacity: 0.5;
 }
 
 .setup-status.error {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: var(--danger);
+  background: rgba(255, 34, 68, 0.06);
+  border-color: rgba(255, 34, 68, 0.4);
   color: var(--danger);
 }
 
@@ -64,20 +85,25 @@
   .overlay {
     align-items: flex-end;
     padding: 0;
+    background: rgba(0, 0, 0, 0.7);
   }
 
   .overlay-content {
     max-width: 100%;
-    border-radius: 1.75rem 1.75rem 0 0;
-    padding: 1.75rem 1.25rem;
-    padding-bottom: calc(1.75rem + env(safe-area-inset-bottom));
+    border-radius: 0.5rem 0.5rem 0 0;
+    padding: 2rem 1.25rem;
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+  }
+
+  .overlay-content::before {
+    margin: -2rem -1.25rem 1.5rem -1.25rem;
   }
 
   .overlay-content h1 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .overlay-content p {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
 }

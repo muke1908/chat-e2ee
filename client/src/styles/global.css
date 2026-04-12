@@ -1,21 +1,34 @@
 /**
- * Global CSS variables
+ * Global CSS variables – hacker / terminal dark theme
  */
 
 :root {
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --bg: #0f172a;
-  --card-bg: rgba(30, 41, 59, 0.7);
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --danger: #ef4444;
-  --success: #10b981;
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  /* Palette */
+  --primary: #00ff41;
+  --primary-hover: #33ff6a;
+  --primary-dim: rgba(0, 255, 65, 0.12);
+  --bg: #080808;
+  --surface: #0d0d0d;
+  --surface-alt: #111111;
+  --text: #d4ffd4;
+  --text-bright: #00ff41;
+  --text-muted: #4d8c5e;
+  --danger: #ff2244;
+  --danger-hover: #cc1133;
+  --success: #00ff41;
+  --accent: #00ccff;
+  --glass: rgba(0, 255, 65, 0.03);
+  --glass-border: rgba(0, 255, 65, 0.18);
+
+  /* Glows */
+  --glow-sm: 0 0 6px rgba(0, 255, 65, 0.25);
+  --glow-md: 0 0 14px rgba(0, 255, 65, 0.35);
+  --glow-lg: 0 0 28px rgba(0, 255, 65, 0.4);
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -28,15 +41,34 @@ body {
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   background-color: var(--bg);
   color: var(--text);
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background-image: radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
-    radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
+
+  /* Subtle terminal grid */
+  background-image:
+    linear-gradient(rgba(0, 255, 65, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* CRT scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.06) 3px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
 }
 
 #root,
@@ -48,39 +80,37 @@ body {
   padding: 20px;
 }
 
+/* Terminal surface (replaces glassmorphism) */
 .glass {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 10, 0, 0.92);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: var(--glow-sm), inset 0 0 40px rgba(0, 0, 0, 0.5);
 }
 
 .hidden {
   display: none !important;
 }
 
-/* Scrollbar styling */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 255, 65, 0.03);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.4);
-  border-radius: 4px;
+  background: rgba(0, 255, 65, 0.25);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.6);
+  background: rgba(0, 255, 65, 0.45);
 }
 
-/* Mobile responsive */
+/* Mobile */
 @media (max-width: 480px) {
-
   #root,
   #app {
     padding: 0;

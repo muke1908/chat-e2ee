@@ -1,23 +1,22 @@
 /**
- * Message bubble styles
+ * Message bubble styles – terminal theme
  */
 
 .message {
-  max-width: 70%;
-  padding: 0.75rem 1rem;
-  border-radius: 1.25rem;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  max-width: 72%;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.2rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
   position: relative;
-  animation: slideUp 0.3s ease-out;
+  animation: msgIn 0.2s ease-out;
 }
 
-@keyframes slideUp {
+@keyframes msgIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -26,37 +25,58 @@
 
 .message.sent {
   align-self: flex-end;
-  background: var(--primary);
-  border-bottom-right-radius: 0.25rem;
-  color: white;
-  margin-left: auto;
+  background: rgba(0, 50, 10, 0.8);
+  border: 1px solid rgba(0, 255, 65, 0.35);
+  border-bottom-right-radius: 0;
+  color: var(--text);
+  box-shadow: var(--glow-sm);
 }
 
 .message.received {
   align-self: flex-start;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-bottom-left-radius: 0.25rem;
+  background: rgba(0, 8, 0, 0.9);
+  border: 1px solid rgba(0, 255, 65, 0.15);
+  border-bottom-left-radius: 0;
+}
+
+/* Small left marker on received messages */
+.message.received::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60%;
+  background: rgba(0, 255, 65, 0.3);
+  border-radius: 1px;
 }
 
 .message-text {
   word-wrap: break-word;
   overflow-wrap: break-word;
+  color: var(--text);
+}
+
+.message.sent .message-text {
+  color: #c8ffcc;
 }
 
 .message-meta {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 0.25rem;
+  font-size: 0.63rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
   display: flex;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  letter-spacing: 0.03em;
+  opacity: 0.7;
 }
 
 /* Mobile responsive */
 @media (max-width: 480px) {
   .message {
-    max-width: 85%;
-    font-size: 0.9rem;
+    max-width: 86%;
+    font-size: 0.85rem;
   }
 }
