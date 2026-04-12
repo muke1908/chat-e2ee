@@ -42,11 +42,11 @@ export interface IUtils {
 
 /**
  * Pluggable encryption strategy passed to createChatInstance().
- * Omit either field to keep the default implementation.
+ * Both fields are required.
  */
 export interface EncryptionStrategy {
-    symmetric?: ISymmetricEncryption;
-    asymmetric?: IAsymmetricEncryption;
+    symmetric: ISymmetricEncryption;
+    asymmetric: IAsymmetricEncryption;
 }
 
 export type { ISymmetricEncryption, IAsymmetricEncryption };
