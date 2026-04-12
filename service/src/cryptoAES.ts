@@ -6,7 +6,7 @@ export interface ISymmetricEncryption {
     /** Generate / initialise the local encryption key. Idempotent. */
     init(): Promise<void>;
     /** Encrypt a raw data buffer. Returns the ciphertext and the IV used. */
-    encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array<ArrayBuffer>; iv: Uint8Array<ArrayBuffer> }>;
+    encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array; iv: Uint8Array }>;
     /** Decrypt a ciphertext buffer using the previously imported remote key. */
     decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer>;
     /** Serialise the local key to a string for transmission (e.g. JWK JSON). */
@@ -53,12 +53,12 @@ export class AesGcmEncryption implements ISymmetricEncryption {
         );
     }
 
-    public async encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array<ArrayBuffer>; iv: Uint8Array<ArrayBuffer> }> {
+    public async encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array; iv: Uint8Array }> {
         if (!this.aesKeyLocal) {
             throw new Error('Local AES key not generated.');
         }
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const encryptedData = await crypto.subtle.encrypt(
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const encryptedData = await window.crypto.subtle.encrypt(
             { name: "AES-GCM", iv },
             this.aesKeyLocal,
             data
@@ -70,7 +70,7 @@ export class AesGcmEncryption implements ISymmetricEncryption {
         if (!this.aesKeyRemote) {
             throw new Error('Remote AES key not set.');
         }
-        return crypto.subtle.decrypt(
+        return window.crypto.subtle.decrypt(
             { name: "AES-GCM", iv },
             this.aesKeyRemote,
             data
