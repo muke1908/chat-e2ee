@@ -8,6 +8,8 @@ RUN npm install
 
 RUN npm run build
 
+RUN npm run server:build
+
 # todo - multi part build (lets us slim down container to not unclude all the webpack stuff)
 
 FROM node:lts-alpine
