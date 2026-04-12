@@ -1,5 +1,5 @@
 /**
- * Input component styles
+ * Input component styles – terminal theme
  */
 
 .input-group {
@@ -9,35 +9,48 @@
 
 .input-label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  margin-bottom: 0.4rem;
   font-weight: 600;
+}
+
+.input-label::before {
+  content: '> ';
+  opacity: 0.6;
 }
 
 .input-field {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--glass-border);
-  border-radius: 0.75rem;
-  color: white;
+  padding: 0.7rem 1rem;
+  background: rgba(0, 5, 0, 0.85);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  border-radius: 0.2rem;
+  color: var(--text);
   font-family: inherit;
-  font-size: 1rem;
-  transition: all 0.2s;
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  caret-color: var(--primary);
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 .input-field:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(0, 0, 0, 0.4);
+  box-shadow: var(--glow-sm);
+  background: rgba(0, 8, 0, 0.95);
 }
 
 .input-field:read-only {
-  cursor: not-allowed;
-  opacity: 0.8;
+  cursor: default;
+  color: var(--text-muted);
+  border-color: rgba(0, 255, 65, 0.1);
 }
 
 /* Copy input container */

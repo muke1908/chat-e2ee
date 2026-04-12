@@ -1,90 +1,92 @@
 /**
- * Call overlay styles
+ * Call overlay styles – terminal theme
  */
 
 .blur-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 200;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(0, 0, 0, 0.88);
   padding: 1rem;
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .call-info {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+/* Terminal-style pulsing avatar */
 .call-avatar {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  background: var(--glass);
-  margin: 0 auto 1.5rem;
+  background: rgba(0, 10, 0, 0.9);
+  margin-bottom: 1rem;
   border: 2px solid var(--primary);
+  box-shadow: var(--glow-md), inset var(--glow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.call-avatar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--primary-dim), transparent 60%);
 }
 
 .shimmer {
-  background: linear-gradient(90deg, var(--glass) 25%, rgba(99, 102, 241, 0.2) 50%, var(--glass) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: callPulse 1.8s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
+@keyframes callPulse {
+  0%, 100% { box-shadow: var(--glow-md), inset var(--glow-sm); }
+  50%       { box-shadow: var(--glow-lg), inset var(--glow-md); }
 }
 
 .call-status {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  text-shadow: var(--glow-md);
 }
 
 .call-duration {
   color: var(--text-muted);
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Mobile responsive */
 @media (max-width: 480px) {
-  .blur-overlay {
-    padding: 1rem;
-  }
-
   .call-avatar {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
   }
 
   .call-status {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
   }
 
   .call-duration {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 }

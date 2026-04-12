@@ -1,23 +1,28 @@
 /**
- * Create hash view styles
+ * Create hash view styles – terminal theme
  */
 
 .create-hash-view {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .copy-feedback {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--success);
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
   display: block;
+  letter-spacing: 0.06em;
+}
+
+.copy-feedback::before {
+  content: '✓ ';
 }
 
 .button-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 0.875rem;
+  margin-top: 0.5rem;
 }

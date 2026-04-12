@@ -1,23 +1,23 @@
 /**
- * Chat container styles
+ * Chat container styles – terminal theme
  */
 
 #chat-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 820px;
   height: 100%;
-  max-height: 800px;
+  max-height: 820px;
   display: flex;
   flex-direction: column;
-  border-radius: 2rem;
+  border-radius: 0.25rem;
   overflow: hidden;
-  opacity: 1;
-  transition: all 0.3s ease;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glow-sm), 0 0 60px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 8, 0, 0.95);
 }
 
 #chat-container.hidden {
   display: none;
-  opacity: 0;
 }
 
 /* Mobile responsive */
@@ -26,5 +26,6 @@
     max-width: 100%;
     max-height: 100%;
     border-radius: 0;
+    border: none;
   }
 }
