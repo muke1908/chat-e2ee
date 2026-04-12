@@ -46,7 +46,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, rgba(0, 255, 65, 0.12), transparent 60%);
+  background: radial-gradient(circle at 40% 35%, var(--primary-dim), transparent 60%);
 }
 
 .shimmer {

@@ -42,13 +42,13 @@
 
 .status-dot.connected {
   background: var(--success);
-  box-shadow: 0 0 6px var(--success), 0 0 12px rgba(0, 255, 65, 0.5);
+  box-shadow: var(--glow-md);
   animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 6px var(--success), 0 0 12px rgba(0, 255, 65, 0.5); }
-  50%       { box-shadow: 0 0 3px var(--success), 0 0 6px rgba(0, 255, 65, 0.25); }
+  0%, 100% { box-shadow: var(--glow-md); }
+  50%       { box-shadow: var(--glow-sm); }
 }
 
 .channel-title {
