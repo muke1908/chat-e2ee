@@ -68,8 +68,8 @@ class ChatE2EE implements IChatE2EE {
     constructor(config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy) {
         config && setConfig(config);
         const defaults = EncryptionFactory.create();
-        this.symEncryption = encryptionStrategy?.symmetric ?? defaults.symmetric!;
-        this.asymEncryption = encryptionStrategy?.asymmetric ?? defaults.asymmetric!;
+        this.symEncryption = encryptionStrategy?.symmetric ?? defaults.symmetric;
+        this.asymEncryption = encryptionStrategy?.asymmetric ?? defaults.asymmetric;
     }
 
     public async init(): Promise<void> {
