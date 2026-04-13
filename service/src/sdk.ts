@@ -1,12 +1,11 @@
-import { type ISymmetricEncryption } from './cryptoAES';
+export { AesGcmEncryption } from './cryptoAES';
 import { setConfig } from './configContext';
 import { cryptoUtils } from './cryptoRSA';
-import { type IAsymmetricEncryption } from './cryptoRSA';
 import { EncryptionFactory } from './encryptionFactory';
 import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
-import { configType, type EncryptionStrategy, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
+import { configType, type IChatE2EE, type ISendMessageReturn, type ISymmetricEncryption, type LinkObjType, type TypeUsersInChannel } from './public/types';
 import { getPublicKey, sharePublicKey } from './publicKey';
 import sendMessage from './sendMessage';
 import { SocketInstance, type SubscriptionType } from './socket/socket';
@@ -22,9 +21,9 @@ export const utils = {
 }
 
 const logger = new Logger();
-export const createChatInstance = (config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy): IChatE2EE => {
+export const createChatInstance = (config?: Partial<configType>): IChatE2EE => {
     logger.log('Creating new instance');
-    return new ChatE2EE(config, encryptionStrategy);
+    return new ChatE2EE(config);
 }
 
 export type chatJoinPayloadType = {
@@ -54,22 +53,21 @@ class ChatE2EE implements IChatE2EE {
     private call?: WebRTCCall;
     private iceCandidates: any[] = [];
 
-    private symEncryption: ISymmetricEncryption;
-    private asymEncryption: IAsymmetricEncryption;
+    private readonly symEncryption: ISymmetricEncryption;
+    private readonly asymEncryption = cryptoUtils;
 
     private setupCallSubs(call: WebRTCCall): void {
         call.on('state-changed', (state) => {
-            if(state === 'failed' || state === 'closed') {
+            if (state === 'failed' || state === 'closed') {
                 this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
                 this.endCall();
             }
         })
     }
-    constructor(config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy) {
+    constructor(config?: Partial<configType>) {
         config && setConfig(config);
-        const defaults = EncryptionFactory.create();
-        this.symEncryption = encryptionStrategy?.symmetric ?? defaults.symmetric;
-        this.asymEncryption = encryptionStrategy?.asymmetric ?? defaults.asymmetric;
+        // If an explicit protocol instance is provided, use it; otherwise, use the factory with defaults
+        this.symEncryption = config?.encryptionProtocol || EncryptionFactory.create().symmetric;
     }
 
     public async init(): Promise<void> {
@@ -86,9 +84,9 @@ class ChatE2EE implements IChatE2EE {
         this.on('on-alice-join', async () => {
             evetLogger.log("Receiver connected.");
             await this.getPublicKey(initLogger);
-            // Now that we have the receiver's RSA public key, share AES key encrypted with it
+            // Now that we have the receiver's RSA public key, share symmetric key material
             if (this.receiverPublicKey) {
-                await this.shareEncryptedAesKey();
+                await this.shareSymmetricKeyMaterial();
             }
         })
 
@@ -103,7 +101,7 @@ class ChatE2EE implements IChatE2EE {
          */
         this.on('webrtc-session-description', (data: any) => {
             evetLogger.log("New session description");
-            if(data.type === 'offer') {
+            if (data.type === 'offer') {
                 evetLogger.log("New offer");
                 this.call = this.getWebRtcCall();
                 this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
@@ -115,30 +113,30 @@ class ChatE2EE implements IChatE2EE {
                 })
                 this.iceCandidates = [];
 
-            }else if(data.type === 'answer') {
+            } else if (data.type === 'answer') {
                 evetLogger.log("New answer");
                 this.call!.signal(data);
-            }else if(data.type === 'candidate') {
+            } else if (data.type === 'candidate') {
                 evetLogger.log('ICE Candidate received.');
-                if(!this.call) {
+                if (!this.call) {
                     evetLogger.log("call not created yet, storing ICE candidate");
                     this.iceCandidates.push(data);
-                }else {
+                } else {
                     this.call.signal(data);
                 }
             }
         });
 
 
-        initLogger.log(`Initializing symmetric Encryption for webrtc`);
+        initLogger.log(`Initializing symmetric encryption for WebRTC`);
         await this.symEncryption.init();
-        initLogger.log(`Initialized symmetric Encryption for webrtc`);
+        initLogger.log(`Initialized symmetric encryption for WebRTC`);
         initLogger.log(`Finished.`);
         this.initialized = true;
     }
 
     public get activeCall(): E2ECall | null {
-        if(!this.call) {
+        if (!this.call) {
             return null;
         }
         return new E2ECall(this.call);
@@ -151,17 +149,17 @@ class ChatE2EE implements IChatE2EE {
 
     public async setChannel(channelId: string, userId: string, userName?: string): Promise<void> {
         this.checkInitialized();
-        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId,userName })}`);
+        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId, userName })}`);
         this.channelId = channelId;
         this.userId = userId;
 
         // Share RSA public key (without AES key until we have receiver's RSA public key)
-        await sharePublicKey({ aesKey: null, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
-        this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId!})
+        await sharePublicKey({ aesKey: null, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
+        this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId! })
         await this.getPublicKey(logger);
-        // If the receiver's RSA public key is now known, share AES key encrypted with it
+        // If the receiver's RSA public key is now known, share symmetric key material
         if (this.receiverPublicKey) {
-            await this.shareEncryptedAesKey();
+            await this.shareSymmetricKeyMaterial();
         }
         return;
     }
@@ -207,11 +205,11 @@ class ChatE2EE implements IChatE2EE {
     public on(listener: string, callback: (...args: any[]) => void): void {
         const loggerWithCount = this.subscriptionLogger.count();
         let subscriptions = this.subscriptions;
-        
-        if(peerConnectionEvents.includes(listener as PeerConnectionEventType)) {
+
+        if (peerConnectionEvents.includes(listener as PeerConnectionEventType)) {
             subscriptions = this.callSubscriptions;
         }
-        
+
         const sub = this.subscriptions.get(listener);
         if (sub) {
             if (sub.has(callback)) {
@@ -243,10 +241,10 @@ class ChatE2EE implements IChatE2EE {
     }
 
     public async startCall(): Promise<E2ECall> {
-        if(!WebRTCCall.isSupported()) {
+        if (!WebRTCCall.isSupported()) {
             throw new Error('createEncodedStreams not supported.');
         }
-        if(this.call) {
+        if (this.call) {
             throw new Error('Call already active');
         }
         const webrtcCall = this.getWebRtcCall();
@@ -258,7 +256,7 @@ class ChatE2EE implements IChatE2EE {
     public async endCall(): Promise<void> {
         this.call?.endCall();
         this.call = undefined;
-        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());   
+        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());
     }
 
     //get receiver public key
@@ -267,19 +265,17 @@ class ChatE2EE implements IChatE2EE {
         const receiverPublicKey = await getPublicKey({ userId: this.userId, channelId: this.channelId });
         logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
         this.receiverPublicKey = receiverPublicKey?.publicKey;
-        if(receiverPublicKey.aesKey) {
-            // symmetric key is asymmetrically-encrypted ciphertext; decrypt it with our private key
-            const decryptedKeyMaterial = await this.asymEncryption.decryptMessage(receiverPublicKey.aesKey, this.privateKey!);
-            await this.symEncryption.importRemoteKey(decryptedKeyMaterial);
+        if (receiverPublicKey.aesKey) {
+            // ECDH public key is sent unencrypted in the aesKey field
+            await this.symEncryption.importRemoteKey(receiverPublicKey.aesKey);
         }
         return;
     }
 
-    // Encrypt local AES key with receiver's RSA public key and share it
-    private async shareEncryptedAesKey(): Promise<void> {
-        const exportedKey = await this.symEncryption.exportKey();
-        const encryptedAesKey = await this.asymEncryption.encryptMessage(exportedKey, this.receiverPublicKey!);
-        await sharePublicKey({ aesKey: encryptedAesKey, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
+    // Share ECDH public key unencrypted in the aesKey field
+    private async shareSymmetricKeyMaterial(): Promise<void> {
+        const publicEcdhKeyJwk = await this.symEncryption.exportKey();
+        await sharePublicKey({ aesKey: publicEcdhKeyJwk, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
     }
 
     private createSocketSubcription(): void {
@@ -288,7 +284,7 @@ class ChatE2EE implements IChatE2EE {
     }
 
     private checkInitialized(): void {
-        if(!this.initialized) {
+        if (!this.initialized) {
             throw new Error('ChatE2EE is not initialized, call init()');
         }
     }
@@ -307,4 +303,3 @@ class ChatE2EE implements IChatE2EE {
 }
 
 export * from './public/types';
-export { EncryptionFactory, type EncryptionStrategyConfig, type BuiltinSymmetricStrategy, type BuiltinAsymmetricStrategy } from './encryptionFactory';

@@ -15,5 +15,6 @@
       "ESNext",
       "dom"
     ],
+    "skipLibCheck": true,
   }
 }

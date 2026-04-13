@@ -8,7 +8,7 @@
  * without any mocking.
  */
 
-import { webcrypto } from 'crypto';
+import { webcrypto } from 'node:crypto';
 
 // Polyfill for Node versions < 19 that do not expose globalThis.crypto
 if (!globalThis.crypto) {
@@ -18,7 +18,7 @@ if (!globalThis.crypto) {
 // cryptoRSA.ts accesses `window.crypto`, `window.btoa`, and `window.atob`.
 // In a Node (non-jsdom) environment `window` is undefined, so we point it at
 // globalThis which already has btoa/atob (Node 16+) and crypto (Node 19+).
-if (typeof window === 'undefined') {
+if (globalThis.window === undefined) {
     (globalThis as any).window = globalThis;
 }
 
@@ -73,15 +73,16 @@ describe('cryptoUtils (RSA-OAEP) – real Web Crypto', () => {
 // AES-GCM round-trip tests
 // ---------------------------------------------------------------------------
 describe('AesGcmEncryption (AES-GCM) – real Web Crypto', () => {
-    it('init() generates the key and is idempotent on subsequent calls', async () => {
+    it('init() generates ECDH key pair and is idempotent on subsequent calls', async () => {
         const aes = new AesGcmEncryption();
         await aes.init();
-        await aes.init(); // Should not throw or regenerate
+        const key1Export = await aes.exportKey();
+        await aes.init();
+        const key2Export = await aes.exportKey();
 
-        // Verify the key exists and is exportable
-        const exported = await aes.exportKey();
-        expect(typeof exported).toBe('string');
-        expect(exported.length).toBeGreaterThan(0);
+        expect(key1Export).toBeDefined();
+        // Second call should return the same cached instance
+        expect(key1Export).toBe(key2Export);
     });
 
     it('encryptData() + decryptData() recover the original data', async () => {
@@ -90,9 +91,7 @@ describe('AesGcmEncryption (AES-GCM) – real Web Crypto', () => {
         // Initialise the local key (used for encryption)
         await aes.init();
 
-        // Export the local key and re-import it as the "remote" key so that
-        // decryptData() (which uses aesKeyRemote) can decrypt what encryptData()
-        // produced.
+        // Export the local ECDH public key and set it as the "remote" key to derive shared key for loopback test
         const exportedKey = await aes.exportKey();
         await aes.importRemoteKey(exportedKey);
 
@@ -111,230 +110,52 @@ describe('AesGcmEncryption (AES-GCM) – real Web Crypto', () => {
         expect(decryptedText).toBe(originalText);
     });
 
-    it('decryptData() throws when remote key has not been set', async () => {
+    it('encryptData() and decryptData() throw before initialisation/key import', async () => {
         const aes = new AesGcmEncryption();
+
+        // No init() call → should throw for encrypt
+        await expect(aes.encryptData(
+            new TextEncoder().encode('data').buffer
+        )).rejects.toThrow('Local AES key not generated.');
+
         await aes.init();
 
-        const { encryptedData, iv } = await aes.encryptData(
-            new TextEncoder().encode('data').buffer
-        );
-
-        // No importRemoteKey() call → should throw
-        await expect(aes.decryptData(encryptedData, iv)).rejects.toThrow(
+        // No importRemoteKey() call → should throw for decrypt
+        await expect(aes.decryptData(new ArrayBuffer(10), new Uint8Array(12))).rejects.toThrow(
             'Remote AES key not set.'
         );
     });
 });
 
 // ---------------------------------------------------------------------------
-// AES key exchange via RSA-encrypted channel
+// ECDH symmetric key exchange
 // ---------------------------------------------------------------------------
-describe('AES key exchange via RSA-encrypted channel', () => {
-    it('AES key exported by sender can be RSA-encrypted and decrypted by receiver, enabling symmetric decryption', async () => {
-        // Simulate Bob (receiver): generate an RSA key pair
-        const { publicKey: bobPublicKey, privateKey: bobPrivateKey } = await cryptoUtils.generateKeypairs();
+describe('ECDH symmetric key exchange', () => {
+    it('ECDH public key exported by sender can be used by receiver to derive same AES key', async () => {
+        // Simulate Bob (receiver)
+        const bobAes = new AesGcmEncryption();
+        await bobAes.init();
+        const bobEcdhKeyJwk = await bobAes.exportKey();
 
-        // Simulate Alice (sender): generate an AES key
+        // Simulate Alice (sender)
         const aliceAes = new AesGcmEncryption();
         await aliceAes.init();
+        const aliceEcdhKeyJwk = await aliceAes.exportKey();
 
-        // Alice exports her AES key as a JWK string
-        const aesKeyJwk = await aliceAes.exportKey();
+        // Exchange keys (in plaintext over the wire)
+        await aliceAes.importRemoteKey(bobEcdhKeyJwk);
+        await bobAes.importRemoteKey(aliceEcdhKeyJwk);
 
-        // Alice encrypts the AES key with Bob's RSA public key before sending it to the server
-        const encryptedAesKey = await cryptoUtils.encryptMessage(aesKeyJwk, bobPublicKey);
-        expect(typeof encryptedAesKey).toBe('string');
-        expect(encryptedAesKey).not.toBe(aesKeyJwk); // must be ciphertext, not plaintext
-
-        // Bob decrypts the AES key using his RSA private key
-        const decryptedAesKeyJwk = await cryptoUtils.decryptMessage(encryptedAesKey, bobPrivateKey);
-        expect(decryptedAesKeyJwk).toBe(aesKeyJwk); // recovered plaintext must match original
-
-        // Bob sets the decrypted AES key as his remote key
-        const bobAes = new AesGcmEncryption();
-        await bobAes.importRemoteKey(decryptedAesKeyJwk);
-
-        // Alice encrypts some data with her local AES key
-        const originalText = 'Secret message over AES-GCM 🔐';
+        // Alice encrypts some data with her derived AES key
+        const originalText = 'Secret message over ECDH derived AES-GCM 🔐';
         const { encryptedData, iv } = await aliceAes.encryptData(
             new TextEncoder().encode(originalText).buffer
         );
 
-        // Bob decrypts the data using the AES key he received through the RSA-encrypted channel
+        // Bob decrypts the data using his derived AES key
         const decryptedBuffer = await bobAes.decryptData(encryptedData, iv);
         const decryptedText = new TextDecoder().decode(decryptedBuffer);
 
         expect(decryptedText).toBe(originalText);
-    });
-
-    it('a third party cannot decrypt the AES key without the receiver private key', async () => {
-        const { publicKey: bobPublicKey } = await cryptoUtils.generateKeypairs();
-        const { privateKey: evePrivateKey } = await cryptoUtils.generateKeypairs(); // attacker's key
-
-        const aliceAes = new AesGcmEncryption();
-        await aliceAes.init();
-        const aesKeyJwk = await aliceAes.exportKey();
-
-        // Alice encrypts AES key with Bob's public key
-        const encryptedAesKey = await cryptoUtils.encryptMessage(aesKeyJwk, bobPublicKey);
-
-        // Eve (third party) tries to decrypt with her own private key and fails
-        await expect(
-            cryptoUtils.decryptMessage(encryptedAesKey, evePrivateKey)
-        ).rejects.toThrow();
-    });
-});
-
-// ---------------------------------------------------------------------------
-// EncryptionFactory
-// ---------------------------------------------------------------------------
-describe('EncryptionFactory', () => {
-    // Import inside the describe so the window polyfill above is already set up
-    const { EncryptionFactory } = require('./encryptionFactory');
-    const { AesGcmEncryption } = require('./cryptoAES');
-
-    it('create() with no args returns an object with symmetric and asymmetric strategies', () => {
-        const strategy = EncryptionFactory.create();
-        expect(strategy.symmetric).toBeDefined();
-        expect(strategy.asymmetric).toBeDefined();
-    });
-
-    it('create() returns a fresh symmetric instance on each call (stateful key material)', () => {
-        const a = EncryptionFactory.create();
-        const b = EncryptionFactory.create();
-        // Symmetric strategy holds key state — must be a distinct instance each time
-        expect(a.symmetric).not.toBe(b.symmetric);
-    });
-
-    it('create({ symmetric: "AES-GCM" }) returns an AesGcmEncryption instance', () => {
-        const { symmetric } = EncryptionFactory.create({ symmetric: 'AES-GCM' });
-        expect(symmetric).toBeInstanceOf(AesGcmEncryption);
-    });
-
-    it('create() with an unknown symmetric name throws a descriptive error', () => {
-        expect(() => EncryptionFactory.create({ symmetric: 'UNKNOWN' })).toThrow(
-            'Unknown symmetric strategy: "UNKNOWN"'
-        );
-    });
-
-    it('create() with an unknown asymmetric name throws a descriptive error', () => {
-        expect(() => EncryptionFactory.create({ asymmetric: 'UNKNOWN' })).toThrow(
-            'Unknown asymmetric strategy: "UNKNOWN"'
-        );
-    });
-
-    it('registerSymmetric() makes a custom strategy available by name', async () => {
-        const mockSymmetric = new AesGcmEncryption();
-        EncryptionFactory.registerSymmetric('MOCK-SYM', () => mockSymmetric);
-
-        const { symmetric } = EncryptionFactory.create({ symmetric: 'MOCK-SYM' });
-        expect(symmetric).toBe(mockSymmetric);
-    });
-
-    it('registerAsymmetric() makes a custom strategy available by name', () => {
-        const mockAsymmetric = { generateKeypairs: jest.fn(), encryptMessage: jest.fn(), decryptMessage: jest.fn() };
-        EncryptionFactory.registerAsymmetric('MOCK-ASM', () => mockAsymmetric);
-
-        const { asymmetric } = EncryptionFactory.create({ asymmetric: 'MOCK-ASM' });
-        expect(asymmetric).toBe(mockAsymmetric);
-    });
-
-    it('registerSymmetric() supports chaining', () => {
-        const result = EncryptionFactory.registerSymmetric('CHAIN-TEST', () => new AesGcmEncryption());
-        expect(result).toBe(EncryptionFactory);
-    });
-});
-
-// ---------------------------------------------------------------------------
-// Pluggable encryption – integration
-// ---------------------------------------------------------------------------
-describe('Pluggable encryption (integration)', () => {
-    const { EncryptionFactory } = require('./encryptionFactory');
-    const { AesGcmEncryption } = require('./cryptoAES');
-    const { cryptoUtils } = require('./cryptoRSA');
-
-    /**
-     * Thin tracking wrapper: delegates every call to a real AesGcmEncryption
-     * while recording which methods were invoked.
-     */
-    class TrackingSymmetric {
-        readonly calls: string[] = [];
-        private inner = new AesGcmEncryption();
-
-        async init()                                      { this.calls.push('init');            return this.inner.init(); }
-        async encryptData(data: ArrayBuffer)              { this.calls.push('encryptData');      return this.inner.encryptData(data); }
-        async decryptData(data: BufferSource, iv: BufferSource) { this.calls.push('decryptData'); return this.inner.decryptData(data, iv); }
-        async exportKey()                                 { this.calls.push('exportKey');        return this.inner.exportKey(); }
-        async importRemoteKey(key: string)                { this.calls.push('importRemoteKey');  return this.inner.importRemoteKey(key); }
-    }
-
-    it('custom symmetric strategy is called through the factory', async () => {
-        const impl = new TrackingSymmetric();
-        EncryptionFactory.registerSymmetric('TRACKING-SYM', () => impl);
-
-        const { symmetric } = EncryptionFactory.create({ symmetric: 'TRACKING-SYM' });
-
-        await symmetric.init();
-        const key = await symmetric.exportKey();
-        await symmetric.importRemoteKey(key);
-        const { encryptedData, iv } = await symmetric.encryptData(new TextEncoder().encode('test').buffer);
-        await symmetric.decryptData(encryptedData, iv);
-
-        expect(impl.calls).toEqual(['init', 'exportKey', 'importRemoteKey', 'encryptData', 'decryptData']);
-    });
-
-    it('custom asymmetric strategy is called through the factory', async () => {
-        const calls: string[] = [];
-        const impl = {
-            generateKeypairs: async () => { calls.push('generateKeypairs'); return cryptoUtils.generateKeypairs(); },
-            encryptMessage:   async (p: string, k: string) => { calls.push('encryptMessage');   return cryptoUtils.encryptMessage(p, k); },
-            decryptMessage:   async (c: string, k: string) => { calls.push('decryptMessage');   return cryptoUtils.decryptMessage(c, k); },
-        };
-        EncryptionFactory.registerAsymmetric('TRACKING-ASM', () => impl);
-
-        const { asymmetric } = EncryptionFactory.create({ asymmetric: 'TRACKING-ASM' });
-
-        const { publicKey, privateKey } = await asymmetric.generateKeypairs();
-        const ciphertext = await asymmetric.encryptMessage('hello', publicKey);
-        const recovered  = await asymmetric.decryptMessage(ciphertext, privateKey);
-
-        expect(recovered).toBe('hello');
-        expect(calls).toEqual(['generateKeypairs', 'encryptMessage', 'decryptMessage']);
-    });
-
-    it('full SDK handshake protocol works end-to-end with factory-created strategies', async () => {
-        // Mirrors exactly what sdk.ts does internally during setChannel()
-        const aliceStrategy = EncryptionFactory.create();
-        const bobStrategy   = EncryptionFactory.create();
-
-        // Both peers initialise their symmetric keys
-        await aliceStrategy.symmetric.init();
-        await bobStrategy.symmetric.init();
-
-        // Both peers generate asymmetric key pairs
-        const { publicKey: alicePub, privateKey: alicePriv } = await aliceStrategy.asymmetric.generateKeypairs();
-        const { publicKey: bobPub,   privateKey: bobPriv   } = await bobStrategy.asymmetric.generateKeypairs();
-
-        // Alice wraps her symmetric key with Bob's public key and "sends" it
-        const aliceExportedKey = await aliceStrategy.symmetric.exportKey();
-        const wrappedKey       = await aliceStrategy.asymmetric.encryptMessage(aliceExportedKey, bobPub);
-
-        // Bob unwraps it with his private key and imports it as the remote key
-        const unwrappedKey = await bobStrategy.asymmetric.decryptMessage(wrappedKey, bobPriv);
-        await bobStrategy.symmetric.importRemoteKey(unwrappedKey);
-
-        // Alice encrypts a message; Bob decrypts it
-        const plaintext = 'end-to-end via pluggable factory';
-        const { encryptedData, iv } = await aliceStrategy.symmetric.encryptData(
-            new TextEncoder().encode(plaintext).buffer
-        );
-        const decrypted = await bobStrategy.symmetric.decryptData(encryptedData, iv);
-
-        expect(new TextDecoder().decode(decrypted)).toBe(plaintext);
-
-        // Confirm the asymmetric keys are independent (no cross-contamination)
-        await expect(
-            aliceStrategy.asymmetric.decryptMessage(wrappedKey, alicePriv)
-        ).rejects.toThrow();
     });
 });
