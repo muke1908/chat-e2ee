@@ -14,11 +14,19 @@ interface InitialActionsProps {
 export const InitialActions: React.FC<InitialActionsProps> = ({ onCreateClick, onJoinClick }) => {
   return (
     <div className="initial-actions">
+      {/* 1. Added a custom heading/subtext to notice right away */}
+      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <p style={{ color: '#00ff00', fontSize: '14px', fontFamily: 'monospace' }}>
+          &gt; SYSTEM STATUS: READY_TO_CONNECT
+        </p>
+      </div>
+
       <Button variant="primary" size="large" onClick={onCreateClick}>
-        Create New Channel
+        Start New Secure Chat
       </Button>
+      
       <Button variant="secondary" size="large" onClick={onJoinClick}>
-        Already have a Hash?
+        Have an invite hash?
       </Button>
     </div>
   );
