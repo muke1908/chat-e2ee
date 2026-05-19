@@ -90,7 +90,7 @@ describe('SocketInstance', () => {
     describe('constructor', () => {
         it('registers handlers for all six socket events', () => {
             const subs = makeSubscriptions();
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
 
             const registeredEvents = [...fakeSocket._handlers.keys()];
             expect(registeredEvents).toEqual(
@@ -109,7 +109,7 @@ describe('SocketInstance', () => {
         it('connects to the URL returned by configContext', () => {
             const socketIOClient = require('socket.io-client').default;
             const subs = makeSubscriptions();
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
 
             expect(socketIOClient).toHaveBeenCalledWith('http://localhost:3001/');
         });
@@ -163,7 +163,7 @@ describe('SocketInstance', () => {
                 const subs = makeSubscriptions([event]);
                 subs.get(event)!.add(callback);
 
-                new SocketInstance(() => subs, makeLogger());
+                const _instance = new SocketInstance(() => subs, makeLogger());
                 fakeSocket.fire(event, { data: 'payload' });
 
                 expect(callback).toHaveBeenCalledTimes(1);
@@ -178,7 +178,7 @@ describe('SocketInstance', () => {
             subs.get('on-alice-join')!.add(cb1);
             subs.get('on-alice-join')!.add(cb2);
 
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
             fakeSocket.fire('on-alice-join');
 
             expect(cb1).toHaveBeenCalledTimes(1);
@@ -187,7 +187,7 @@ describe('SocketInstance', () => {
 
         it('does not throw when no subscribers exist for a fired event', () => {
             const subs = makeSubscriptions(); // empty map
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
 
             expect(() => fakeSocket.fire('limit-reached')).not.toThrow();
         });
@@ -201,7 +201,7 @@ describe('SocketInstance', () => {
             const subs = makeSubscriptions(['chat-message']);
             subs.get('chat-message')!.add(callback);
 
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
 
             const msg = { channel: 'ch-1', sender: 'user-1', id: 'msg-42', text: 'hi' };
             fakeSocket.fire('chat-message', msg);
@@ -211,7 +211,7 @@ describe('SocketInstance', () => {
 
         it('emits a "received" acknowledgement after delivering the message', () => {
             const subs = makeSubscriptions(['chat-message']);
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
 
             const msg = { channel: 'ch-1', sender: 'user-1', id: 'msg-42' };
             fakeSocket.fire('chat-message', msg);
@@ -232,7 +232,7 @@ describe('SocketInstance', () => {
 
             const subs = makeSubscriptions(['chat-message']);
             subs.get('chat-message')!.add(callback);
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
 
             fakeSocket.fire('chat-message', { channel: 'c', sender: 's', id: '1' });
 
