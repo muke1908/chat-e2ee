@@ -245,7 +245,7 @@ describe('SocketInstance', () => {
     describe('subscriptionContext reactivity', () => {
         it('reads the subscription map lazily on each event', () => {
             const subs: SubscriptionType = new Map();
-            new SocketInstance(() => subs, makeLogger());
+            const _instance = new SocketInstance(() => subs, makeLogger());
 
             // Register a callback AFTER construction
             const lateCallback = jest.fn();
