@@ -7,11 +7,11 @@
  */
 
 // ─── Polyfills (mirrors crypto.test.ts setup) ────────────────────────────────
-import { webcrypto } from 'crypto';
+import { webcrypto } from 'node:crypto';
 if (!globalThis.crypto) {
     (globalThis as any).crypto = webcrypto;
 }
-if (typeof window === 'undefined') {
+if (typeof globalThis.window === 'undefined') {
     (globalThis as any).window = globalThis;
 }
 
@@ -161,7 +161,7 @@ describe('SocketInstance', () => {
             it(`routes "${event}" to registered subscription callbacks`, () => {
                 const callback = jest.fn();
                 const subs = makeSubscriptions([event]);
-                subs.get(event)!.add(callback);
+                subs.get(event)?.add(callback);
 
                 const _instance = new SocketInstance(() => subs, makeLogger());
                 fakeSocket.fire(event, { data: 'payload' });
@@ -175,8 +175,8 @@ describe('SocketInstance', () => {
             const cb1 = jest.fn();
             const cb2 = jest.fn();
             const subs = makeSubscriptions(['on-alice-join']);
-            subs.get('on-alice-join')!.add(cb1);
-            subs.get('on-alice-join')!.add(cb2);
+            subs.get('on-alice-join')?.add(cb1);
+            subs.get('on-alice-join')?.add(cb2);
 
             const _instance = new SocketInstance(() => subs, makeLogger());
             fakeSocket.fire('on-alice-join');
@@ -199,7 +199,7 @@ describe('SocketInstance', () => {
         it('routes the message to subscription callbacks', () => {
             const callback = jest.fn();
             const subs = makeSubscriptions(['chat-message']);
-            subs.get('chat-message')!.add(callback);
+            subs.get('chat-message')?.add(callback);
 
             const _instance = new SocketInstance(() => subs, makeLogger());
 
@@ -231,7 +231,7 @@ describe('SocketInstance', () => {
             });
 
             const subs = makeSubscriptions(['chat-message']);
-            subs.get('chat-message')!.add(callback);
+            subs.get('chat-message')?.add(callback);
             const _instance = new SocketInstance(() => subs, makeLogger());
 
             fakeSocket.fire('chat-message', { channel: 'c', sender: 's', id: '1' });
