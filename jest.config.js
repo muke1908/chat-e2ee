@@ -8,4 +8,6 @@ module.exports = {
     '^.+\\.(ts|tsx)?$': 'ts-jest',
   },
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(tsx?)$',
+  coveragePathIgnorePatterns: ['/node_modules/', '/client/'], 
+  testPathIgnorePatterns: ['/node_modules/', '/e2e/'],  
 };
