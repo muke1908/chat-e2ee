@@ -212,7 +212,7 @@ class ChatE2EE implements IChatE2EE {
             subscriptions = this.callSubscriptions;
         }
         
-        const sub = this.subscriptions.get(listener);
+        const sub = subscriptions.get(listener);
         if (sub) {
             if (sub.has(callback)) {
                 loggerWithCount.log(`Skpping, subscription: ${listener}`);
