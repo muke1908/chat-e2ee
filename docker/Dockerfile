@@ -1,4 +1,4 @@
-FROM node:lts-alpine as build
+FROM node:lts-alpine AS build
 
 WORKDIR /chat-e2ee
 # todo break apart client and server dep installs/builds so that they can be cached b/w builds
@@ -8,7 +8,8 @@ RUN npm install
 
 RUN npm run build
 
-RUN npm run server:build
+# build-service-sdk compiles the service/SDK workspace (was incorrectly called server:build)
+RUN npm run build-service-sdk
 
 # todo - multi part build (lets us slim down container to not unclude all the webpack stuff)
 
