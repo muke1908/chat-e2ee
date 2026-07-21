@@ -14,7 +14,7 @@ interface SetupOverlayProps {
   isHidden: boolean;
 }
 
-type ViewType = 'initial' | 'create' | 'join';
+type ViewType = 'initial' | 'create' | 'join' | 'deleted';
 
 export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isHidden }) => {
   const { createNewChannel } = useChat();
@@ -88,8 +88,13 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
       setIsLoading(true);
       setStatus('Connecting...');
       await onSetupComplete(joinHash);
-    } catch (err) {
-      setStatus('Failed to join channel. Please check the hash and try again.');
+    } catch (err: any) {
+      if (err.message === 'CHANNEL_DELETED') {
+        setView('deleted');
+        setStatus('');
+      } else {
+        setStatus('Failed to join channel. Please check the hash and try again.');
+      }
       console.error('Join error:', err);
     } finally {
       setIsLoading(false);
@@ -125,6 +130,16 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
             onBack={handleBack}
             onJoin={handleJoinNext}
           />
+        )}
+
+        {view === 'deleted' && (
+          <div style={{ textAlign: 'center', margin: '2rem 0' }}>
+            <h2 style={{ color: '#ef4444', marginBottom: '1rem' }}>Channel Deleted</h2>
+            <p style={{ opacity: 0.8, marginBottom: '2rem' }}>This secure channel has been permanently deleted and can no longer be accessed.</p>
+            <button className="btn btn--primary" onClick={handleBack}>
+              Return Home
+            </button>
+          </div>
         )}
 
         {status && <div className="setup-status">{status}</div>}

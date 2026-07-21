@@ -57,6 +57,16 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     async (hash: string) => {
       if (!chat) throw new Error('Chat not initialized');
       try {
+        // Check for channel status before joining
+        const baseUrl = process.env.CHATE2EE_API_URL || 'http://localhost:3001';
+        const statusRes = await fetch(`${baseUrl}/api/chat-link/status/${encodeURIComponent(hash)}`);
+        if (statusRes.status === 410) {
+          throw new Error('CHANNEL_DELETED');
+        }
+        if (!statusRes.ok) {
+          throw new Error('Failed to verify channel status');
+        }
+
         // Auto-generate User ID
         const newUserId = (utils as any).generateUUID();
         setUserId(newUserId);
@@ -181,6 +191,20 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Delete channel
+  const deleteChannel = useCallback(async () => {
+    if (!chat) return;
+    try {
+      await chat.delete();
+      setIsConnected(false);
+      setChannelHash('');
+      setMessages([]);
+    } catch (err) {
+      console.error('Failed to delete channel:', err);
+      throw err;
+    }
+  }, [chat]);
+
   const value: ChatContextType = {
     chat,
     userId,
@@ -199,6 +223,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     endCall,
     addMessage,
     setCallDuration,
+    deleteChannel,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

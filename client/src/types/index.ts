@@ -49,6 +49,7 @@ export interface ChatContextType {
   endCall: () => Promise<void>;
   addMessage: (message: Message) => void;
   setCallDuration: (duration: number) => void;
+  deleteChannel: () => Promise<void>;
 }
 
 // Common component props

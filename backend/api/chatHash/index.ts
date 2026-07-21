@@ -50,13 +50,16 @@ router.get(
   "/status/:channel",
   asyncHandler(async (req, res) => {
     const { channel } = req.params;
-    const { valid } = await channelValid(channel);
+    const { valid, state } = await channelValid(channel);
 
     if (!valid) {
-      return res.sendStatus(404).send("Invalid channel");
+      if (state === CHANNEL_STATE.DELETED) {
+        return res.status(410).send({ error: "Channel deleted", state });
+      }
+      return res.status(404).send({ error: "Invalid channel", state });
     }
 
-    return res.send({ status: "ok" });
+    return res.send({ status: "ok", state });
   })
 );
 router.delete(
