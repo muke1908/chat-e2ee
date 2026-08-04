@@ -1,15 +1,15 @@
 /**
- * Join hash view styles – terminal theme
+ * Join hash view styles
  */
 
 .join-hash-view {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .button-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.875rem;
+  gap: 1rem;
 }

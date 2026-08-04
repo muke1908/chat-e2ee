@@ -104,8 +104,8 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
   return (
     <div className={`overlay ${isHidden ? 'hidden' : ''}`}>
       <div className="overlay-content glass">
-        <h1>CHAT_E2EE</h1>
-        <p>// end-to-end encrypted · zero knowledge · ephemeral</p>
+        <h1>Secure Messenger</h1>
+        <p>Simple. End-to-End Encrypted. Private.</p>
 
         {view === 'initial' && (
           <InitialActions
