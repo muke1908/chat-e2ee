@@ -19,6 +19,9 @@ interface IceCandidateSignalData {
     candidate: RTCIceCandidateInit;
 }
 
+/** Union of all signaling payload shapes exchanged over the socket connection. */
+export type WebRtcSignalPayload = SignalData | IceCandidateSignalData;
+
 /**
  * RTCRtpSender / RTCRtpReceiver extended with the non-standard
  * `createEncodedStreams()` method (Insertable Streams API).
@@ -96,12 +99,74 @@ export class WebRTCCall {
         this.peer = undefined;
     }
 
-    public signal(data: SignalData | IceCandidateSignalData): void {
+    public signal(data: WebRtcSignalPayload): void {
         this.logger.log('handling signal data');
         if(!this.peer) {
             throw new Error('No peer connection');
         }
         this.peer.signal(data);
+    }
+}
+
+/**
+ * Routes incoming WebRTC signaling messages (offer / answer / ICE candidate) to
+ * the active call.
+ *
+ * - An 'offer' creates a new call (via the injected factory) and flushes any
+ *   ICE candidates that arrived before the call existed.
+ * - 'answer' / 'candidate' are forwarded to the active call if one exists,
+ *   otherwise candidates are buffered until a call is created or attached.
+ *
+ * This consolidates signal-routing logic that previously lived in the SDK
+ * façade (sdk.ts) alongside the offer/answer/candidate handling in Peer.
+ */
+export class CallSignalRouter {
+    private call?: WebRTCCall;
+    private bufferedIceCandidates: IceCandidateSignalData[] = [];
+
+    constructor(
+        private createCall: () => WebRTCCall,
+        private onCallCreated: (call: WebRTCCall) => void,
+        private logger: Logger,
+    ) {}
+
+    public get activeCall(): WebRTCCall | undefined {
+        return this.call;
+    }
+
+    /** Register a call created outside of signal routing (e.g. an outgoing call). */
+    public attachCall(call: WebRTCCall): void {
+        this.call = call;
+    }
+
+    public handleSignal(data: WebRtcSignalPayload): void {
+        this.logger.log(`New session description: ${data.type}`);
+        if (data.type === 'offer') {
+            this.call = this.createCall();
+            this.onCallCreated(this.call);
+            this.call.signal(data);
+            this.flushBufferedIceCandidates();
+        } else if (data.type === 'answer') {
+            this.call?.signal(data);
+        } else if (data.type === 'candidate') {
+            if (!this.call) {
+                this.logger.log('Call not created yet, buffering ICE candidate.');
+                this.bufferedIceCandidates.push(data);
+            } else {
+                this.call.signal(data);
+            }
+        }
+    }
+
+    /** Clear the active call reference and any buffered ICE candidates. */
+    public reset(): void {
+        this.call = undefined;
+        this.bufferedIceCandidates = [];
+    }
+
+    private flushBufferedIceCandidates(): void {
+        this.bufferedIceCandidates.forEach((ice) => this.call!.signal(ice));
+        this.bufferedIceCandidates = [];
     }
 }
 
@@ -180,7 +245,7 @@ class Peer {
     }
 
 
-    public async signal(data: SignalData | IceCandidateSignalData) {
+    public async signal(data: WebRtcSignalPayload) {
         if (data.type === 'offer') {
             await this.localStreamAcquisatonPromise;
             this.logger.log('Signal, offer');

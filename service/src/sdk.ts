@@ -13,7 +13,7 @@ import { SocketInstance, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
-import { WebRTCCall, E2ECall, peerConnectionEvents, type PeerConnectionEventType } from './webrtc';
+import { WebRTCCall, E2ECall, peerConnectionEvents, CallSignalRouter, type PeerConnectionEventType, type WebRtcSignalPayload } from './webrtc';
 export type { IE2ECall } from './webrtc';
 
 export const utils = {
@@ -45,11 +45,17 @@ class ChatE2EE implements IChatE2EE {
     private callLogger = logger.createChild('Call');
 
     private initialized = false;
-    private call?: WebRTCCall;
-    private iceCandidates: any[] = [];
 
     private symEncryption: ISymmetricEncryption;
     private asymEncryption: IAsymmetricEncryption;
+
+    private callSignalRouter: CallSignalRouter = new CallSignalRouter(
+        () => this.createWebRtcCall(),
+        (call) => {
+            this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
+        },
+        this.callLogger,
+    );
 
     private setupCallSubs(call: WebRTCCall): void {
         call.on('state-changed', (state) => {
@@ -91,36 +97,8 @@ class ChatE2EE implements IChatE2EE {
             this.receiverPublicKey = undefined;
         });
 
-        /**
-         * Related to webrtc connection,
-         * Move it to WebRTC class?
-         */
-        this.on('webrtc-session-description', (data: any) => {
-            evetLogger.log("New session description");
-            if(data.type === 'offer') {
-                evetLogger.log("New offer");
-                this.call = this.getWebRtcCall();
-                this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
-                this.call.signal(data);
-
-                // add ICE from buffer
-                this.iceCandidates.forEach((ice) => {
-                    this.call!.signal(ice);
-                })
-                this.iceCandidates = [];
-
-            }else if(data.type === 'answer') {
-                evetLogger.log("New answer");
-                this.call!.signal(data);
-            }else if(data.type === 'candidate') {
-                evetLogger.log('ICE Candidate received.');
-                if(!this.call) {
-                    evetLogger.log("call not created yet, storing ICE candidate");
-                    this.iceCandidates.push(data);
-                }else {
-                    this.call.signal(data);
-                }
-            }
+        this.on('webrtc-session-description', (data: WebRtcSignalPayload) => {
+            this.callSignalRouter.handleSignal(data);
         });
 
 
@@ -132,10 +110,11 @@ class ChatE2EE implements IChatE2EE {
     }
 
     public get activeCall(): E2ECall | null {
-        if(!this.call) {
+        const call = this.callSignalRouter.activeCall;
+        if(!call) {
             return null;
         }
-        return new E2ECall(this.call);
+        return new E2ECall(call);
     }
 
     public async getLink(): Promise<LinkObjType> {
@@ -240,18 +219,19 @@ class ChatE2EE implements IChatE2EE {
         if(!WebRTCCall.isSupported()) {
             throw new Error('createEncodedStreams not supported.');
         }
-        if(this.call) {
+        if(this.callSignalRouter.activeCall) {
             throw new Error('Call already active');
         }
-        const webrtcCall = this.getWebRtcCall();
+        const webrtcCall = this.createWebRtcCall();
+        this.callSignalRouter.attachCall(webrtcCall);
         await webrtcCall.startCall()
         const call = new E2ECall(webrtcCall);
         return call;
     }
 
     public async endCall(): Promise<void> {
-        this.call?.endCall();
-        this.call = undefined;
+        this.callSignalRouter.activeCall?.endCall();
+        this.callSignalRouter.reset();
         this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());   
     }
 
@@ -287,16 +267,16 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
-    private getWebRtcCall(): WebRTCCall {
+    private createWebRtcCall(): WebRTCCall {
         this.checkInitialized();
-        this.call = new WebRTCCall(
+        const call = new WebRTCCall(
             this.symEncryption,
             this.userId!,
             this.channelId!,
             this.callLogger,
         );
-        this.setupCallSubs(this.call)
-        return this.call;
+        this.setupCallSubs(call)
+        return call;
     }
 }
 
