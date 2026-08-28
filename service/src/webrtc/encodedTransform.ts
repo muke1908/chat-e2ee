@@ -9,7 +9,7 @@ type TransformDirection = 'encrypt' | 'decrypt';
 type ScriptTransformConstructor = new (
     worker: Worker,
     options: { direction: TransformDirection; key?: CryptoKey },
-) => unknown;
+) => RTCRtpScriptTransform;
 
 function hasTransformProperty(target: typeof RTCRtpSender | typeof RTCRtpReceiver | undefined): boolean {
     return !!target && 'transform' in target.prototype;
@@ -65,7 +65,7 @@ function applyScriptTransform(
     key: CryptoKey | undefined,
     logger: Logger,
 ): () => void {
-    let worker: Worker;
+    let worker: Worker | undefined;
     try {
         worker = new Worker('./encodedTransform.worker.js', { type: 'module' });
         worker.onerror = (event) => logger.log('Encoded transform worker error:', event.message);
@@ -75,9 +75,9 @@ function applyScriptTransform(
             }
         };
         const ScriptTransform = (globalThis as { RTCRtpScriptTransform: ScriptTransformConstructor }).RTCRtpScriptTransform;
-        (target as EncodedTransformTarget & { transform: unknown }).transform =
+        (target as EncodedTransformTarget & { transform: RTCRtpScriptTransform | null }).transform =
             new ScriptTransform(worker, { direction, key });
-        return () => worker.terminate();
+        return () => worker?.terminate();
     } catch (error) {
         worker?.terminate();
         throw new Error(`Unable to initialize RTCRtpScriptTransform: ${String(error)}`);
