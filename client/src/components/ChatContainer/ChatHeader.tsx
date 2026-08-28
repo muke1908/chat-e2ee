@@ -10,9 +10,10 @@ import './ChatHeader.css';
 
 interface ChatHeaderProps {
   onStartCall: () => void;
+  disableStartCall?: boolean;
 }
 
-export const ChatHeader: React.FC<ChatHeaderProps> = ({ onStartCall }) => {
+export const ChatHeader: React.FC<ChatHeaderProps> = ({ onStartCall, disableStartCall = false }) => {
   const { isConnected, channelHash, deleteChannel } = useChat();
   const [hashCopied, setHashCopied] = useState(false);
 
@@ -90,6 +91,7 @@ const handleDelete = async () => {
           variant="secondary"
           onClick={onStartCall}
           title="Start Audio Call"
+          disabled={disableStartCall || !isConnected}
         >
           <PhoneIcon size={20} />
         </Button>

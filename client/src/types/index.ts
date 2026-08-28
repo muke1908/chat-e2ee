@@ -3,6 +3,7 @@
  */
 
 import type { IChatE2EE } from '@chat-e2ee/service';
+import type { CallLifecycleState } from '@chat-e2ee/service';
 
 // Message type
 export interface Message {
@@ -39,6 +40,8 @@ export interface ChatContextType {
   callActive: boolean;
   callStatus: string;
   callDuration: number;
+  callLifecycleState: CallLifecycleState;
+  isIncomingCall: boolean;
 
   // Methods
   initializeChat: () => Promise<void>;
@@ -46,6 +49,9 @@ export interface ChatContextType {
   joinChannel: (hash: string) => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
   startCall: () => Promise<void>;
+  acceptCall: () => Promise<void>;
+  rejectCall: () => Promise<void>;
+  cancelCall: () => Promise<void>;
   endCall: () => Promise<void>;
   addMessage: (message: Message) => void;
   setCallDuration: (duration: number) => void;

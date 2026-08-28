@@ -2,6 +2,7 @@ import { SocketListenerType } from "../socket/socket";
 import { E2ECall, PeerConnectionEventType } from "../webrtc/webrtcCall";
 import { ISymmetricEncryption } from "../crypto/cryptoAES";
 import { IAsymmetricEncryption } from "../crypto/cryptoRSA";
+import { CallEndReason } from "../webrtc/types";
 
 export type LinkObjType = {
     hash: string,
@@ -38,7 +39,10 @@ export interface IChatE2EE {
     on(listener: SocketListenerType | PeerConnectionEventType, callback: (...args: any) => void): void;
     // webrtc call 
     startCall(): Promise<E2ECall>;
-    endCall(): void;
+    acceptCall(): Promise<void>;
+    rejectCall(): Promise<void>;
+    cancelCall(): Promise<void>;
+    endCall(reason?: CallEndReason): Promise<void>;
     activeCall: E2ECall | null
 }
 
@@ -65,4 +69,3 @@ export type configType = {
     baseUrl?: string,
 }
 export type SetConfigType = (config: Partial<configType>) => void;
-

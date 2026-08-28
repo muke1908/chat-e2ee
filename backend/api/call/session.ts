@@ -11,11 +11,12 @@ const clients = getClientInstance();
 router.post(
     "/",
     asyncHandler(async (req: Request, res: Response): Promise<Response<WebrtcSessionResponse>> => {
-      const { description, sender, channel } = req.body;
+        const { description, signal, sender, channel } = req.body;
+        const sessionSignal = signal || description;
   
-      if (!description) {
-        return res.send(400);
-      }
+        if (!sessionSignal) {
+          return res.send(400);
+        }
 
       const { valid } = await channelValid(channel);
   
@@ -35,7 +36,7 @@ router.post(
       }
   
       const receiverSid = clients.getSIDByIDs(receiver, channel).sid;
-      socketEmit<SOCKET_TOPIC.WEBRTC_SESSION_DESCRIPTION>(SOCKET_TOPIC.WEBRTC_SESSION_DESCRIPTION, receiverSid, description);
+      socketEmit<SOCKET_TOPIC.WEBRTC_SESSION_DESCRIPTION>(SOCKET_TOPIC.WEBRTC_SESSION_DESCRIPTION, receiverSid, sessionSignal);
       return res.send({ status: "ok" });
     })
   );
