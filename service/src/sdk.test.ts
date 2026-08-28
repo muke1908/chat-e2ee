@@ -29,36 +29,26 @@ jest.mock('socket.io-client', () => ({
 // ---------------------------------------------------------------------------
 // Mock all HTTP helpers used by the SDK
 // ---------------------------------------------------------------------------
-jest.mock('./publicKey', () => ({
+jest.mock('./api/publicKey', () => ({
     getPublicKey: jest.fn().mockResolvedValue({ publicKey: null, aesKey: null }),
     sharePublicKey: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock('./sendMessage', () => ({
-    __esModule: true,
-    default: jest.fn().mockResolvedValue({ messageId: 'msg-1' }),
+jest.mock('./api/messages', () => ({
+    sendMessage: jest.fn().mockResolvedValue({ messageId: 'msg-1' }),
+    getUsersInChannel: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('./deleteLink', () => ({
-    __esModule: true,
-    default: jest.fn().mockResolvedValue(undefined),
-}));
-
-jest.mock('./getLink', () => ({
-    __esModule: true,
-    default: jest.fn().mockResolvedValue({ channelID: 'ch-1', uniqueId: 'uid-1' }),
-}));
-
-jest.mock('./getUsersInChannel', () => ({
-    __esModule: true,
-    default: jest.fn().mockResolvedValue([]),
+jest.mock('./api/links', () => ({
+    deleteLink: jest.fn().mockResolvedValue(undefined),
+    getLink: jest.fn().mockResolvedValue({ channelID: 'ch-1', uniqueId: 'uid-1' }),
 }));
 
 // ---------------------------------------------------------------------------
 // Import after all mocks are in place
 // ---------------------------------------------------------------------------
 import { createChatInstance } from './sdk';
-import { getPublicKey, sharePublicKey } from './publicKey';
+import { getPublicKey, sharePublicKey } from './api/publicKey';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -269,7 +259,7 @@ describe('delete()', () => {
             .mockResolvedValueOnce({ publicKey: null, aesKey: null })   // init
             .mockResolvedValueOnce({ publicKey: receiverPub, aesKey: null }); // setChannel
 
-        const deleteLink = require('./deleteLink').default;
+        const { deleteLink } = require('./api/links');
         await instance.setChannel(CHANNEL_ID, USER_ID);
         await instance.delete();
         expect(deleteLink).toHaveBeenCalled();

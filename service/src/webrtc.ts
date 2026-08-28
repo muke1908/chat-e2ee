@@ -1,6 +1,6 @@
 import { type ISymmetricEncryption } from "./cryptoAES";
 import { Logger } from "./utils/logger";
-import { webrtcSession } from "./webrtcSession";
+import { webrtcSession } from "./api/webrtcSession";
 
 export interface IE2ECall {
     on(event: callEvents, cb: () => void): void;

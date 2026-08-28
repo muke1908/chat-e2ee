@@ -1,6 +1,6 @@
 import { type ISymmetricEncryption } from '../cryptoAES';
 import { type IAsymmetricEncryption } from '../cryptoRSA';
-import { getPublicKey, sharePublicKey } from '../publicKey';
+import { getPublicKey, sharePublicKey } from '../api/publicKey';
 import { Logger } from '../utils/logger';
 
 /** Mutable identity/channel state the key-exchange handshake needs to read. */

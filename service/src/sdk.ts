@@ -3,12 +3,10 @@ import { setConfig } from './configContext';
 import { cryptoUtils } from './cryptoRSA';
 import { type IAsymmetricEncryption } from './cryptoRSA';
 import { EncryptionFactory } from './encryptionFactory';
-import deleteLink from './deleteLink';
-import getLink from './getLink';
-import getUsersInChannel from './getUsersInChannel';
+import { deleteLink, getLink } from './api/links';
+import { getUsersInChannel, sendMessage } from './api/messages';
 import { configType, type EncryptionStrategy, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
 import { KeyExchangeManager } from './keyExchange/keyExchangeManager';
-import sendMessage from './sendMessage';
 import { SocketInstance, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
@@ -154,7 +152,7 @@ class ChatE2EE implements IChatE2EE {
     public async delete(): Promise<void> {
         logger.log(`delete()`);
         this.checkInitialized();
-        return deleteLink({ channelID: this.channelId });
+        await deleteLink({ channelID: this.channelId });
     }
 
     public async getUsersInChannel(): Promise<TypeUsersInChannel> {
