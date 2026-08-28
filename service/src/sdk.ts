@@ -49,7 +49,7 @@ class ChatE2EE implements IChatE2EE {
 
     private callSignalRouter: CallSignalRouter = new CallSignalRouter(
         () => this.createWebRtcCall(),
-        (call) => {
+        () => {
             this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
         },
         this.callLogger,
