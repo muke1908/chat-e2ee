@@ -18,7 +18,13 @@ class FakeSender {
     });
 }
 
-class FakeReceiver extends FakeSender {}
+class FakeReceiver {
+    public transform: unknown;
+    public createEncodedStreams = jest.fn().mockReturnValue({
+        readable: { pipeThrough: jest.fn().mockReturnThis(), pipeTo: jest.fn().mockResolvedValue(undefined) },
+        writable: {},
+    });
+}
 
 class FakeWorker {
     public onerror: ((event: ErrorEvent) => void) | null = null;

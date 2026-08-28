@@ -1,4 +1,4 @@
-import { combineEncryptedFrame, splitEncryptedFrame } from './frameData';
+import { combineEncryptedFrame, IV_LENGTH_BYTES, splitEncryptedFrame } from './frameData';
 
 type TransformOptions = {
     direction: 'encrypt' | 'decrypt';
@@ -25,7 +25,7 @@ worker.addEventListener('rtctransform', (event: Event) => {
                         return;
                     }
                     if (direction === 'encrypt') {
-                        const iv = crypto.getRandomValues(new Uint8Array(12));
+                        const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH_BYTES));
                         const encryptedData = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, frame.data);
                         frame.data = combineEncryptedFrame(new Uint8Array(encryptedData), iv);
                     } else {
