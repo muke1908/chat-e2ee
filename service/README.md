@@ -168,6 +168,7 @@ class ChaCha20Encryption implements ISymmetricEncryption {
     async decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer> { /* … */ }
     async exportKey(): Promise<string> { /* serialise local key for transmission */ }
     async importRemoteKey(key: string): Promise<void> { /* import peer's key */ }
+    getEncodedTransformKey?(direction: 'encrypt' | 'decrypt'): CryptoKey | undefined { /* optional */ }
 }
 ```
 
@@ -242,7 +243,9 @@ Closes socket connections, clears event listeners, and resets the instance state
 ### Call & WebRTC API
 
 #### `await startCall(): Promise<E2ECall>`
-Initiates an end-to-end encrypted audio call. Throws an error if WebRTC insertable streams are not supported or a call is already active.
+Initiates an end-to-end encrypted audio call. The SDK prefers `RTCRtpScriptTransform` when available and falls back to `createEncodedStreams()`. It throws an error if neither encoded-frame API is supported or a call is already active.
+
+The built-in AES-GCM strategy supports both APIs. A custom symmetric strategy can support Script Transform by exposing `getEncodedTransformKey`; otherwise it continues to work through `createEncodedStreams()` where that API is available.
 
 #### `await endCall(): void`
 Terminates the active call session.
@@ -317,4 +320,3 @@ Helper to decrypt incoming messages using the session's private key.
 
 ## Debugging
 Filter browser console logs by `@chat-e2ee/service` to see internal operations. To disable logs, use `setConfig({ settings: { disableLog: true } })`.
-

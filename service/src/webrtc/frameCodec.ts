@@ -1,5 +1,6 @@
 import { type ISymmetricEncryption } from "../crypto/cryptoAES";
 import { Logger } from "../utils/logger";
+import { combineEncryptedFrame, splitEncryptedFrame } from "./frameData";
 
 /**
  * Encrypts/decrypts individual encoded WebRTC media frames using the shared
@@ -9,8 +10,6 @@ import { Logger } from "../utils/logger";
  * single implementation, instead of being duplicated across the
  * applyEncryption/applyDecryption transform callbacks.
  */
-const IV_LENGTH_BYTES = 12;
-
 export class FrameCodec {
     constructor(private encryption: ISymmetricEncryption, private logger: Logger) {}
 
@@ -20,11 +19,7 @@ export class FrameCodec {
                 try {
                     const { encryptedData, iv } = await this.encryption.encryptData(chunk.data);
 
-                    const combinedData = new Uint8Array(iv.length + encryptedData.byteLength);
-                    combinedData.set(iv, 0);
-                    combinedData.set(encryptedData, iv.length);
-
-                    chunk.data = combinedData.buffer;
+                    chunk.data = combineEncryptedFrame(encryptedData, iv);
                     controller.enqueue(chunk);
                 } catch (error) {
                     this.logger.log('Encryption error:', error);
@@ -37,11 +32,9 @@ export class FrameCodec {
         return new TransformStream({
             transform: async (chunk: RTCEncodedAudioFrame, controller) => {
                 try {
-                    const data = new Uint8Array(chunk.data);
-                    const iv = data.slice(0, IV_LENGTH_BYTES);
-                    const encryptedData = data.slice(IV_LENGTH_BYTES);
+                    const { encryptedData, iv } = splitEncryptedFrame(chunk.data);
 
-                    const decryptedData = await this.encryption.decryptData(encryptedData, iv);
+                    const decryptedData = await this.encryption.decryptData(encryptedData as BufferSource, iv as BufferSource);
                     chunk.data = decryptedData;
                     controller.enqueue(chunk);
                 } catch (error) {

@@ -6,9 +6,9 @@ import {
     type WebRtcSignalPayload,
     type IceCandidateSignalData,
     type PeerConnectionEventType,
-    type RTCRtpSenderWithStreams,
     peerConnectionEvents,
 } from "./types";
+import { supportsEncodedTransforms } from './encodedTransform';
 
 export type { WebRtcSignalPayload, callEvents, PeerConnectionEventType };
 export { peerConnectionEvents };
@@ -24,7 +24,7 @@ export class WebRTCCall {
     private subs: Map<callEvents, Set<Function>> = new Map()
 
     public static isSupported(): boolean {
-        return  !!(RTCRtpSender.prototype as RTCRtpSenderWithStreams).createEncodedStreams;
+        return supportsEncodedTransforms();
     }
 
     public on(listener: callEvents, cb: (state: RTCPeerConnectionState) => void): void {

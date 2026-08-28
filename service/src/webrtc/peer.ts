@@ -6,11 +6,10 @@ import {
     type WebRtcSignalPayload,
     type SignalData,
     type IceCandidateSignalData,
-    type RTCRtpSenderWithStreams,
-    type RTCRtpReceiverWithStreams,
 } from "./types";
 import { FrameCodec } from "./frameCodec";
 import { AudioSink } from "./audioSink";
+import { applyEncodedTransform } from './encodedTransform';
 
 /** Public STUN servers used for ICE candidate gathering. */
 const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
@@ -33,6 +32,7 @@ export class Peer {
     private audioSink: AudioSink;
     private frameCodec: FrameCodec;
     private audioStream?: MediaStream;
+    private encodedTransformCleanup: Array<() => void> = [];
 
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(
@@ -135,6 +135,8 @@ export class Peer {
             this.audioStream = undefined;
         }
         this.audioSink.detach();
+        this.encodedTransformCleanup.forEach(cleanup => cleanup());
+        this.encodedTransformCleanup = [];
         this.logger.log('Dispose');
         this.pc?.close();
         this.pc = undefined as unknown as RTCPeerConnection;
@@ -153,18 +155,23 @@ export class Peer {
     }
 
     private applyDecryption(receiver: RTCRtpReceiver): void {
-        const receiverStreams = (receiver as RTCRtpReceiverWithStreams).createEncodedStreams();
-        receiverStreams.readable
-            .pipeThrough(this.frameCodec.createDecryptTransform())
-            .pipeTo(receiverStreams.writable);
+        try {
+            this.encodedTransformCleanup.push(
+                applyEncodedTransform(receiver, 'decrypt', this.encryption, this.frameCodec, this.logger),
+            );
+        } catch (error) {
+            this.logger.log('Unable to initialize incoming encoded-frame decryption:', error);
+        }
     }
 
     private applyEncryption(mediaType: 'audio' | 'video'): void {
         const sender = this.pc.getSenders().find(r => r.track?.kind === mediaType);
 
-        const senderStreams = (sender as RTCRtpSenderWithStreams).createEncodedStreams();
-        senderStreams.readable
-            .pipeThrough(this.frameCodec.createEncryptTransform())
-            .pipeTo(senderStreams.writable);
+        if (!sender) {
+            throw new Error(`No ${mediaType} sender is available for encoded-frame encryption.`);
+        }
+        this.encodedTransformCleanup.push(
+            applyEncodedTransform(sender, 'encrypt', this.encryption, this.frameCodec, this.logger),
+        );
     }
 }
