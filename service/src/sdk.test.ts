@@ -284,6 +284,38 @@ describe('encrypt()', () => {
         const builder = instance.encrypt({ image: '', text: 'hello' });
         expect(typeof builder.send).toBe('function');
     });
+
+    it('send() rejects with a descriptive error when the receiver public key is unknown', async () => {
+        (getPublicKey as jest.Mock).mockReset();
+        (getPublicKey as jest.Mock).mockResolvedValue({ publicKey: null, aesKey: null });
+
+        const instance = await buildInitializedInstance();
+        await instance.setChannel(CHANNEL_ID, USER_ID);
+
+        await expect(
+            instance.encrypt({ image: '', text: 'hello' }).send()
+        ).rejects.toThrow(/has not shared their public key yet/);
+    });
+
+    it('send() encrypts and sends once the receiver public key is available', async () => {
+        const receiverInstance = await buildInitializedInstance();
+        const receiverPub = receiverInstance.getKeyPair().publicKey;
+
+        (getPublicKey as jest.Mock).mockReset();
+        (getPublicKey as jest.Mock).mockResolvedValue({ publicKey: receiverPub, aesKey: null });
+
+        const { sendMessage } = require('./api/messages');
+        (sendMessage as jest.Mock).mockClear();
+
+        const instance = await buildInitializedInstance();
+        await instance.setChannel(CHANNEL_ID, USER_ID);
+
+        await instance.encrypt({ image: '', text: 'hello' }).send();
+
+        const args = (sendMessage as jest.Mock).mock.calls[0][0];
+        expect(args.text).not.toBe('hello');
+        expect(args.text.length).toBeGreaterThan(0);
+    });
 });
 
 // ---------------------------------------------------------------------------

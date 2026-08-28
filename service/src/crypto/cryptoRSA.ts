@@ -71,10 +71,29 @@ const exportKey = async (key: CryptoKey): Promise<string> => {
     return JSON.stringify(await window.crypto.subtle.exportKey('jwk', key));
 }
 
+const parseJwk = (key: string): JsonWebKey => {
+    if (typeof key !== 'string' || !key) {
+        throw new Error('Invalid RSA key: expected a serialised JWK string.');
+    }
+
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(key);
+    } catch {
+        throw new Error('Invalid RSA key: not a valid JWK JSON string.');
+    }
+
+    if (!parsed || typeof parsed !== 'object' || !(parsed as JsonWebKey).kty) {
+        throw new Error('Invalid RSA key: JWK is missing the required "kty" member.');
+    }
+
+    return parsed as JsonWebKey;
+}
+
 const importKey = async (key: string, usage: 'encrypt' | 'decrypt'): Promise<CryptoKey> => {
     return window.crypto.subtle.importKey(
         'jwk',
-        JSON.parse(key),
+        parseJwk(key),
         {
             name: 'RSA-OAEP',
             hash: 'SHA-256',
