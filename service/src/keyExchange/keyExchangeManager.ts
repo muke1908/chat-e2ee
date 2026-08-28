@@ -1,5 +1,5 @@
-import { type ISymmetricEncryption } from '../cryptoAES';
-import { type IAsymmetricEncryption } from '../cryptoRSA';
+import { type ISymmetricEncryption } from '../crypto/cryptoAES';
+import { type IAsymmetricEncryption } from '../crypto/cryptoRSA';
 import { getPublicKey, sharePublicKey } from '../api/publicKey';
 import { Logger } from '../utils/logger';
 

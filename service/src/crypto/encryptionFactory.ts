@@ -1,6 +1,6 @@
 import { AesGcmEncryption, type ISymmetricEncryption } from './cryptoAES';
 import { cryptoUtils, type IAsymmetricEncryption } from './cryptoRSA';
-import type { EncryptionStrategy } from './public/types';
+import type { EncryptionStrategy } from '../public/types';
 
 /** Names of built-in symmetric encryption strategies. */
 export type BuiltinSymmetricStrategy = 'AES-GCM';

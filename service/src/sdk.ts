@@ -1,8 +1,8 @@
-import { type ISymmetricEncryption } from './cryptoAES';
+import { type ISymmetricEncryption } from './crypto/cryptoAES';
 import { setConfig } from './configContext';
-import { cryptoUtils } from './cryptoRSA';
-import { type IAsymmetricEncryption } from './cryptoRSA';
-import { EncryptionFactory } from './encryptionFactory';
+import { cryptoUtils } from './crypto/cryptoRSA';
+import { type IAsymmetricEncryption } from './crypto/cryptoRSA';
+import { EncryptionFactory } from './crypto/encryptionFactory';
 import { deleteLink, getLink } from './api/links';
 import { getUsersInChannel, sendMessage } from './api/messages';
 import { configType, type EncryptionStrategy, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
@@ -11,8 +11,8 @@ import { SocketInstance, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
-import { WebRTCCall, E2ECall, peerConnectionEvents, CallSignalRouter, type PeerConnectionEventType, type WebRtcSignalPayload } from './webrtc';
-export type { IE2ECall } from './webrtc';
+import { WebRTCCall, E2ECall, peerConnectionEvents, CallSignalRouter, type PeerConnectionEventType, type WebRtcSignalPayload } from './webrtc/webrtcCall';
+export type { IE2ECall } from './webrtc/webrtcCall';
 
 export const utils = {
     decryptMessage: (ciphertext: string, privateKey: string) => cryptoUtils.decryptMessage(ciphertext, privateKey),
@@ -264,4 +264,4 @@ class ChatE2EE implements IChatE2EE {
 }
 
 export * from './public/types';
-export { EncryptionFactory, type EncryptionStrategyConfig, type BuiltinSymmetricStrategy, type BuiltinAsymmetricStrategy } from './encryptionFactory';
+export { EncryptionFactory, type EncryptionStrategyConfig, type BuiltinSymmetricStrategy, type BuiltinAsymmetricStrategy } from './crypto/encryptionFactory';

@@ -1,7 +1,7 @@
 import { SocketListenerType } from "../socket/socket";
-import { E2ECall, PeerConnectionEventType } from "../webrtc";
-import { ISymmetricEncryption } from "../cryptoAES";
-import { IAsymmetricEncryption } from "../cryptoRSA";
+import { E2ECall, PeerConnectionEventType } from "../webrtc/webrtcCall";
+import { ISymmetricEncryption } from "../crypto/cryptoAES";
+import { IAsymmetricEncryption } from "../crypto/cryptoRSA";
 
 export type LinkObjType = {
     hash: string,
