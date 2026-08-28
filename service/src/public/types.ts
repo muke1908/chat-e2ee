@@ -17,6 +17,13 @@ export interface ISendMessageReturn { id: string, timestamp: string };
 export interface IGetPublicKeyReturn { publicKey: string, aesKey: string };
 export type TypeUsersInChannel = { "uuid": string }[];
 
+/** Payload sent to the server when a user joins a chat channel. */
+export type chatJoinPayloadType = {
+    channelID: string,
+    userID: string,
+    publicKey: string
+}
+
 export interface IChatE2EE {
     init(): Promise<void>;
     getKeyPair(): { privateKey: string, publicKey: string };

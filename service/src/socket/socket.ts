@@ -1,7 +1,7 @@
 import socketIOClient, { Socket } from 'socket.io-client';
 import { configContext } from '../configContext';
 import { Logger } from '../utils/logger';
-import { chatJoinPayloadType } from '../sdk';
+import { chatJoinPayloadType } from '../public/types';
 export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message" | "webrtc-session-description";
 
 export type SubscriptionType = Map<SocketListenerType, Set<Function>>;
@@ -47,8 +47,8 @@ export class SocketInstance {
     }
 
     private handler(listener: SocketListenerType, args: unknown[]): void {
-        const loggerWithCount = this.eventHandlerLogger.count();
-        loggerWithCount.log(`handler called for ${listener}`);
+        const loggerWithInvocationId = this.eventHandlerLogger.withInvocationId();
+        loggerWithInvocationId.log(`handler called for ${listener}`);
         const callbacks = this.subscriptionContext().get(listener);
         callbacks?.forEach(fn => fn(...args));
     }

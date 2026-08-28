@@ -1,7 +1,7 @@
 import { configContext } from "../configContext";
 
 export class Logger {
-    private counter = 0;
+    private invocationId = 0;
     private disableLog = false;
     
     constructor(private name = '@chat-e2ee/service', private childs: string[] = []) {
@@ -28,15 +28,20 @@ export class Logger {
             // set disableLog: false in configContext to enable logs
             return;
         }
-        if(this.counter) {
-            console.log(`${this.logTitle}$${this.counter}`, ...args);
+        if(this.invocationId) {
+            console.log(`${this.logTitle}$${this.invocationId}`, ...args);
         }else {
             console.log(`${this.logTitle}`, ...args);
         }
     }
 
-    public count() {
-        this.counter ++;
+    /**
+     * Returns a logger bound to the next invocation id, so repeated calls
+     * from the same call site (e.g. per-event-emission logging) can be told
+     * apart in the console output (`$1`, `$2`, ...).
+     */
+    public withInvocationId() {
+        this.invocationId ++;
         return { log: this.log.bind(this) }
     }
 }

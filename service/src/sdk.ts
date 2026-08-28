@@ -27,12 +27,6 @@ export const createChatInstance = (config?: Partial<configType>, encryptionStrat
     return new ChatE2EE(config, encryptionStrategy);
 }
 
-export type chatJoinPayloadType = {
-    channelID: string,
-    userID: string,
-    publicKey: string
-}
-
 class ChatE2EE implements IChatE2EE {
     private channelId?: string;
     private userId?: string;
@@ -205,7 +199,7 @@ class ChatE2EE implements IChatE2EE {
     }
 
     public on(listener: string, callback: (...args: any[]) => void): void {
-        const loggerWithCount = this.subscriptionLogger.count();
+        const loggerWithInvocationId = this.subscriptionLogger.withInvocationId();
         let subscriptions = this.subscriptions;
         
         if(peerConnectionEvents.includes(listener as PeerConnectionEventType)) {
@@ -215,13 +209,13 @@ class ChatE2EE implements IChatE2EE {
         const sub = subscriptions.get(listener);
         if (sub) {
             if (sub.has(callback)) {
-                loggerWithCount.log(`Skipping, subscription: ${listener}`);
+                loggerWithInvocationId.log(`Skipping, subscription: ${listener}`);
                 return;
             }
-            loggerWithCount.log(`Created +1 : ${listener}`);
+            loggerWithInvocationId.log(`Created +1 : ${listener}`);
             sub.add(callback);
         } else {
-            loggerWithCount.log(`Created: ${listener}`);
+            loggerWithInvocationId.log(`Created: ${listener}`);
             subscriptions.set(listener, new Set([callback]));
         }
     }

@@ -20,14 +20,6 @@ interface IceCandidateSignalData {
 }
 
 /**
- * The non-standard `encodedInsertableStreams` option used when constructing
- * RTCPeerConnection for insertable-streams support.
- */
-interface RTCPeerConnectionWithInsertableStreams extends RTCPeerConnection {
-    // Non-standard extension – kept as explicit interface rather than `any`
-}
-
-/**
  * RTCRtpSender / RTCRtpReceiver extended with the non-standard
  * `createEncodedStreams()` method (Insertable Streams API).
  */
@@ -42,6 +34,20 @@ interface RTCRtpReceiverWithStreams extends RTCRtpReceiver {
 export type callEvents = 'state-changed';
 export type PeerConnectionEventType = "call-added" | "call-removed";
 export const peerConnectionEvents: PeerConnectionEventType[] = [ "call-added", "call-removed" ];
+
+/** Public STUN servers used for ICE candidate gathering. */
+const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun.l.google.com:5349" },
+    { urls: "stun:stun1.l.google.com:3478" },
+    { urls: "stun:stun1.l.google.com:5349" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:5349" },
+    { urls: "stun:stun3.l.google.com:3478" },
+    { urls: "stun:stun3.l.google.com:5349" },
+    { urls: "stun:stun4.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:5349" }
+];
 
 export class WebRTCCall {
     private peer: Peer | undefined;
@@ -101,7 +107,7 @@ export class WebRTCCall {
 
 class Peer {
     private state: RTCPeerConnectionState;
-    private pc: RTCPeerConnectionWithInsertableStreams;
+    private pc: RTCPeerConnection;
 
     private audioEl?: HTMLAudioElement;
     private audioStream?: MediaStream;
@@ -114,22 +120,11 @@ class Peer {
         private channel: string,
         private logger: Logger
     ) {
-        // RTCPeerConnection is cast via the interface because `encodedInsertableStreams`
+        // The constructor is cast because `encodedInsertableStreams`
         // is a non-standard constructor option not present in the lib.dom types.
-        this.pc = new (RTCPeerConnection as unknown as new (config: RTCConfiguration & { encodedInsertableStreams: boolean }) => RTCPeerConnectionWithInsertableStreams)({
+        this.pc = new (RTCPeerConnection as unknown as new (config: RTCConfiguration & { encodedInsertableStreams: boolean }) => RTCPeerConnection)({
             encodedInsertableStreams: true,
-            iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun.l.google.com:5349" },
-                { urls: "stun:stun1.l.google.com:3478" },
-                { urls: "stun:stun1.l.google.com:5349" },
-                { urls: "stun:stun2.l.google.com:19302" },
-                { urls: "stun:stun2.l.google.com:5349" },
-                { urls: "stun:stun3.l.google.com:3478" },
-                { urls: "stun:stun3.l.google.com:5349" },
-                { urls: "stun:stun4.l.google.com:19302" },
-                { urls: "stun:stun4.l.google.com:5349" }
-            ]
+            iceServers: DEFAULT_ICE_SERVERS
         });
 
         this.pc.onconnectionstatechange = () => {
@@ -221,7 +216,7 @@ class Peer {
         }
         this.logger.log('Dispose');
         this.pc?.close();
-        this.pc = undefined as unknown as RTCPeerConnectionWithInsertableStreams;
+        this.pc = undefined as unknown as RTCPeerConnection;
     }
 
     private async addLocalAudioTracks(): Promise<void> {
@@ -230,17 +225,6 @@ class Peer {
         this.audioStream.getTracks().forEach(track => this.pc.addTrack(track, this.audioStream!));
         this.applyEncryption('audio');
     }
-
-    /*
-    private async addLocalVideoTracks(): Promise<void> {
-        this.logger.log('addLocalTracks');
-        // const stream = await this.getAudioStream();
-        const stream = await this.getVideoStream();
-        this.appendVideoStreamToDom(stream, 'local');
-        stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
-        this.applyEncryption('video');
-    }
-    */
 
     private async getAudioStream(): Promise<MediaStream> {
         this.logger.log('getAudioStream');
