@@ -45,12 +45,10 @@ export function applyEncodedTransform(
     logger: Logger,
 ): () => void {
     if (supportsScriptTransform() && encryption.getEncodedTransformKey) {
-        applyScriptTransform(target, direction, encryption.getEncodedTransformKey(direction), logger);
         return applyScriptTransform(target, direction, encryption.getEncodedTransformKey(direction), logger);
     }
 
     if (supportsCreateEncodedStreams()) {
-        applyEncodedStreamsTransform(target, direction, frameCodec, logger);
         return applyEncodedStreamsTransform(target, direction, frameCodec, logger);
     }
 
