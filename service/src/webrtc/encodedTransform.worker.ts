@@ -5,6 +5,10 @@ type TransformOptions = {
     key?: CryptoKey;
 };
 
+type EncodedFrame = {
+    data: ArrayBuffer;
+};
+
 const worker = globalThis as unknown as {
     addEventListener(type: string, listener: (event: Event) => void): void;
     postMessage(message: unknown): void;
@@ -18,7 +22,7 @@ worker.addEventListener('rtctransform', (event: Event) => {
 
     transformer.readable
         .pipeThrough(new TransformStream({
-            transform: async (frame: RTCEncodedAudioFrame, controller) => {
+            transform: async (frame: EncodedFrame, controller) => {
                 try {
                     if (!key) {
                         worker.postMessage({ type: 'error', message: `No ${direction} key is available for the encoded transform.` });
