@@ -172,13 +172,31 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`encrypt()`);
         this.checkInitialized();
 
-        const encryptedTextPromise = this.asymEncryption.encryptMessage(text, this.keyExchange.getReceiverPublicKey()!);
         return ({
             send: async () => {
-                const encryptedText = await encryptedTextPromise;
+                const receiverPublicKey = await this.resolveReceiverPublicKey();
+                const encryptedText = await this.asymEncryption.encryptMessage(text, receiverPublicKey);
                 return this.sendMessage({ image, text: encryptedText })
             }
         })
+    }
+
+    /**
+     * Returns the receiver's public key, refreshing it once if it isn't known yet.
+     * Encrypting without it produces a confusing WebCrypto `DataError`, so fail
+     * with an actionable message instead.
+     */
+    private async resolveReceiverPublicKey(): Promise<string> {
+        if (!this.keyExchange.hasReceiverPublicKey) {
+            await this.keyExchange.refreshReceiverPublicKey(logger.createChild('encrypt'));
+        }
+
+        const receiverPublicKey = this.keyExchange.getReceiverPublicKey();
+        if (!receiverPublicKey) {
+            throw new Error('Cannot encrypt message: the receiver has not shared their public key yet.');
+        }
+
+        return receiverPublicKey;
     }
 
     public on(listener: string, callback: (...args: any[]) => void): void {

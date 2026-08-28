@@ -55,7 +55,7 @@ export class KeyExchangeManager {
         logger.log(`getPublicKey()`);
         const receiverPublicKey = await getPublicKey({ userId, channelId });
         logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
-        this.receiverPublicKey = receiverPublicKey?.publicKey;
+        this.receiverPublicKey = receiverPublicKey?.publicKey || undefined;
         if (receiverPublicKey.aesKey) {
             // symmetric key is asymmetrically-encrypted ciphertext; decrypt it with our private key
             const decryptedKeyMaterial = await this.asymEncryption.decryptMessage(receiverPublicKey.aesKey, privateKey!);

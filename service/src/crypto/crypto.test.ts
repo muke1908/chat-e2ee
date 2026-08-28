@@ -67,6 +67,24 @@ describe('cryptoUtils (RSA-OAEP) – real Web Crypto', () => {
             cryptoUtils.decryptMessage(ciphertext, wrongPrivateKey)
         ).rejects.toThrow();
     });
+
+    it('encryptMessage() throws a descriptive error for missing or invalid keys', async () => {
+        await expect(
+            cryptoUtils.encryptMessage('hi', undefined as unknown as string)
+        ).rejects.toThrow(/serialised JWK string/);
+
+        await expect(
+            cryptoUtils.encryptMessage('hi', 'null')
+        ).rejects.toThrow(/kty/);
+
+        await expect(
+            cryptoUtils.encryptMessage('hi', '{}')
+        ).rejects.toThrow(/kty/);
+
+        await expect(
+            cryptoUtils.encryptMessage('hi', 'not-json')
+        ).rejects.toThrow(/valid JWK JSON/);
+    });
 });
 
 // ---------------------------------------------------------------------------
