@@ -9,7 +9,7 @@ let chate2eeConfig: configType = {
 };
 
 export const setConfig: SetConfigType = (config) => {
-    const logger = new Logger('Config').count();
+    const logger = new Logger('Config').withInvocationId();
     logger.log(`Overriding config`, config);
     chate2eeConfig = { ...chate2eeConfig, ...config }
 }

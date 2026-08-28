@@ -1,7 +1,7 @@
 import { SocketListenerType } from "../socket/socket";
-import { E2ECall, PeerConnectionEventType } from "../webrtc";
-import { ISymmetricEncryption } from "../cryptoAES";
-import { IAsymmetricEncryption } from "../cryptoRSA";
+import { E2ECall, PeerConnectionEventType } from "../webrtc/webrtcCall";
+import { ISymmetricEncryption } from "../crypto/cryptoAES";
+import { IAsymmetricEncryption } from "../crypto/cryptoRSA";
 
 export type LinkObjType = {
     hash: string,
@@ -16,6 +16,13 @@ export type LinkObjType = {
 export interface ISendMessageReturn { id: string, timestamp: string };
 export interface IGetPublicKeyReturn { publicKey: string, aesKey: string };
 export type TypeUsersInChannel = { "uuid": string }[];
+
+/** Payload sent to the server when a user joins a chat channel. */
+export type chatJoinPayloadType = {
+    channelID: string,
+    userID: string,
+    publicKey: string
+}
 
 export interface IChatE2EE {
     init(): Promise<void>;

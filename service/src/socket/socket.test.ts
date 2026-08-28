@@ -20,7 +20,7 @@ import { SocketInstance, SubscriptionType } from './socket';
 const createLogger = (): any => {
     const logger: any = {
         log: jest.fn(),
-        count: jest.fn(() => logger),
+        withInvocationId: jest.fn(() => logger),
         createChild: jest.fn(() => createLogger()),
     };
     return logger;
