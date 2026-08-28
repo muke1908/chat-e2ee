@@ -26,6 +26,16 @@ async function build() {
         console.log('Watching for changes...');
     } else {
         await esbuild.build(buildOptions);
+        await esbuild.build({
+            entryPoints: ['./src/webrtc/encodedTransform.worker.ts'],
+            bundle: true,
+            outfile: './dist/encodedTransform.worker.js',
+            format: 'esm',
+            platform: 'browser',
+            sourcemap: true,
+            minify: isProduction,
+            logLevel: 'info',
+        });
         console.log('Build complete.');
 
         // Generate type definitions

@@ -47,7 +47,7 @@ function makeFakeStream(tracks: FakeTrack[]) {
 }
 
 function makeFakeEncodedStreamsPair() {
-    const readable = { pipeThrough: jest.fn().mockReturnThis(), pipeTo: jest.fn() };
+    const readable = { pipeThrough: jest.fn().mockReturnThis(), pipeTo: jest.fn().mockResolvedValue(undefined) };
     return { readable, writable: {} };
 }
 
@@ -84,7 +84,15 @@ class FakeRTCPeerConnection {
 }
 
 function installWebRtcGlobals() {
+    class FakeRTCRtpSender {
+    }
+    class FakeRTCRtpReceiver {
+    }
+    (FakeRTCRtpSender.prototype as any).createEncodedStreams = jest.fn().mockReturnValue(makeFakeEncodedStreamsPair());
+    (FakeRTCRtpReceiver.prototype as any).createEncodedStreams = jest.fn().mockReturnValue(makeFakeEncodedStreamsPair());
     (globalThis as any).RTCPeerConnection = FakeRTCPeerConnection;
+    (globalThis as any).RTCRtpSender = FakeRTCRtpSender;
+    (globalThis as any).RTCRtpReceiver = FakeRTCRtpReceiver;
     (globalThis as any).RTCSessionDescription = class {
         type: string; sdp: string;
         constructor(init: { type: string; sdp: string }) { this.type = init.type; this.sdp = init.sdp; }
@@ -102,6 +110,8 @@ function installWebRtcGlobals() {
 
 function uninstallWebRtcGlobals() {
     delete (globalThis as any).RTCPeerConnection;
+    delete (globalThis as any).RTCRtpSender;
+    delete (globalThis as any).RTCRtpReceiver;
     delete (globalThis as any).RTCSessionDescription;
     delete (globalThis as any).RTCIceCandidate;
     delete (globalThis as any).navigator;

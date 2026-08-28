@@ -8,11 +8,17 @@ export interface ISymmetricEncryption {
     /** Encrypt a raw data buffer. Returns the ciphertext and the IV used. */
     encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array; iv: Uint8Array }>;
     /** Decrypt a ciphertext buffer using the previously imported remote key. */
-    decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer>;
+    decryptData(data: BufferSource | Uint8Array, iv: BufferSource | Uint8Array): Promise<ArrayBuffer>;
     /** Serialise the local key to a string for transmission (e.g. JWK JSON). */
     exportKey(): Promise<string>;
     /** Import the remote peer's serialised key so incoming data can be decrypted. */
     importRemoteKey(key: string): Promise<void>;
+    /**
+     * Returns the Web Crypto key needed by an RTCRtpScriptTransform worker.
+     * Implementations that do not expose a transferable CryptoKey continue to
+     * use the Insertable Streams implementation when it is available.
+     */
+    getEncodedTransformKey?(direction: 'encrypt' | 'decrypt'): CryptoKey | undefined;
 }
 
 /**
@@ -66,14 +72,18 @@ export class AesGcmEncryption implements ISymmetricEncryption {
         return { encryptedData: new Uint8Array(encryptedData), iv };
     }
 
-    public async decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer> {
+    public async decryptData(data: BufferSource | Uint8Array, iv: BufferSource | Uint8Array): Promise<ArrayBuffer> {
         if (!this.aesKeyRemote) {
             throw new Error('Remote AES key not set.');
         }
         return window.crypto.subtle.decrypt(
-            { name: "AES-GCM", iv },
+            { name: "AES-GCM", iv: iv as BufferSource },
             this.aesKeyRemote,
-            data
+            data as BufferSource
         );
+    }
+
+    public getEncodedTransformKey(direction: 'encrypt' | 'decrypt'): CryptoKey | undefined {
+        return direction === 'encrypt' ? this.aesKeyLocal : this.aesKeyRemote;
     }
 }
