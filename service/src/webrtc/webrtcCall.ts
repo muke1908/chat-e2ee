@@ -167,14 +167,15 @@ export class CallSignalRouter {
         if (!this.pendingIncomingOffer || this.pendingIncomingOffer.callId !== callId) {
             return undefined;
         }
+        const activeCallId = this.pendingIncomingOffer.callId;
         const call = this.createCall();
         this.call = call;
-        this.activeCallId = this.pendingIncomingOffer.callId;
+        this.activeCallId = activeCallId;
         this.acceptedPendingCallId = undefined;
         this.onCallCreated(call);
         call.signal(this.pendingIncomingOffer);
         this.pendingIncomingOffer = undefined;
-        this.flushBufferedIceCandidates(this.activeCallId);
+        this.flushBufferedIceCandidates(activeCallId);
         return call;
     }
 

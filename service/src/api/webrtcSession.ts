@@ -3,7 +3,7 @@ import { type WebRtcSignalPayload } from '../webrtc/types';
 
 type WebRtcSessionBody = {
   signal: WebRtcSignalPayload,
-  description: WebRtcSignalPayload,
+  description?: WebRtcSignalPayload,
   sender: string,
   channel: string
 };

@@ -311,9 +311,7 @@ class ChatE2EE implements IChatE2EE {
         this.activeCallId = pendingCallId;
         await this.sendControlSignal('call-reject', 'rejected');
         this.callSignalRouter.rejectPendingOffer();
-        this.updateCallLifecycle('rejected', 'rejected');
-        this.updateCallLifecycle('ended', 'rejected');
-        this.activeCallId = undefined;
+        this.endLocalCall('rejected', 'rejected');
     }
 
     public async cancelCall(): Promise<void> {
@@ -321,7 +319,7 @@ class ChatE2EE implements IChatE2EE {
             return;
         }
         await this.sendControlSignal('call-cancel', 'cancelled');
-        this.endLocalCall('cancelled');
+        this.endLocalCall('cancelled', 'cancelled');
     }
 
     public async endCall(reason: CallEndReason = 'local-end'): Promise<void> {
@@ -360,8 +358,7 @@ class ChatE2EE implements IChatE2EE {
         if (data.type === 'call-reject') {
             if (this.activeCallId && data.callId === this.activeCallId) {
                 this.callSubscriptions.get("call-rejected")?.forEach((cb) => cb({ callId: data.callId }));
-                this.endLocalCall('rejected');
-                this.updateCallLifecycle('rejected', 'rejected');
+                this.endLocalCall('rejected', 'rejected');
             }
             return;
         }
@@ -369,8 +366,7 @@ class ChatE2EE implements IChatE2EE {
         if (data.type === 'call-cancel') {
             if (this.activeCallId && data.callId === this.activeCallId) {
                 this.callSubscriptions.get("call-cancelled")?.forEach((cb) => cb({ callId: data.callId }));
-                this.endLocalCall('cancelled');
-                this.updateCallLifecycle('cancelled', 'cancelled');
+                this.endLocalCall('cancelled', 'cancelled');
             }
             return;
         }
@@ -378,8 +374,7 @@ class ChatE2EE implements IChatE2EE {
         if (data.type === 'call-timeout') {
             if (this.activeCallId && data.callId === this.activeCallId) {
                 this.callSubscriptions.get("call-timeout")?.forEach((cb) => cb({ callId: data.callId }));
-                this.endLocalCall('timeout');
-                this.updateCallLifecycle('timeout', 'timeout');
+                this.endLocalCall('timeout', 'timeout');
             }
             return;
         }
@@ -388,7 +383,6 @@ class ChatE2EE implements IChatE2EE {
             if (this.activeCallId && data.callId === this.activeCallId) {
                 this.callSubscriptions.get("call-ended")?.forEach((cb) => cb({ callId: data.callId, reason: data.reason }));
                 this.endLocalCall('remote-end');
-                this.updateCallLifecycle('ended', 'remote-end');
             }
             return;
         }
@@ -435,8 +429,7 @@ class ChatE2EE implements IChatE2EE {
                 this.callLogger.log('Unable to send timeout signal', error);
             }
             this.callSubscriptions.get("call-timeout")?.forEach((cb) => cb({ callId: this.activeCallId }));
-            this.endLocalCall('timeout');
-            this.updateCallLifecycle('timeout', 'timeout');
+            this.endLocalCall('timeout', 'timeout');
         }, 30_000);
     }
 
@@ -457,7 +450,7 @@ class ChatE2EE implements IChatE2EE {
         this.callSubscriptions.get("call-state-changed")?.forEach((cb) => cb(payload));
     }
 
-    private endLocalCall(reason: CallEndReason): void {
+    private endLocalCall(reason: CallEndReason, terminalState: CallLifecycleState = 'ended'): void {
         this.clearOutgoingInviteTimeout();
         this.updateCallLifecycle('ending', reason);
         this.callSignalRouter.activeCall?.endCall();
@@ -465,6 +458,9 @@ class ChatE2EE implements IChatE2EE {
         this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());
         if (this.activeCallId) {
             this.lastSignalSeqByCall.delete(this.activeCallId);
+        }
+        if (terminalState !== 'ended') {
+            this.updateCallLifecycle(terminalState, reason);
         }
         this.activeCallId = undefined;
         this.updateCallLifecycle('ended', reason);

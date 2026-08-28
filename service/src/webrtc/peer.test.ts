@@ -132,6 +132,10 @@ async function createPeer(subs: Map<callEvents, Set<Function>> = new Map()): Pro
     return { peer, pc };
 }
 
+function withMeta<T extends { type: string }>(signal: T): T & { callId: string; seq: number; timestamp: number } {
+    return { ...signal, callId: 'call-1', seq: 1, timestamp: Date.now() };
+}
+
 describe('Peer', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -157,7 +161,7 @@ describe('Peer', () => {
         expect(pc.createOffer).toHaveBeenCalled();
         expect(pc.setLocalDescription).toHaveBeenCalledWith({ type: 'offer', sdp: 'offer-sdp' });
         expect(mockWebrtcSession).toHaveBeenCalledWith({
-            description: { type: 'offer', sdp: 'offer-sdp' },
+            signal: expect.objectContaining({ type: 'offer', sdp: 'offer-sdp', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
             sender: 'sender-1',
             channelId: 'channel-1',
         });
@@ -165,7 +169,7 @@ describe('Peer', () => {
 
     it('signal() with an offer sets the remote description and replies with an answer', async () => {
         const { peer, pc } = await createPeer();
-        const offer: WebRtcSignalPayload = { type: 'offer', sdp: 'remote-offer' };
+        const offer: WebRtcSignalPayload = withMeta({ type: 'offer', sdp: 'remote-offer' });
 
         await peer.signal(offer);
 
@@ -173,7 +177,7 @@ describe('Peer', () => {
         expect(pc.createAnswer).toHaveBeenCalled();
         expect(pc.setLocalDescription).toHaveBeenCalledWith({ type: 'answer', sdp: 'answer-sdp' });
         expect(mockWebrtcSession).toHaveBeenCalledWith({
-            description: { type: 'answer', sdp: 'answer-sdp' },
+            signal: expect.objectContaining({ type: 'answer', sdp: 'answer-sdp', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
             sender: 'sender-1',
             channelId: 'channel-1',
         });
@@ -181,7 +185,7 @@ describe('Peer', () => {
 
     it('signal() with an answer only sets the remote description', async () => {
         const { peer, pc } = await createPeer();
-        const answer: WebRtcSignalPayload = { type: 'answer', sdp: 'remote-answer' };
+        const answer: WebRtcSignalPayload = withMeta({ type: 'answer', sdp: 'remote-answer' });
 
         await peer.signal(answer);
 
@@ -191,7 +195,7 @@ describe('Peer', () => {
 
     it('signal() with a candidate adds it as an ICE candidate', async () => {
         const { peer, pc } = await createPeer();
-        const candidate: WebRtcSignalPayload = { type: 'candidate', candidate: { candidate: 'ice-1' } as RTCIceCandidateInit };
+        const candidate: WebRtcSignalPayload = withMeta({ type: 'candidate', candidate: { candidate: 'ice-1' } as RTCIceCandidateInit });
 
         await peer.signal(candidate);
 
@@ -205,7 +209,7 @@ describe('Peer', () => {
         pc.onicecandidate!({ candidate: { candidate: 'local-ice' } });
 
         expect(mockWebrtcSession).toHaveBeenCalledWith({
-            description: { candidate: { candidate: 'local-ice' }, type: 'candidate' },
+            signal: expect.objectContaining({ candidate: { candidate: 'local-ice' }, type: 'candidate', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
             sender: 'sender-1',
             channelId: 'channel-1',
         });

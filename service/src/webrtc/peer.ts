@@ -1,5 +1,6 @@
 import { type ISymmetricEncryption } from "../crypto/cryptoAES";
 import { Logger } from "../utils/logger";
+import { generateUUID } from "../utils/uuid";
 import { webrtcSession } from "../api/webrtcSession";
 import {
     type callEvents,
@@ -35,6 +36,8 @@ export class Peer {
     private frameCodec: FrameCodec;
     private audioStream?: MediaStream;
     private encodedTransformCleanup: Array<() => void> = [];
+    private fallbackSignalSeq = 0;
+    private fallbackCallId = generateUUID();
 
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(
@@ -197,8 +200,8 @@ export class Peer {
             return this.signalMetadataProvider();
         }
         return {
-            callId: 'legacy-call',
-            seq: Date.now(),
+            callId: this.fallbackCallId,
+            seq: ++this.fallbackSignalSeq,
             timestamp: Date.now(),
         };
     }
