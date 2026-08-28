@@ -19,23 +19,25 @@ async function build() {
         logLevel: 'info',
         metafile: true,
     };
+    const workerBuildOptions = {
+        entryPoints: ['./src/webrtc/encodedTransform.worker.ts'],
+        bundle: true,
+        outfile: './dist/encodedTransform.worker.js',
+        format: 'esm',
+        platform: 'browser',
+        sourcemap: true,
+        minify: isProduction,
+        logLevel: 'info',
+    };
 
     if (watch) {
         let ctx = await esbuild.context(buildOptions);
-        await ctx.watch();
+        let workerCtx = await esbuild.context(workerBuildOptions);
+        await Promise.all([ctx.watch(), workerCtx.watch()]);
         console.log('Watching for changes...');
     } else {
         await esbuild.build(buildOptions);
-        await esbuild.build({
-            entryPoints: ['./src/webrtc/encodedTransform.worker.ts'],
-            bundle: true,
-            outfile: './dist/encodedTransform.worker.js',
-            format: 'esm',
-            platform: 'browser',
-            sourcemap: true,
-            minify: isProduction,
-            logLevel: 'info',
-        });
+        await esbuild.build(workerBuildOptions);
         console.log('Build complete.');
 
         // Generate type definitions
