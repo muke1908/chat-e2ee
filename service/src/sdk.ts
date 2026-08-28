@@ -7,7 +7,7 @@ import deleteLink from './deleteLink';
 import getLink from './getLink';
 import getUsersInChannel from './getUsersInChannel';
 import { configType, type EncryptionStrategy, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
-import { getPublicKey, sharePublicKey } from './publicKey';
+import { KeyExchangeManager } from './keyExchange/keyExchangeManager';
 import sendMessage from './sendMessage';
 import { SocketInstance, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
@@ -34,8 +34,6 @@ class ChatE2EE implements IChatE2EE {
     private privateKey?: string;
     private publicKey?: string;
 
-    private receiverPublicKey?: string;
-
     //To Do: Fix types
     private subscriptions: Map<string, Set<Function>> = new Map();
     private callSubscriptions: Map<string, Set<Function>> = new Map();
@@ -43,11 +41,13 @@ class ChatE2EE implements IChatE2EE {
 
     private subscriptionLogger = logger.createChild('Subscription');
     private callLogger = logger.createChild('Call');
+    private keyExchangeLogger = logger.createChild('KeyExchange');
 
     private initialized = false;
 
     private symEncryption: ISymmetricEncryption;
     private asymEncryption: IAsymmetricEncryption;
+    private keyExchange: KeyExchangeManager;
 
     private callSignalRouter: CallSignalRouter = new CallSignalRouter(
         () => this.createWebRtcCall(),
@@ -70,6 +70,17 @@ class ChatE2EE implements IChatE2EE {
         const defaults = EncryptionFactory.create();
         this.symEncryption = encryptionStrategy?.symmetric ?? defaults.symmetric;
         this.asymEncryption = encryptionStrategy?.asymmetric ?? defaults.asymmetric;
+        this.keyExchange = new KeyExchangeManager(
+            this.symEncryption,
+            this.asymEncryption,
+            () => ({
+                userId: this.userId,
+                channelId: this.channelId,
+                publicKey: this.publicKey,
+                privateKey: this.privateKey,
+            }),
+            this.keyExchangeLogger,
+        );
     }
 
     public async init(): Promise<void> {
@@ -85,16 +96,14 @@ class ChatE2EE implements IChatE2EE {
 
         this.on('on-alice-join', async () => {
             evetLogger.log("Receiver connected.");
-            await this.getPublicKey(initLogger);
-            // Now that we have the receiver's RSA public key, share AES key encrypted with it
-            if (this.receiverPublicKey) {
-                await this.shareEncryptedAesKey();
-            }
+            // Now that the receiver has joined, sync their RSA public key and,
+            // if now known, share our AES key encrypted with it.
+            await this.keyExchange.syncWithReceiver(initLogger);
         })
 
         this.on("on-alice-disconnect", () => {
             evetLogger.log("Receiver disconnected");
-            this.receiverPublicKey = undefined;
+            this.keyExchange.onReceiverDisconnected();
         });
 
         this.on('webrtc-session-description', (data: WebRtcSignalPayload) => {
@@ -129,20 +138,17 @@ class ChatE2EE implements IChatE2EE {
         this.userId = userId;
 
         // Share RSA public key (without AES key until we have receiver's RSA public key)
-        await sharePublicKey({ aesKey: null, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId});
+        await this.keyExchange.shareOwnPublicKey();
         this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId!})
-        await this.getPublicKey(logger);
         // If the receiver's RSA public key is now known, share AES key encrypted with it
-        if (this.receiverPublicKey) {
-            await this.shareEncryptedAesKey();
-        }
+        await this.keyExchange.syncWithReceiver(logger);
         return;
     }
 
     public isEncrypted(): boolean {
         this.checkInitialized();
         logger.log(`isEncrypted()`);
-        return !!this.receiverPublicKey;
+        return this.keyExchange.hasReceiverPublicKey;
     }
 
     public async delete(): Promise<void> {
@@ -154,7 +160,7 @@ class ChatE2EE implements IChatE2EE {
     public async getUsersInChannel(): Promise<TypeUsersInChannel> {
         logger.log(`getUsersInChannel()`);
         this.checkInitialized();
-        await this.getPublicKey(logger.createChild('getUsersInChannel'));
+        await this.keyExchange.refreshReceiverPublicKey(logger.createChild('getUsersInChannel'));
         return getUsersInChannel({ channelID: this.channelId });
     }
 
@@ -168,7 +174,7 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`encrypt()`);
         this.checkInitialized();
 
-        const encryptedTextPromise = this.asymEncryption.encryptMessage(text, this.receiverPublicKey!);
+        const encryptedTextPromise = this.asymEncryption.encryptMessage(text, this.keyExchange.getReceiverPublicKey()!);
         return ({
             send: async () => {
                 const encryptedText = await encryptedTextPromise;
@@ -233,27 +239,6 @@ class ChatE2EE implements IChatE2EE {
         this.callSignalRouter.activeCall?.endCall();
         this.callSignalRouter.reset();
         this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());   
-    }
-
-    //get receiver public key
-    private async getPublicKey(logger: Logger): Promise<void> {
-        logger.log(`getPublicKey()`);
-        const receiverPublicKey = await getPublicKey({ userId: this.userId, channelId: this.channelId });
-        logger.log(`setPublicKey() - ${!!receiverPublicKey?.publicKey}`);
-        this.receiverPublicKey = receiverPublicKey?.publicKey;
-        if(receiverPublicKey.aesKey) {
-            // symmetric key is asymmetrically-encrypted ciphertext; decrypt it with our private key
-            const decryptedKeyMaterial = await this.asymEncryption.decryptMessage(receiverPublicKey.aesKey, this.privateKey!);
-            await this.symEncryption.importRemoteKey(decryptedKeyMaterial);
-        }
-        return;
-    }
-
-    // Encrypt local AES key with receiver's RSA public key and share it
-    private async shareEncryptedAesKey(): Promise<void> {
-        const exportedKey = await this.symEncryption.exportKey();
-        const encryptedAesKey = await this.asymEncryption.encryptMessage(exportedKey, this.receiverPublicKey!);
-        await sharePublicKey({ aesKey: encryptedAesKey, publicKey: this.publicKey, sender: this.userId, channelId: this.channelId });
     }
 
     private createSocketSubcription(): void {
