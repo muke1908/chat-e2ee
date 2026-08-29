@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { createChatInstance, utils } from '@chat-e2ee/service';
-import type { IChatE2EE, IE2ECall } from '@chat-e2ee/service';
+import type { IChatE2EE, IE2ECall, CallLifecycleState, CallLifecycleUpdate } from '@chat-e2ee/service';
 import { ChatContextType, Message } from '../types/index';
 import { createMessage } from '../utils/messageHandling';
 import { playBeep } from '../utils/audioNotification';
@@ -22,6 +22,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [callActive, setCallActive] = useState<boolean>(false);
   const [callStatus, setCallStatus] = useState<string>('');
   const [callDuration, setCallDuration] = useState<number>(0);
+  const [callLifecycleState, setCallLifecycleState] = useState<CallLifecycleState>('idle');
+  const [isIncomingCall, setIsIncomingCall] = useState<boolean>(false);
 
   // Initialize chat service (no modifications)
   const initializeChat = useCallback(async () => {
@@ -111,9 +113,54 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const call = await chat.startCall();
       setCallActive(true);
+       setIsIncomingCall(false);
+      setCallLifecycleState('ringing');
+      setCallStatus('Ringing...');
       setupCallListeners(call);
     } catch (err) {
       console.error('Failed to start call:', err);
+      throw err;
+    }
+  }, [chat]);
+
+  const acceptCall = useCallback(async () => {
+    if (!chat) throw new Error('Chat not initialized');
+    try {
+      await chat.acceptCall();
+      setCallActive(true);
+      setIsIncomingCall(false);
+      setCallLifecycleState('connecting');
+      setCallStatus('Connecting...');
+    } catch (err) {
+      console.error('Failed to accept call:', err);
+      throw err;
+    }
+  }, [chat]);
+
+  const rejectCall = useCallback(async () => {
+    if (!chat) throw new Error('Chat not initialized');
+    try {
+      await chat.rejectCall();
+      setIsIncomingCall(false);
+      setCallActive(false);
+      setCallLifecycleState('rejected');
+      setCallStatus('Call Rejected');
+    } catch (err) {
+      console.error('Failed to reject call:', err);
+      throw err;
+    }
+  }, [chat]);
+
+  const cancelCall = useCallback(async () => {
+    if (!chat) throw new Error('Chat not initialized');
+    try {
+      await chat.cancelCall();
+      setCallActive(false);
+      setIsIncomingCall(false);
+      setCallLifecycleState('cancelled');
+      setCallStatus('Call Cancelled');
+    } catch (err) {
+      console.error('Failed to cancel call:', err);
       throw err;
     }
   }, [chat]);
@@ -122,10 +169,13 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const endCall = useCallback(async () => {
     try {
       if (chat) {
-        chat.endCall();
+        await chat.endCall();
       }
       setCallActive(false);
+      setIsIncomingCall(false);
       setCallDuration(0);
+      setCallLifecycleState('ended');
+      setCallStatus('Call Ended');
     } catch (err) {
       console.error('Failed to end call:', err);
     }
@@ -159,8 +209,35 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     chatInstance.on('call-added', (call: IE2ECall) => {
       setCallActive(true);
-      setCallStatus('Incoming Call...');
+      setIsIncomingCall(false);
       setupCallListeners(call);
+    });
+
+    chatInstance.on('call-invite', () => {
+      setCallActive(true);
+      setIsIncomingCall(true);
+      setCallLifecycleState('incoming');
+      setCallStatus('Incoming Call...');
+      playBeep();
+    });
+
+    chatInstance.on('call-state-changed', (update: CallLifecycleUpdate) => {
+      setCallLifecycleState(update.state);
+      setCallStatus(formatCallStatus(update.state));
+      if (update.state === 'incoming') {
+        setCallActive(true);
+      }
+      if (['ended', 'rejected', 'timeout', 'cancelled', 'no-peer', 'media-denied', 'signaling-failed', 'ice-failed'].includes(update.state)) {
+        setCallActive(false);
+        setIsIncomingCall(false);
+        setCallDuration(0);
+      }
+    });
+
+    chatInstance.on('call-removed', () => {
+      setCallActive(false);
+      setIsIncomingCall(false);
+      setCallDuration(0);
     });
   };
 
@@ -172,10 +249,33 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (state === 'closed' || state === 'failed') {
         setCallActive(false);
+        setIsIncomingCall(false);
         setCallDuration(0);
-        setCallStatus('');
+        setCallLifecycleState(state === 'failed' ? 'ice-failed' : 'ended');
+        setCallStatus(state === 'failed' ? 'Connection Failed' : 'Call Ended');
       }
     });
+  };
+
+  const formatCallStatus = (state: CallLifecycleState): string => {
+    const callStatusByState: Record<CallLifecycleState, string> = {
+      idle: '',
+      initiating: 'Initiating...',
+      ringing: 'Ringing...',
+      incoming: 'Incoming Call...',
+      connecting: 'Connecting...',
+      connected: 'Connected',
+      ending: 'Ending...',
+      ended: 'Call Ended',
+      rejected: 'Call Rejected',
+      'no-peer': 'No Peer Available',
+      'media-denied': 'Microphone Permission Denied',
+      'signaling-failed': 'Signaling Failed',
+      'ice-failed': 'Connection Failed',
+      timeout: 'Call Timed Out',
+      cancelled: 'Call Cancelled',
+    };
+    return callStatusByState[state] ?? '';
   };
 
   // Check for existing users
@@ -215,11 +315,16 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     callActive,
     callStatus,
     callDuration,
+    callLifecycleState,
+    isIncomingCall,
     initializeChat,
     createNewChannel,
     joinChannel,
     sendMessage,
     startCall,
+    acceptCall,
+    rejectCall,
+    cancelCall,
     endCall,
     addMessage,
     setCallDuration,

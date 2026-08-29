@@ -11,7 +11,16 @@ import { SocketInstance, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
-import { WebRTCCall, E2ECall, peerConnectionEvents, CallSignalRouter, type PeerConnectionEventType, type WebRtcSignalPayload } from './webrtc/webrtcCall';
+import {
+    WebRTCCall,
+    E2ECall,
+    peerConnectionEvents,
+    CallSignalRouter,
+    type PeerConnectionEventType,
+    type WebRtcSignalPayload,
+} from './webrtc/webrtcCall';
+import { type CallControlSignal, type CallEndReason, type CallLifecycleState, type CallLifecycleUpdate } from './webrtc/types';
+import { webrtcSession } from './api/webrtcSession';
 export type { IE2ECall } from './webrtc/webrtcCall';
 
 export const utils = {
@@ -40,6 +49,11 @@ class ChatE2EE implements IChatE2EE {
     private subscriptionLogger = logger.createChild('Subscription');
     private callLogger = logger.createChild('Call');
     private keyExchangeLogger = logger.createChild('KeyExchange');
+    private signalSeq = 0;
+    private activeCallId?: string;
+    private outgoingInviteTimeout?: ReturnType<typeof setTimeout>;
+    private callLifecycleState: CallLifecycleState = 'idle';
+    private lastSignalSeqByCall: Map<string, number> = new Map();
 
     private initialized = false;
 
@@ -48,18 +62,35 @@ class ChatE2EE implements IChatE2EE {
     private keyExchange: KeyExchangeManager;
 
     private callSignalRouter: CallSignalRouter = new CallSignalRouter(
-        () => this.createWebRtcCall(),
+        () => this.createWebRtcCall(this.activeCallId || this.callSignalRouter.pendingCallId),
         () => {
             this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
+        },
+        (callId) => {
+            this.activeCallId = callId;
+            if (this.callLifecycleState !== 'incoming') {
+                this.updateCallLifecycle('incoming');
+                this.callSubscriptions.get("call-invite")?.forEach((cb) => cb({ callId }));
+            }
         },
         this.callLogger,
     );
 
     private setupCallSubs(call: WebRTCCall): void {
         call.on('state-changed', (state) => {
+            if (state === 'connecting') {
+                this.updateCallLifecycle('connecting');
+            }
+            if (state === 'connected') {
+                this.clearOutgoingInviteTimeout();
+                this.updateCallLifecycle('connected');
+            }
             if(state === 'failed' || state === 'closed') {
                 this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
-                this.endCall();
+                const reason: CallEndReason = state === 'failed' ? 'failed' : 'remote-end';
+                this.endCall(reason);
+            } else if (state === 'disconnected') {
+                this.updateCallLifecycle('ice-failed');
             }
         })
     }
@@ -105,7 +136,10 @@ class ChatE2EE implements IChatE2EE {
         });
 
         this.on('webrtc-session-description', (data: WebRtcSignalPayload) => {
-            this.callSignalRouter.handleSignal(data);
+            this.handleCallSignal(data).catch((error) => {
+                this.callLogger.log('Failed to handle call signal', error);
+                this.updateCallLifecycle('signaling-failed');
+            });
         });
 
 
@@ -244,17 +278,202 @@ class ChatE2EE implements IChatE2EE {
         if(this.callSignalRouter.activeCall) {
             throw new Error('Call already active');
         }
-        const webrtcCall = this.createWebRtcCall();
-        this.callSignalRouter.attachCall(webrtcCall);
-        await webrtcCall.startCall()
+        await this.assertCallPreconditions();
+        this.activeCallId = generateUUID();
+        this.signalSeq = 0;
+        const webrtcCall = this.createWebRtcCall(this.activeCallId);
+        this.callSignalRouter.attachCall(webrtcCall, this.activeCallId);
+        this.updateCallLifecycle('initiating');
+        await this.sendControlSignal('call-invite');
+        this.updateCallLifecycle('ringing');
+        this.scheduleOutgoingInviteTimeout();
         const call = new E2ECall(webrtcCall);
         return call;
     }
 
-    public async endCall(): Promise<void> {
+    public async acceptCall(): Promise<void> {
+        if (!this.activeCallId) {
+            throw new Error('Missing call identifier for incoming call.');
+        }
+        await this.sendControlSignal('call-accept');
+        const call = this.callSignalRouter.acceptPendingOffer(this.activeCallId);
+        if (call) {
+            this.callSubscriptions.get("call-added")?.forEach((cb) => cb(this.activeCall));
+        }
+        this.updateCallLifecycle('connecting');
+    }
+
+    public async rejectCall(): Promise<void> {
+        const pendingCallId = this.callSignalRouter.pendingCallId;
+        if (!pendingCallId) {
+            return;
+        }
+        this.activeCallId = pendingCallId;
+        await this.sendControlSignal('call-reject', 'rejected');
+        this.callSignalRouter.rejectPendingOffer();
+        this.endLocalCall('rejected', 'rejected');
+    }
+
+    public async cancelCall(): Promise<void> {
+        if (!this.activeCallId) {
+            return;
+        }
+        await this.sendControlSignal('call-cancel', 'cancelled');
+        this.endLocalCall('cancelled', 'cancelled');
+    }
+
+    public async endCall(reason: CallEndReason = 'local-end'): Promise<void> {
+        if (this.activeCallId) {
+            await this.sendControlSignal('call-end', reason);
+        }
+        this.endLocalCall(reason);
+    }
+
+    private async handleCallSignal(data: WebRtcSignalPayload): Promise<void> {
+        if (this.isStaleSignal(data)) {
+            return;
+        }
+        if (data.type === 'call-invite') {
+            if (this.callSignalRouter.activeCall || this.callSignalRouter.pendingCallId) {
+                this.activeCallId = data.callId;
+                await this.sendControlSignal('call-reject', 'rejected');
+                return;
+            }
+            this.activeCallId = data.callId;
+            this.updateCallLifecycle('incoming');
+            this.callSubscriptions.get("call-invite")?.forEach((cb) => cb({ callId: data.callId }));
+            return;
+        }
+
+        if (data.type === 'call-accept') {
+            if (!this.activeCallId || data.callId !== this.activeCallId) {
+                return;
+            }
+            this.clearOutgoingInviteTimeout();
+            this.updateCallLifecycle('connecting');
+            await this.callSignalRouter.activeCall?.startCall();
+            return;
+        }
+
+        if (data.type === 'call-reject') {
+            if (this.activeCallId && data.callId === this.activeCallId) {
+                this.callSubscriptions.get("call-rejected")?.forEach((cb) => cb({ callId: data.callId }));
+                this.endLocalCall('rejected', 'rejected');
+            }
+            return;
+        }
+
+        if (data.type === 'call-cancel') {
+            if (this.activeCallId && data.callId === this.activeCallId) {
+                this.callSubscriptions.get("call-cancelled")?.forEach((cb) => cb({ callId: data.callId }));
+                this.endLocalCall('cancelled', 'cancelled');
+            }
+            return;
+        }
+
+        if (data.type === 'call-timeout') {
+            if (this.activeCallId && data.callId === this.activeCallId) {
+                this.callSubscriptions.get("call-timeout")?.forEach((cb) => cb({ callId: data.callId }));
+                this.endLocalCall('timeout', 'timeout');
+            }
+            return;
+        }
+
+        if (data.type === 'call-end') {
+            if (this.activeCallId && data.callId === this.activeCallId) {
+                this.callSubscriptions.get("call-ended")?.forEach((cb) => cb({ callId: data.callId, reason: data.reason }));
+                this.endLocalCall('remote-end');
+            }
+            return;
+        }
+
+        this.callSignalRouter.handleSignal(data);
+    }
+
+    private async assertCallPreconditions(): Promise<void> {
+        const users = await this.getUsersInChannel();
+        if (!users || users.length < 2) {
+            this.updateCallLifecycle('no-peer');
+            throw new Error('No user available to accept call');
+        }
+        await this.resolveReceiverPublicKey();
+    }
+
+    private async sendControlSignal(type: CallControlSignal['type'], reason?: CallEndReason): Promise<void> {
+        if (!this.activeCallId) {
+            throw new Error('Cannot send control signal without active call ID.');
+        }
+        const signal: CallControlSignal = {
+            type,
+            callId: this.activeCallId,
+            seq: ++this.signalSeq,
+            timestamp: Date.now(),
+            ...(reason ? { reason } : {}),
+        };
+        await webrtcSession({
+            signal,
+            sender: this.userId!,
+            channelId: this.channelId!,
+        });
+    }
+
+    private scheduleOutgoingInviteTimeout(): void {
+        this.clearOutgoingInviteTimeout();
+        this.outgoingInviteTimeout = setTimeout(async () => {
+            if (this.callLifecycleState !== 'ringing' || !this.activeCallId) {
+                return;
+            }
+            try {
+                await this.sendControlSignal('call-timeout', 'timeout');
+            } catch (error) {
+                this.callLogger.log('Unable to send timeout signal', error);
+            }
+            this.callSubscriptions.get("call-timeout")?.forEach((cb) => cb({ callId: this.activeCallId }));
+            this.endLocalCall('timeout', 'timeout');
+        }, 30_000);
+    }
+
+    private clearOutgoingInviteTimeout(): void {
+        if (this.outgoingInviteTimeout) {
+            clearTimeout(this.outgoingInviteTimeout);
+            this.outgoingInviteTimeout = undefined;
+        }
+    }
+
+    private updateCallLifecycle(state: CallLifecycleState, reason?: CallEndReason): void {
+        this.callLifecycleState = state;
+        const payload: CallLifecycleUpdate = {
+            state,
+            callId: this.activeCallId,
+            ...(reason ? { reason } : {}),
+        };
+        this.callSubscriptions.get("call-state-changed")?.forEach((cb) => cb(payload));
+    }
+
+    private endLocalCall(reason: CallEndReason, terminalState: CallLifecycleState = 'ended'): void {
+        this.clearOutgoingInviteTimeout();
+        this.updateCallLifecycle('ending', reason);
         this.callSignalRouter.activeCall?.endCall();
         this.callSignalRouter.reset();
-        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());   
+        this.callSubscriptions.get("call-removed")?.forEach((cb) => cb());
+        if (this.activeCallId) {
+            this.lastSignalSeqByCall.delete(this.activeCallId);
+        }
+        if (terminalState !== 'ended') {
+            this.updateCallLifecycle(terminalState, reason);
+        }
+        this.activeCallId = undefined;
+        this.updateCallLifecycle('ended', reason);
+    }
+
+    private isStaleSignal(signal: WebRtcSignalPayload): boolean {
+        const last = this.lastSignalSeqByCall.get(signal.callId);
+        if (typeof last === 'number' && signal.seq <= last) {
+            this.callLogger.log(`Skipping stale signal ${signal.type} for call=${signal.callId}, seq=${signal.seq}`);
+            return true;
+        }
+        this.lastSignalSeqByCall.set(signal.callId, signal.seq);
+        return false;
     }
 
     private createSocketSubcription(): void {
@@ -268,13 +487,19 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
-    private createWebRtcCall(): WebRTCCall {
+    private createWebRtcCall(callId?: string): WebRTCCall {
         this.checkInitialized();
+        const resolvedCallId = callId || generateUUID();
         const call = new WebRTCCall(
             this.symEncryption,
             this.userId!,
             this.channelId!,
             this.callLogger,
+            () => ({
+                callId: resolvedCallId,
+                seq: ++this.signalSeq,
+                timestamp: Date.now(),
+            }),
         );
         this.setupCallSubs(call)
         return call;
@@ -283,3 +508,4 @@ class ChatE2EE implements IChatE2EE {
 
 export * from './public/types';
 export { EncryptionFactory, type EncryptionStrategyConfig, type BuiltinSymmetricStrategy, type BuiltinAsymmetricStrategy } from './crypto/encryptionFactory';
+export type { CallLifecycleState, CallEndReason, CallLifecycleUpdate } from './webrtc/types';

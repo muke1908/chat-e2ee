@@ -1,11 +1,14 @@
 import { type ISymmetricEncryption } from "../crypto/cryptoAES";
 import { Logger } from "../utils/logger";
+import { generateUUID } from "../utils/uuid";
 import { webrtcSession } from "../api/webrtcSession";
 import {
     type callEvents,
     type WebRtcSignalPayload,
-    type SignalData,
-    type IceCandidateSignalData,
+    type OfferSignalData,
+    type AnswerSignalData,
+    type IceCandidateSignalWithMetadata,
+    type SignalMetadata,
 } from "./types";
 import { FrameCodec } from "./frameCodec";
 import { AudioSink } from "./audioSink";
@@ -33,6 +36,8 @@ export class Peer {
     private frameCodec: FrameCodec;
     private audioStream?: MediaStream;
     private encodedTransformCleanup: Array<() => void> = [];
+    private fallbackSignalSeq = 0;
+    private fallbackCallId = generateUUID();
 
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(
@@ -40,7 +45,8 @@ export class Peer {
         private encryption: ISymmetricEncryption,
         private sender: string,
         private channel: string,
-        private logger: Logger
+        private logger: Logger,
+        private signalMetadataProvider?: () => SignalMetadata,
     ) {
         this.audioSink = new AudioSink(this.logger.createChild('AudioSink'));
         this.frameCodec = new FrameCodec(this.encryption, this.logger.createChild('FrameCodec'));
@@ -63,11 +69,14 @@ export class Peer {
         this.pc.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
             if (event.candidate) {
                 this.logger.log('ICE Candidate (Caller) gathered.');
+                const metadata = this.resolveSignalMetadata();
+                const signal: IceCandidateSignalWithMetadata = {
+                    candidate: event.candidate.toJSON ? event.candidate.toJSON() : event.candidate,
+                    type: 'candidate',
+                    ...metadata,
+                };
                 webrtcSession({
-                    description: {
-                        candidate: event.candidate,
-                        type: 'candidate'
-                    },
+                    signal,
                     sender: this.sender,
                     channelId: this.channel
                 });
@@ -95,8 +104,14 @@ export class Peer {
         this.logger.log('createAndSendOffer');
         const offer = await this.pc.createOffer();
         await this.pc.setLocalDescription(offer);
+        const metadata = this.resolveSignalMetadata();
+        const signal: OfferSignalData = {
+            type: 'offer',
+            sdp: offer.sdp || '',
+            ...metadata,
+        };
         await webrtcSession({
-            description: offer,
+            signal,
             sender: this.sender,
             channelId: this.channel
         });
@@ -108,21 +123,26 @@ export class Peer {
         if (data.type === 'offer') {
             await this.localStreamAcquisatonPromise;
             this.logger.log('Signal, offer');
-            await this.pc.setRemoteDescription(new RTCSessionDescription(data as SignalData));
+            await this.pc.setRemoteDescription(new RTCSessionDescription(data));
             const answer = await this.pc.createAnswer();
             await this.pc.setLocalDescription(answer);
+            const metadata = this.resolveSignalMetadata();
+            const signal: AnswerSignalData = {
+                type: 'answer',
+                sdp: answer.sdp || '',
+                ...metadata,
+            };
             await webrtcSession({
-                description: answer,
+                signal,
                 sender: this.sender,
                 channelId: this.channel
             });
         } else if (data.type === 'answer') {
             this.logger.log('Signal, answer');
-            await this.pc.setRemoteDescription(new RTCSessionDescription(data as SignalData));
+            await this.pc.setRemoteDescription(new RTCSessionDescription(data));
         } else if (data.type === 'candidate') {
             this.logger.log('Signal, candidate');
-            const iceCandidateData = data as IceCandidateSignalData;
-            const candidate = new RTCIceCandidate(iceCandidateData.candidate);
+            const candidate = new RTCIceCandidate(data.candidate);
             this.pc.addIceCandidate(candidate).catch(e => console.error('Error adding ICE candidate:', e));
         }
     }
@@ -173,5 +193,16 @@ export class Peer {
         this.encodedTransformCleanup.push(
             applyEncodedTransform(sender, 'encrypt', this.encryption, this.frameCodec, this.logger),
         );
+    }
+
+    private resolveSignalMetadata(): SignalMetadata {
+        if (this.signalMetadataProvider) {
+            return this.signalMetadataProvider();
+        }
+        return {
+            callId: this.fallbackCallId,
+            seq: ++this.fallbackSignalSeq,
+            timestamp: Date.now(),
+        };
     }
 }

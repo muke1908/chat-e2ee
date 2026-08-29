@@ -4,7 +4,9 @@ import { Peer } from "./peer";
 import {
     type callEvents,
     type WebRtcSignalPayload,
-    type IceCandidateSignalData,
+    type IceCandidateSignalWithMetadata,
+    type OfferSignalData,
+    type SignalMetadata,
     type PeerConnectionEventType,
     peerConnectionEvents,
 } from "./types";
@@ -39,14 +41,21 @@ export class WebRTCCall {
         }
     }
 
-    constructor(encryption: ISymmetricEncryption, sender: string, channel: string, private logger: Logger) {
+    constructor(
+        encryption: ISymmetricEncryption,
+        sender: string,
+        channel: string,
+        private logger: Logger,
+        private signalMetadataProvider?: () => SignalMetadata,
+    ) {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
             () => this.subs,
             encryption,
             sender,
             channel,
-            this.logger.createChild('Peer')
+            this.logger.createChild('Peer'),
+            this.signalMetadataProvider,
         );
     }
 
@@ -89,11 +98,16 @@ export class WebRTCCall {
  */
 export class CallSignalRouter {
     private call?: WebRTCCall;
-    private bufferedIceCandidates: IceCandidateSignalData[] = [];
+    private activeCallId?: string;
+    private pendingIncomingOffer?: OfferSignalData;
+    private acceptedPendingCallId?: string;
+    private bufferedIceCandidates: IceCandidateSignalWithMetadata[] = [];
+    private lastSeqByCall: Map<string, number> = new Map();
 
     constructor(
         private createCall: () => WebRTCCall,
         private onCallCreated: (call: WebRTCCall) => void,
+        private onIncomingOffer: (callId: string) => void,
         private logger: Logger,
     ) {}
 
@@ -101,22 +115,45 @@ export class CallSignalRouter {
         return this.call;
     }
 
+    public get pendingCallId(): string | undefined {
+        return this.pendingIncomingOffer?.callId;
+    }
+
     /** Register a call created outside of signal routing (e.g. an outgoing call). */
-    public attachCall(call: WebRTCCall): void {
+    public attachCall(call: WebRTCCall, callId: string): void {
         this.call = call;
+        this.activeCallId = callId;
+        this.flushBufferedIceCandidates(callId);
     }
 
     public handleSignal(data: WebRtcSignalPayload): void {
         this.logger.log(`New session description: ${data.type}`);
+        if (this.isStale(data)) {
+            this.logger.log(`Ignoring stale signal: ${data.type}, ${data.callId}, seq=${data.seq}`);
+            return;
+        }
+        if (this.isControlSignal(data.type)) {
+            return;
+        }
+
         if (data.type === 'offer') {
-            this.call = this.createCall();
-            this.onCallCreated(this.call);
-            this.call.signal(data);
-            this.flushBufferedIceCandidates();
+            if (this.call && this.activeCallId === data.callId) {
+                this.call.signal(data);
+                return;
+            }
+            if (this.acceptedPendingCallId === data.callId) {
+                this.pendingIncomingOffer = data;
+                this.acceptPendingOffer(data.callId);
+                return;
+            }
+            this.pendingIncomingOffer = data;
+            this.onIncomingOffer(data.callId);
         } else if (data.type === 'answer') {
-            this.call?.signal(data);
+            if (this.call && this.activeCallId === data.callId) {
+                this.call.signal(data);
+            }
         } else if (data.type === 'candidate') {
-            if (!this.call) {
+            if (!this.call || this.activeCallId !== data.callId) {
                 this.logger.log('Call not created yet, buffering ICE candidate.');
                 this.bufferedIceCandidates.push(data);
             } else {
@@ -125,15 +162,61 @@ export class CallSignalRouter {
         }
     }
 
+    public acceptPendingOffer(callId: string): WebRTCCall | undefined {
+        this.acceptedPendingCallId = callId;
+        if (!this.pendingIncomingOffer || this.pendingIncomingOffer.callId !== callId) {
+            return undefined;
+        }
+        const activeCallId = this.pendingIncomingOffer.callId;
+        const call = this.createCall();
+        this.call = call;
+        this.activeCallId = activeCallId;
+        this.acceptedPendingCallId = undefined;
+        this.onCallCreated(call);
+        call.signal(this.pendingIncomingOffer);
+        this.pendingIncomingOffer = undefined;
+        this.flushBufferedIceCandidates(activeCallId);
+        return call;
+    }
+
+    public rejectPendingOffer(): string | undefined {
+        const pendingId = this.pendingIncomingOffer?.callId || this.acceptedPendingCallId;
+        this.acceptedPendingCallId = undefined;
+        this.pendingIncomingOffer = undefined;
+        if (pendingId) {
+            this.bufferedIceCandidates = this.bufferedIceCandidates.filter((c) => c.callId !== pendingId);
+        }
+        return pendingId;
+    }
+
     /** Clear the active call reference and any buffered ICE candidates. */
     public reset(): void {
         this.call = undefined;
+        this.activeCallId = undefined;
+        this.pendingIncomingOffer = undefined;
+        this.acceptedPendingCallId = undefined;
         this.bufferedIceCandidates = [];
+        this.lastSeqByCall.clear();
     }
 
-    private flushBufferedIceCandidates(): void {
-        this.bufferedIceCandidates.forEach((ice) => this.call!.signal(ice));
-        this.bufferedIceCandidates = [];
+    private flushBufferedIceCandidates(callId: string): void {
+        const scoped = this.bufferedIceCandidates.filter((ice) => ice.callId === callId);
+        const others = this.bufferedIceCandidates.filter((ice) => ice.callId !== callId);
+        scoped.forEach((ice) => this.call!.signal(ice));
+        this.bufferedIceCandidates = others;
+    }
+
+    private isControlSignal(type: WebRtcSignalPayload['type']): boolean {
+        return type.startsWith('call-');
+    }
+
+    private isStale(data: WebRtcSignalPayload): boolean {
+        const last = this.lastSeqByCall.get(data.callId);
+        if (typeof last === 'number' && data.seq <= last) {
+            return true;
+        }
+        this.lastSeqByCall.set(data.callId, data.seq);
+        return false;
     }
 }
 

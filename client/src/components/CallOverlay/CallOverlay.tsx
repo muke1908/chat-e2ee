@@ -10,7 +10,7 @@ import { EndCallIcon } from '../common/icons';
 import './CallOverlay.css';
 
 export const CallOverlay: React.FC = () => {
-  const { callActive, callStatus, endCall } = useChat();
+  const { callActive, callStatus, isIncomingCall, callLifecycleState, endCall, acceptCall, rejectCall, cancelCall } = useChat();
   const { duration, formatDuration, startTimer, stopTimer } = useCallTimer();
 
   useEffect(() => {
@@ -24,7 +24,19 @@ export const CallOverlay: React.FC = () => {
   if (!callActive) return null;
 
   const handleEndCall = async () => {
+    if (callLifecycleState === 'ringing') {
+      await cancelCall();
+      return;
+    }
     await endCall();
+  };
+
+  const handleAcceptCall = async () => {
+    await acceptCall();
+  };
+
+  const handleRejectCall = async () => {
+    await rejectCall();
   };
 
   return (
@@ -37,16 +49,27 @@ export const CallOverlay: React.FC = () => {
         <p id="call-duration" className="call-duration">
           {formatDuration(duration)}
         </p>
-        <Button
-          id="end-call-btn"
-          variant="danger"
-          circle
-          size="large"
-          onClick={handleEndCall}
-          title="End Call"
-        >
-          <EndCallIcon size={32} />
-        </Button>
+        {isIncomingCall ? (
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <Button variant="secondary" size="medium" onClick={handleAcceptCall} title="Accept Call">
+              Accept
+            </Button>
+            <Button variant="danger" size="medium" onClick={handleRejectCall} title="Decline Call">
+              Decline
+            </Button>
+          </div>
+        ) : (
+          <Button
+            id="end-call-btn"
+            variant="danger"
+            circle
+            size="large"
+            onClick={handleEndCall}
+            title={callLifecycleState === 'ringing' ? 'Cancel Call' : 'End Call'}
+          >
+            <EndCallIcon size={32} />
+          </Button>
+        )}
       </div>
     </div>
   );
