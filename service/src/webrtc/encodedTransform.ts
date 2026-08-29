@@ -98,10 +98,11 @@ function applyScriptTransform(
             }
         };
         const ScriptTransform = (globalThis as { RTCRtpScriptTransform: ScriptTransformConstructor }).RTCRtpScriptTransform;
+        const initialKey = getKey();
         (target as EncodedTransformTarget & { transform: RTCRtpScriptTransform | null }).transform =
-            new ScriptTransform(worker, { direction, key: getKey() });
+            new ScriptTransform(worker, { direction, key: initialKey });
 
-        if (!getKey()) {
+        if (!initialKey) {
             logger.log(`No ${direction} key yet, waiting for the key exchange to complete.`);
             const startedAt = Date.now();
             keyPoll = setInterval(() => {

@@ -22,7 +22,13 @@ const rewriteWorkerUrlPlugin = {
                 return;
             }
             const contents = fs.readFileSync(outfile, 'utf8');
-            fs.writeFileSync(outfile, contents.split('./encodedTransform.worker.ts').join('./encodedTransform.worker.js'));
+            const workerUrlPattern = /(new URL\(\s*["'])\.\/encodedTransform\.worker\.ts(["'])/g;
+            if (!workerUrlPattern.test(contents)) {
+                console.warn('Worker URL not found in the bundle; the encoded transform worker may fail to load.');
+                return;
+            }
+            // Same length as the original specifier, so the source map stays valid.
+            fs.writeFileSync(outfile, contents.replace(workerUrlPattern, '$1./encodedTransform.worker.js$2'));
         });
     },
 };
