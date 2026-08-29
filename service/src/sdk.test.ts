@@ -437,6 +437,78 @@ describe('receiving chat-message', () => {
 });
 
 // ---------------------------------------------------------------------------
+// receiving a webrtc signal
+// ---------------------------------------------------------------------------
+describe('receiving webrtc signal', () => {
+    it('decrypts the envelope and delivers it to call-invite subscribers', async () => {
+        const instance = await buildInitializedInstance();
+        await instance.setChannel(ROOM_ID, SECRET, USER_ID);
+        const cb = jest.fn();
+        instance.on('call-invite', cb);
+
+        const envelope = await sealWithDefaultStrategy('signaling', { type: 'call-invite', callId: 'call-1', seq: 1, timestamp: 1 });
+
+        wireHandlerFor('webrtc-session-description')({ envelope });
+        await flushAsync();
+
+        expect(cb).toHaveBeenCalledWith(expect.objectContaining({ callId: 'call-1' }));
+    });
+
+    it('drops a replayed/duplicate signal (same sequence number twice for the same call)', async () => {
+        const instance = await buildInitializedInstance();
+        await instance.setChannel(ROOM_ID, SECRET, USER_ID);
+        const cb = jest.fn();
+        instance.on('call-invite', cb);
+
+        const envelope = await sealWithDefaultStrategy('signaling', { type: 'call-invite', callId: 'call-1', seq: 5, timestamp: 1 });
+        const handler = wireHandlerFor('webrtc-session-description');
+
+        handler({ envelope });
+        await flushAsync();
+        handler({ envelope });
+        await flushAsync();
+
+        expect(cb).toHaveBeenCalledTimes(1);
+    });
+
+    it('drops an out-of-order/lower sequence number signal for the same call', async () => {
+        const instance = await buildInitializedInstance();
+        await instance.setChannel(ROOM_ID, SECRET, USER_ID);
+        const cb = jest.fn();
+        instance.on('call-invite', cb);
+        const handler = wireHandlerFor('webrtc-session-description');
+
+        const newer = await sealWithDefaultStrategy('signaling', { type: 'call-invite', callId: 'call-1', seq: 5, timestamp: 1 });
+        const older = await sealWithDefaultStrategy('signaling', { type: 'call-invite', callId: 'call-1', seq: 3, timestamp: 1 });
+
+        handler({ envelope: newer });
+        await flushAsync();
+        handler({ envelope: older });
+        await flushAsync();
+
+        expect(cb).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not drop a signal for a different call id, even with a lower/equal sequence number', async () => {
+        const instance = await buildInitializedInstance();
+        await instance.setChannel(ROOM_ID, SECRET, USER_ID);
+        const cb = jest.fn();
+        instance.on('call-invite', cb);
+        const handler = wireHandlerFor('webrtc-session-description');
+
+        const callOne = await sealWithDefaultStrategy('signaling', { type: 'call-invite', callId: 'call-1', seq: 5, timestamp: 1 });
+        const callTwo = await sealWithDefaultStrategy('signaling', { type: 'call-invite', callId: 'call-2', seq: 1, timestamp: 1 });
+
+        handler({ envelope: callOne });
+        await flushAsync();
+        handler({ envelope: callTwo });
+        await flushAsync();
+
+        expect(cb).toHaveBeenCalledTimes(2);
+    });
+});
+
+// ---------------------------------------------------------------------------
 // createChatInstance() encryption strategy selection
 // ---------------------------------------------------------------------------
 /** Minimal custom strategy factory used to prove the registry/factory is genuinely pluggable (not just secure-vs-disabled). It knows nothing about rooms/channels/payload shape — only opaque bytes. */
