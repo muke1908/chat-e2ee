@@ -1,6 +1,6 @@
 import { setConfig } from './configContext';
-import { deriveInviteKeys, type InviteKeys } from './crypto/inviteCrypto';
-import { openEnvelope, sealEnvelope } from './crypto/secureEnvelope';
+import { KeyExchangeManager } from './crypto/strategy';
+import { resolveEncryptionStrategy } from './crypto/registry';
 import { ReplayGuard } from './utils/replayGuard';
 import { deleteLink, getLink } from './api/links';
 import { getUsersInChannel } from './api/messages';
@@ -37,8 +37,13 @@ class ChatE2EE implements IChatE2EE {
     private roomId?: string;
     private userId?: string;
 
-    /** Non-extractable AES-256-GCM keys derived from the invitation secret. Never persisted. */
-    private inviteKeys?: InviteKeys;
+    /**
+     * Delegates all sealing/opening of chat + signaling traffic to the
+     * configured `EncryptionStrategy` (secure default, disabled, or a
+     * custom registered strategy). `ChatE2EE` never touches key material
+     * (e.g. `CryptoKey`) directly.
+     */
+    private keyExchange: KeyExchangeManager;
 
     //To Do: Fix types
     private subscriptions: Map<string, Set<Function>> = new Map();
@@ -93,6 +98,11 @@ class ChatE2EE implements IChatE2EE {
     }
     constructor(config?: Partial<configType>) {
         config && setConfig(config);
+        // Resolved once per instance (not persisted to the shared global
+        // config) so multiple ChatE2EE instances can run different
+        // strategies concurrently. Throws immediately for an unknown
+        // strategy id — no lazy/deferred failure at setChannel() time.
+        this.keyExchange = new KeyExchangeManager(resolveEncryptionStrategy(config?.encryption?.strategy));
     }
 
     public async init(): Promise<void> {
@@ -119,9 +129,10 @@ class ChatE2EE implements IChatE2EE {
     }
 
     /**
-     * Derives the signaling/chat AEAD keys from the invitation `secret` via
-     * HKDF-SHA256 and joins the room. `secret` never leaves this device —
-     * only `roomId` and `userId` are sent to the server.
+     * Establishes the per-room encryption session via the configured
+     * strategy (HKDF-SHA256/AES-GCM by default) and joins the room.
+     * `secret` never leaves this device — only `roomId` and `userId` are
+     * sent to the server.
      */
     public async setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void> {
         this.checkInitialized();
@@ -129,7 +140,7 @@ class ChatE2EE implements IChatE2EE {
         if (!roomId || !secret) {
             throw new Error('setChannel() requires both a roomId and an invitation secret.');
         }
-        this.inviteKeys = await deriveInviteKeys(secret, roomId);
+        await this.keyExchange.begin(secret, roomId);
         this.roomId = roomId;
         this.userId = userId;
         // A fresh room join starts a fresh sequence-number space: forget any
@@ -142,11 +153,16 @@ class ChatE2EE implements IChatE2EE {
         return;
     }
 
-    /** True once the invite-derived keys are ready, i.e. as soon as setChannel() has resolved. */
+    /**
+     * True once the configured strategy's session is ready (i.e. as soon as
+     * setChannel() has resolved) *and* the strategy actually provides
+     * confidentiality. Always `false` for an explicitly disabled/no-op
+     * strategy, even once its session is ready.
+     */
     public isEncrypted(): boolean {
         this.checkInitialized();
         logger.log(`isEncrypted()`);
-        return !!this.inviteKeys;
+        return this.keyExchange.isReady && this.keyExchange.encrypts;
     }
 
     public async delete(): Promise<void> {
@@ -170,7 +186,7 @@ class ChatE2EE implements IChatE2EE {
             send: async () => {
                 this.assertChannelReady();
                 const seq = ++this.chatSeq;
-                const envelope = await sealEnvelope(this.inviteKeys!.chatKey, this.roomId!, {
+                const envelope = await this.keyExchange.seal('chat', {
                     seq,
                     timestamp: Date.now(),
                     text,
@@ -283,7 +299,7 @@ class ChatE2EE implements IChatE2EE {
      */
     private async handleRawChatMessage(msg: RawChatMessage): Promise<void> {
         this.assertChannelReady();
-        const payload = await openEnvelope<ChatPlaintext>(this.inviteKeys!.chatKey, this.roomId!, msg.envelope);
+        const payload = await this.keyExchange.open<ChatPlaintext>('chat', msg.envelope);
         if (!this.chatReplayGuard.accept('chat', payload.seq)) {
             this.chatLogger.log(`Dropping replayed/duplicate chat message, seq=${payload.seq}`);
             return;
@@ -305,7 +321,7 @@ class ChatE2EE implements IChatE2EE {
      */
     private async handleRawWebrtcSignal(msg: RawSignalMessage): Promise<void> {
         this.assertChannelReady();
-        const payload = await openEnvelope<WebRtcSignalPayload>(this.inviteKeys!.signalingKey, this.roomId!, msg.envelope);
+        const payload = await this.keyExchange.open<WebRtcSignalPayload>('signaling', msg.envelope);
         await this.handleCallSignal(payload);
     }
 
@@ -393,10 +409,10 @@ class ChatE2EE implements IChatE2EE {
         await this.sendSignal(signal);
     }
 
-    /** Seals a signaling payload with the invite-derived signaling key and relays it over the socket. */
+    /** Seals a signaling payload through the configured strategy's signaling channel and relays it over the socket. */
     private async sendSignal(payload: WebRtcSignalPayload): Promise<void> {
         this.assertChannelReady();
-        const envelope = await sealEnvelope(this.inviteKeys!.signalingKey, this.roomId!, payload);
+        const envelope = await this.keyExchange.seal('signaling', payload);
         await this.socket.sendWebrtcSignal(envelope);
     }
 
@@ -482,15 +498,15 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
-    /** Throws unless setChannel() has derived invite keys for an active room. */
+    /** Throws unless setChannel() has established a ready encryption session for an active room. */
     private assertChannelReady(): void {
-        if (!this.roomId || !this.inviteKeys) {
+        if (!this.roomId || !this.keyExchange.isReady) {
             throw new Error('Channel is not ready: call setChannel() with a valid invite secret first.');
         }
     }
 
     private clearChannelSecrets(): void {
-        this.inviteKeys = undefined;
+        this.keyExchange.reset();
         this.roomId = undefined;
         this.userId = undefined;
         this.chatSeq = 0;
@@ -518,3 +534,21 @@ class ChatE2EE implements IChatE2EE {
 
 export * from './public/types';
 export type { CallLifecycleState, CallEndReason, CallLifecycleUpdate } from './webrtc/types';
+
+// ---------------------------------------------------------------------------
+// Encryption strategy public API
+// ---------------------------------------------------------------------------
+// The SDK does not couple to any specific key-exchange/crypto primitive.
+// Every strategy (the secure HKDF+AES-GCM default, the explicit "disabled"
+// no-op, or a custom one) is registered/selected through this factory-style
+// API, in keeping with the `createChatInstance()` factory pattern above.
+export {
+    registerEncryptionStrategy,
+    unregisterEncryptionStrategy,
+    hasEncryptionStrategy,
+    listEncryptionStrategyIds,
+    getEncryptionStrategy,
+    DEFAULT_ENCRYPTION_STRATEGY_ID,
+    NO_ENCRYPTION_STRATEGY_ID,
+} from './crypto/registry';
+export { KeyExchangeManager, type EncryptionStrategy, type EncryptionChannel, type EncryptionEnvelope } from './crypto/strategy';

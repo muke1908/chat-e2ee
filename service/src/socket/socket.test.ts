@@ -103,7 +103,7 @@ describe('SocketInstance', () => {
     describe('incoming chat-message (still-encrypted, routed to onRawChatMessage)', () => {
         it('hands the raw envelope to onRawChatMessage without touching the generic subscription map', () => {
             createInstance();
-            const raw = { id: 1, timestamp: 123, sender: 'alice', envelope: { v: 1, room: 'r', iv: 'i', ct: 'c' } };
+            const raw = { id: 1, timestamp: 123, sender: 'alice', envelope: { v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } } };
 
             handlerFor('chat-message')(raw);
 
@@ -122,7 +122,7 @@ describe('SocketInstance', () => {
     describe('incoming webrtc-session-description (still-encrypted, routed to onRawWebrtcSignal)', () => {
         it('hands the raw envelope to onRawWebrtcSignal', () => {
             createInstance();
-            const raw = { envelope: { v: 1, room: 'r', iv: 'i', ct: 'c' } };
+            const raw = { envelope: { v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } } };
 
             handlerFor('webrtc-session-description')(raw);
 
@@ -143,9 +143,9 @@ describe('SocketInstance', () => {
             mockSocket.emit.mockImplementation((_event, _payload, ack) => ack({ id: 5, timestamp: 999 }));
             const instance = createInstance();
 
-            const result = await instance.sendChatMessage({ v: 1, room: 'r', iv: 'i', ct: 'c' });
+            const result = await instance.sendChatMessage({ v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } });
 
-            expect(mockSocket.emit).toHaveBeenCalledWith('chat-message', { envelope: { v: 1, room: 'r', iv: 'i', ct: 'c' } }, expect.any(Function));
+            expect(mockSocket.emit).toHaveBeenCalledWith('chat-message', { envelope: { v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } } }, expect.any(Function));
             expect(result).toEqual({ id: 5, timestamp: 999 });
         });
 
@@ -153,7 +153,7 @@ describe('SocketInstance', () => {
             mockSocket.emit.mockImplementation((_event, _payload, ack) => ack({ error: 'Rate limit exceeded' }));
             const instance = createInstance();
 
-            await expect(instance.sendChatMessage({ v: 1, room: 'r', iv: 'i', ct: 'c' })).rejects.toThrow('Rate limit exceeded');
+            await expect(instance.sendChatMessage({ v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } })).rejects.toThrow('Rate limit exceeded');
         });
     });
 
@@ -162,16 +162,16 @@ describe('SocketInstance', () => {
             mockSocket.emit.mockImplementation((_event, _payload, ack) => ack({ status: 'ok' }));
             const instance = createInstance();
 
-            await instance.sendWebrtcSignal({ v: 1, room: 'r', iv: 'i', ct: 'c' });
+            await instance.sendWebrtcSignal({ v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } });
 
-            expect(mockSocket.emit).toHaveBeenCalledWith('webrtc-signal', { envelope: { v: 1, room: 'r', iv: 'i', ct: 'c' } }, expect.any(Function));
+            expect(mockSocket.emit).toHaveBeenCalledWith('webrtc-signal', { envelope: { v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } } }, expect.any(Function));
         });
 
         it('rejects when the server ack carries an error', async () => {
             mockSocket.emit.mockImplementation((_event, _payload, ack) => ack({ error: 'No receiver is in the channel' }));
             const instance = createInstance();
 
-            await expect(instance.sendWebrtcSignal({ v: 1, room: 'r', iv: 'i', ct: 'c' })).rejects.toThrow('No receiver is in the channel');
+            await expect(instance.sendWebrtcSignal({ v: 1, strategy: 'test-strategy', room: 'r', data: { iv: 'i', ct: 'c' } })).rejects.toThrow('No receiver is in the channel');
         });
     });
 

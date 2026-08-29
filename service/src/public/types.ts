@@ -1,6 +1,7 @@
 import { SocketListenerType } from "../socket/socket";
 import { E2ECall, PeerConnectionEventType } from "../webrtc/webrtcCall";
 import { CallEndReason } from "../webrtc/types";
+import type { EncryptionStrategy } from "../crypto/strategy";
 
 /**
  * Invitation link/room descriptor.
@@ -53,10 +54,24 @@ export interface IUtils {
     generateUUID(): string,
 }
 
+/**
+ * Which encryption strategy a `ChatE2EE` instance should use.
+ *
+ *  - omitted → the secure invite-secret HKDF + AES-256-GCM default.
+ *  - a `string` → the id of a strategy registered via `registerEncryptionStrategy()`
+ *    (built-in ids: the secure default and `'disabled'`).
+ *  - an `EncryptionStrategy` instance → used directly for this instance only,
+ *    without requiring global registration.
+ */
+export type EncryptionConfig = {
+    strategy?: string | EncryptionStrategy<any>,
+}
+
 export type configType = {
     settings: {
         disableLog: boolean,
     },
     baseUrl?: string,
+    encryption?: EncryptionConfig,
 }
 export type SetConfigType = (config: Partial<configType>) => void;

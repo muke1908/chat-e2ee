@@ -2,7 +2,7 @@ import socketIOClient, { Socket } from 'socket.io-client';
 import { configContext } from '../configContext';
 import { Logger } from '../utils/logger';
 import type { chatJoinPayloadType } from '../public/types';
-import type { SecureEnvelope } from '../crypto/secureEnvelope';
+import type { EncryptionEnvelope } from '../crypto/strategy';
 
 /** Public, consumer-facing event names accepted by `IChatE2EE.on()`. */
 export type SocketListenerType = "limit-reached" | "delivered" | "on-alice-join" | "on-alice-disconnect" | "chat-message";
@@ -11,9 +11,9 @@ export type SubscriptionType = Map<string, Set<Function>>;
 export type SubscriptionContextType = () => SubscriptionType;
 
 /** Still-encrypted chat message as received from the wire. */
-export type RawChatMessage = { id: number; timestamp: number; sender: string; envelope: SecureEnvelope };
+export type RawChatMessage = { id: number; timestamp: number; sender: string; envelope: EncryptionEnvelope };
 /** Still-encrypted WebRTC signaling envelope as received from the wire. */
-export type RawSignalMessage = { envelope: SecureEnvelope };
+export type RawSignalMessage = { envelope: EncryptionEnvelope };
 
 /**
  * Raw, still-encrypted payloads are handed to these callbacks instead of
@@ -70,12 +70,12 @@ export class SocketInstance {
     }
 
     /** Send an already-sealed chat envelope; resolves with the server-assigned id/timestamp. */
-    public sendChatMessage(envelope: SecureEnvelope): Promise<{ id: number; timestamp: number }> {
+    public sendChatMessage(envelope: EncryptionEnvelope): Promise<{ id: number; timestamp: number }> {
         return this.emitWithAck<{ id: number; timestamp: number }>('chat-message', { envelope });
     }
 
     /** Send an already-sealed WebRTC signaling envelope. */
-    public async sendWebrtcSignal(envelope: SecureEnvelope): Promise<void> {
+    public async sendWebrtcSignal(envelope: EncryptionEnvelope): Promise<void> {
         await this.emitWithAck<{ status: string }>('webrtc-signal', { envelope });
     }
 
