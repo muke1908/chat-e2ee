@@ -1,5 +1,9 @@
 /**
- * Join hash view component
+ * Join-by-invite view component.
+ *
+ * Accepts a full invitation link/fragment (`#room=...&secret=...`) rather
+ * than a bare room id — joining requires the secret, which never touches
+ * the server.
  */
 
 import React, { useEffect } from 'react';
@@ -9,41 +13,42 @@ import { useUrlHash } from '../../hooks/useUrlHash';
 import './JoinHashView.css';
 
 interface JoinHashViewProps {
-  hash: string;
-  onHashChange: (hash: string) => void;
+  inviteInput: string;
+  onInviteInputChange: (value: string) => void;
   onBack: () => void;
   onJoin: () => void;
 }
 
 export const JoinHashView: React.FC<JoinHashViewProps> = ({
-  hash,
-  onHashChange,
+  inviteInput,
+  onInviteInputChange,
   onBack,
   onJoin,
 }) => {
-  const { hash: urlHash } = useUrlHash();
+  const { invite } = useUrlHash();
 
-  // Auto-populate from URL if available
+  // Auto-populate from the URL invite fragment if available
   useEffect(() => {
-    if (urlHash && !hash) {
-      onHashChange(urlHash);
+    if (invite && !inviteInput) {
+      onInviteInputChange(`room=${invite.roomId}&secret=${invite.secret}`);
     }
-  }, [urlHash, hash, onHashChange]);
+  }, [invite, inviteInput, onInviteInputChange]);
 
   return (
     <div className="join-hash-view">
       <Input
-        label="Channel Hash"
-        placeholder="Enter hash to join..."
-        value={hash}
-        onChange={onHashChange}
+        id="channel-hash"
+        label="Invitation Link"
+        placeholder="Paste the invite link you were sent..."
+        value={inviteInput}
+        onChange={onInviteInputChange}
       />
 
       <div className="button-group">
-        <Button variant="secondary" onClick={onBack}>
+        <Button id="back-btn" variant="secondary" onClick={onBack}>
           Back
         </Button>
-        <Button variant="primary" onClick={onJoin} disabled={!hash.trim()}>
+        <Button id="join-btn" variant="primary" onClick={onJoin} disabled={!inviteInput.trim()}>
           Connect Securely
         </Button>
       </div>

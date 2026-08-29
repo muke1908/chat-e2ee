@@ -94,7 +94,7 @@ App
 - ✅ Glass-morphism UI design
 - ✅ Mobile-responsive layout
 - ✅ Native share API integration
-- ✅ URL hash auto-population for channel joining
+- ✅ Invitation-link (`#room=...&secret=...`) auto-population for channel joining
 
 ## 🔒 Security & Backend Integration
 
@@ -142,8 +142,8 @@ This is a pure UI layer refactoring from vanilla TypeScript to React.js:
 - [ ] Join existing channel flow
 - [ ] Send/receive messages in real-time
 - [ ] Audio call initiation and termination
-- [ ] Copy hash functionality
-- [ ] URL hash auto-population
+- [ ] Copy invitation link functionality
+- [ ] Invitation-link auto-population
 - [ ] Peer detection and status indicators
 - [ ] Mobile responsiveness
 - [ ] Message animations

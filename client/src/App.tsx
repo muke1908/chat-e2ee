@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useChat } from './context/ChatContext';
 import { SetupOverlay } from './components/SetupOverlay/SetupOverlay';
 import { ChatContainer } from './components/ChatContainer/ChatContainer';
-import { updateUrlHash } from './utils/urlHash';
+import { updateUrlInvite } from './utils/urlHash';
 import './styles/global.css';
 
 const AppContent: React.FC = () => {
@@ -22,11 +22,11 @@ const AppContent: React.FC = () => {
     });
   }, [initializeChat]);
 
-  const handleSetupComplete = async (hash: string) => {
+  const handleSetupComplete = async (roomId: string, secret: string) => {
     try {
       setError('');
-      await joinChannel(hash);
-      updateUrlHash(hash);
+      await joinChannel(roomId, secret);
+      updateUrlInvite(roomId, secret);
       setShowSetup(false);
     } catch (err) {
       setError((err as any).message || 'Failed to connect. Please try again.');

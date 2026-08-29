@@ -6,7 +6,7 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
 import { createChatInstance, utils } from '@chat-e2ee/service';
 import type { IChatE2EE, IE2ECall, CallLifecycleState, CallLifecycleUpdate } from '@chat-e2ee/service';
-import { ChatContextType, Message } from '../types/index';
+import { ChatContextType, InviteInfo, Message } from '../types/index';
 import { createMessage } from '../utils/messageHandling';
 import { playBeep } from '../utils/audioNotification';
 
@@ -16,7 +16,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [chat, setChat] = useState<IChatE2EE | null>(null);
   const [userId, setUserId] = useState<string>('');
   const [channelHash, setChannelHash] = useState<string>('');
-  const [privateKey, setPrivateKey] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [callActive, setCallActive] = useState<boolean>(false);
@@ -24,6 +23,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [callDuration, setCallDuration] = useState<number>(0);
   const [callLifecycleState, setCallLifecycleState] = useState<CallLifecycleState>('idle');
   const [isIncomingCall, setIsIncomingCall] = useState<boolean>(false);
+  // Chat message decryption happens inside the SDK; only plaintext ever
+  // reaches this context. No private key material is held here any more.
 
   // Initialize chat service (no modifications)
   const initializeChat = useCallback(async () => {
@@ -32,9 +33,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         baseUrl: process.env.CHATE2EE_API_URL || 'http://localhost:3001',
       });
       await chatInstance.init();
-
-      const keys = chatInstance.getKeyPair();
-      setPrivateKey(keys.privateKey);
       setChat(chatInstance);
     } catch (err) {
       console.error('Chat initialization failed:', err);
@@ -42,26 +40,28 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  // Create new channel
-  const createNewChannel = useCallback(async (): Promise<string> => {
+  // Create new channel: asks the server for a room id, then generates the
+  // invitation secret entirely on this device (see getLink()). The secret
+  // never leaves the browser except via the URL fragment.
+  const createNewChannel = useCallback(async (): Promise<InviteInfo> => {
     if (!chat) throw new Error('Chat not initialized');
     try {
       const linkObj = await chat.getLink();
-      return linkObj.hash;
+      return { roomId: linkObj.hash, secret: linkObj.secret, link: linkObj.link, absoluteLink: linkObj.absoluteLink };
     } catch (err) {
       console.error('Failed to create channel:', err);
       throw err;
     }
   }, [chat]);
 
-  // Join existing channel
+  // Join existing channel using the invitation's roomId + secret
   const joinChannel = useCallback(
-    async (hash: string) => {
+    async (roomId: string, secret: string) => {
       if (!chat) throw new Error('Chat not initialized');
       try {
         // Check for channel status before joining
         const baseUrl = process.env.CHATE2EE_API_URL || 'http://localhost:3001';
-        const statusRes = await fetch(`${baseUrl}/api/chat-link/status/${encodeURIComponent(hash)}`);
+        const statusRes = await fetch(`${baseUrl}/api/chat-link/status/${encodeURIComponent(roomId)}`);
         if (statusRes.status === 410) {
           throw new Error('CHANNEL_DELETED');
         }
@@ -73,9 +73,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const newUserId = (utils as any).generateUUID();
         setUserId(newUserId);
 
-        // setChannel returns void but has async operations inside
-        chat.setChannel(hash, newUserId);
-        setChannelHash(hash);
+        await chat.setChannel(roomId, secret, newUserId);
+        setChannelHash(roomId);
         setIsConnected(true);
 
         // Setup listeners
@@ -157,7 +156,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await chat.cancelCall();
       setCallActive(false);
       setIsIncomingCall(false);
-      setCallLifecycleState('cancelled');
       setCallStatus('Call Cancelled');
     } catch (err) {
       console.error('Failed to cancel call:', err);
@@ -197,14 +195,11 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsConnected(false);
     });
 
-    chatInstance.on('chat-message', async (msg: any) => {
-      try {
-        const plainText = await (utils as any).decryptMessage(msg.message, privateKey);
-        const message = createMessage(msg.sender, plainText, 'received');
-        addMessage(message);
-      } catch (err) {
-        console.error('Failed to decrypt message:', err);
-      }
+    // The SDK has already decrypted (and replay-checked) the message before
+    // this fires — `msg.message` is plaintext.
+    chatInstance.on('chat-message', (msg: any) => {
+      const message = createMessage(msg.sender, msg.message, 'received');
+      addMessage(message);
     });
 
     chatInstance.on('call-added', (call: IE2ECall) => {
@@ -309,7 +304,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     chat,
     userId,
     channelHash,
-    privateKey,
     messages,
     isConnected,
     callActive,

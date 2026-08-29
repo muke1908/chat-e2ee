@@ -1,13 +1,12 @@
-import { type ISymmetricEncryption } from './crypto/cryptoAES';
 import { setConfig } from './configContext';
-import { cryptoUtils } from './crypto/cryptoRSA';
-import { type IAsymmetricEncryption } from './crypto/cryptoRSA';
-import { EncryptionFactory } from './crypto/encryptionFactory';
+import type { EncryptionEnvelope, EncryptionStrategy } from './crypto/strategy';
+import { resolveEncryptionStrategyFactory } from './crypto/registry';
+import { deriveChannelSecrets } from './crypto/inviteCrypto';
+import { ReplayGuard } from './utils/replayGuard';
 import { deleteLink, getLink } from './api/links';
-import { getUsersInChannel, sendMessage } from './api/messages';
-import { configType, type EncryptionStrategy, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
-import { KeyExchangeManager } from './keyExchange/keyExchangeManager';
-import { SocketInstance, type SubscriptionType } from './socket/socket';
+import { getUsersInChannel } from './api/messages';
+import { configType, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
+import { SocketInstance, type RawChatMessage, type RawSignalMessage, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
@@ -20,26 +19,44 @@ import {
     type WebRtcSignalPayload,
 } from './webrtc/webrtcCall';
 import { type CallControlSignal, type CallEndReason, type CallLifecycleState, type CallLifecycleUpdate } from './webrtc/types';
-import { webrtcSession } from './api/webrtcSession';
 export type { IE2ECall } from './webrtc/webrtcCall';
 
 export const utils = {
-    decryptMessage: (ciphertext: string, privateKey: string) => cryptoUtils.decryptMessage(ciphertext, privateKey),
     generateUUID
 }
 
 const logger = new Logger();
-export const createChatInstance = (config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy): IChatE2EE => {
+export const createChatInstance = (config?: Partial<configType>): IChatE2EE => {
     logger.log('Creating new instance');
-    return new ChatE2EE(config, encryptionStrategy);
+    return new ChatE2EE(config);
 }
 
+/** Shape of a decrypted chat payload (see `handleRawChatMessage`). */
+type ChatPlaintext = { seq: number, timestamp: number, text: string, image?: string };
+
+/** JSON-serialize an arbitrary payload into raw bytes — the wire format `EncryptionStrategy.encrypt()` expects. */
+const encodePayload = (payload: unknown): ArrayBuffer => new TextEncoder().encode(JSON.stringify(payload)).buffer as ArrayBuffer;
+
+/** Deserialize raw bytes produced by `EncryptionStrategy.decrypt()` back into JSON. */
+const decodePayload = <T>(bytes: ArrayBuffer): T => JSON.parse(new TextDecoder().decode(bytes)) as T;
+
 class ChatE2EE implements IChatE2EE {
-    private channelId?: string;
+    private roomId?: string;
     private userId?: string;
 
-    private privateKey?: string;
-    private publicKey?: string;
+    /**
+     * Two independent `EncryptionStrategy` instances, one per logical
+     * channel this SDK maintains (chat, WebRTC signaling) — created from
+     * the same factory (secure default, disabled, or a custom registered
+     * strategy) but never sharing in-memory state with each other. `ChatE2EE`
+     * owns all routing, JSON<->byte serialization, and replay/protocol
+     * validation around them; a strategy itself never sees a room id,
+     * channel name, or anything else application-specific.
+     */
+    private chatStrategy: EncryptionStrategy;
+    private signalingStrategy: EncryptionStrategy;
+    /** True once `setChannel()` has initialized both strategy instances for the active room. */
+    private channelReady = false;
 
     //To Do: Fix types
     private subscriptions: Map<string, Set<Function>> = new Map();
@@ -48,18 +65,17 @@ class ChatE2EE implements IChatE2EE {
 
     private subscriptionLogger = logger.createChild('Subscription');
     private callLogger = logger.createChild('Call');
-    private keyExchangeLogger = logger.createChild('KeyExchange');
+    private chatLogger = logger.createChild('Chat');
     private signalSeq = 0;
+    private chatSeq = 0;
     private activeCallId?: string;
     private outgoingInviteTimeout?: ReturnType<typeof setTimeout>;
     private callLifecycleState: CallLifecycleState = 'idle';
     private lastSignalSeqByCall: Map<string, number> = new Map();
+    private chatReplayGuard: ReplayGuard = new ReplayGuard();
 
     private initialized = false;
 
-    private symEncryption: ISymmetricEncryption;
-    private asymEncryption: IAsymmetricEncryption;
-    private keyExchange: KeyExchangeManager;
 
     private callSignalRouter: CallSignalRouter = new CallSignalRouter(
         () => this.createWebRtcCall(this.activeCallId || this.callSignalRouter.pendingCallId),
@@ -94,58 +110,26 @@ class ChatE2EE implements IChatE2EE {
             }
         })
     }
-    constructor(config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy) {
+    constructor(config?: Partial<configType>) {
         config && setConfig(config);
-        const defaults = EncryptionFactory.create();
-        this.symEncryption = encryptionStrategy?.symmetric ?? defaults.symmetric;
-        this.asymEncryption = encryptionStrategy?.asymmetric ?? defaults.asymmetric;
-        this.keyExchange = new KeyExchangeManager(
-            this.symEncryption,
-            this.asymEncryption,
-            () => ({
-                userId: this.userId,
-                channelId: this.channelId,
-                publicKey: this.publicKey,
-                privateKey: this.privateKey,
-            }),
-            this.keyExchangeLogger,
-        );
+        // Resolved once per instance (not persisted to the shared global
+        // config) so multiple ChatE2EE instances can run different
+        // strategies concurrently. Throws immediately for an unknown
+        // strategy id — no lazy/deferred failure at setChannel() time.
+        // The factory is called twice so the chat and signaling strategy
+        // instances are always genuinely distinct, even though they share
+        // the same underlying implementation.
+        const strategyFactory = resolveEncryptionStrategyFactory(config?.encryption?.strategy);
+        this.chatStrategy = strategyFactory();
+        this.signalingStrategy = strategyFactory();
     }
 
     public async init(): Promise<void> {
         const initLogger = logger.createChild('Init');
-        const evetLogger = logger.createChild('Events');
         initLogger.log(`Started.`);
 
         this.createSocketSubcription();
-        const { privateKey, publicKey } = await this.asymEncryption.generateKeypairs();
 
-        this.privateKey = privateKey;
-        this.publicKey = publicKey;
-
-        this.on('on-alice-join', async () => {
-            evetLogger.log("Receiver connected.");
-            // Now that the receiver has joined, sync their RSA public key and,
-            // if now known, share our AES key encrypted with it.
-            await this.keyExchange.syncWithReceiver(initLogger);
-        })
-
-        this.on("on-alice-disconnect", () => {
-            evetLogger.log("Receiver disconnected");
-            this.keyExchange.onReceiverDisconnected();
-        });
-
-        this.on('webrtc-session-description', (data: WebRtcSignalPayload) => {
-            this.handleCallSignal(data).catch((error) => {
-                this.callLogger.log('Failed to handle call signal', error);
-                this.updateCallLifecycle('signaling-failed');
-            });
-        });
-
-
-        initLogger.log(`Initializing symmetric Encryption for webrtc`);
-        await this.symEncryption.init();
-        initLogger.log(`Initialized symmetric Encryption for webrtc`);
         initLogger.log(`Finished.`);
         this.initialized = true;
     }
@@ -163,43 +147,61 @@ class ChatE2EE implements IChatE2EE {
         return getLink();
     }
 
-    public async setChannel(channelId: string, userId: string, userName?: string): Promise<void> {
+    /**
+     * Establishes the per-room encryption session via the configured
+     * strategy (HKDF-SHA256/AES-GCM by default) and joins the room.
+     * `secret` never leaves this device — only `roomId` and `userId` are
+     * sent to the server.
+     */
+    public async setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void> {
         this.checkInitialized();
-        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId,userName })}`);
-        this.channelId = channelId;
+        logger.log(`setChannel(), ${JSON.stringify({ roomId, userId, userName })}`);
+        if (!roomId || !secret) {
+            throw new Error('setChannel() requires both a roomId and an invitation secret.');
+        }
+        // Domain-separated opaque secrets are derived here, entirely outside
+        // the strategy layer — each strategy instance only ever sees its
+        // own secret, never the roomId or the fact that a sibling instance
+        // exists for the other channel.
+        const { chatSecret, signalingSecret } = await deriveChannelSecrets(secret);
+        await this.chatStrategy.initialize(chatSecret);
+        await this.signalingStrategy.initialize(signalingSecret);
+        this.channelReady = true;
+        this.roomId = roomId;
         this.userId = userId;
-
-        // Share RSA public key (without AES key until we have receiver's RSA public key)
-        await this.keyExchange.shareOwnPublicKey();
-        this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId!})
-        // If the receiver's RSA public key is now known, share AES key encrypted with it
-        await this.keyExchange.syncWithReceiver(logger);
+        // A fresh room join starts a fresh sequence-number space: forget any
+        // sequence numbers remembered from a previous setChannel() call on
+        // this instance, otherwise a peer restarting their own counter would
+        // have every message rejected as a replay.
+        this.chatSeq = 0;
+        this.chatReplayGuard.clear();
+        this.socket.joinChat({ userID: this.userId, channelID: this.roomId });
         return;
     }
 
+    /**
+     * True once the configured strategy's session is ready (i.e. as soon as
+     * setChannel() has resolved) *and* the strategy actually provides
+     * confidentiality. Always `false` for an explicitly disabled/no-op
+     * strategy, even once its session is ready.
+     */
     public isEncrypted(): boolean {
         this.checkInitialized();
         logger.log(`isEncrypted()`);
-        return this.keyExchange.hasReceiverPublicKey;
+        return this.channelReady && this.chatStrategy.encrypted;
     }
 
     public async delete(): Promise<void> {
         logger.log(`delete()`);
         this.checkInitialized();
-        await deleteLink({ channelID: this.channelId });
+        await deleteLink({ channelID: this.roomId });
+        this.clearChannelSecrets();
     }
 
     public async getUsersInChannel(): Promise<TypeUsersInChannel> {
         logger.log(`getUsersInChannel()`);
         this.checkInitialized();
-        await this.keyExchange.refreshReceiverPublicKey(logger.createChild('getUsersInChannel'));
-        return getUsersInChannel({ channelID: this.channelId });
-    }
-
-    public async sendMessage({ image, text }: { image: string, text: string }): Promise<ISendMessageReturn> {
-        logger.log(`sendMessage()`);
-        this.checkInitialized();
-        return sendMessage({ channelID: this.channelId, userId: this.userId, image, text })
+        return getUsersInChannel({ channelID: this.roomId });
     }
 
     public encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> } {
@@ -208,29 +210,19 @@ class ChatE2EE implements IChatE2EE {
 
         return ({
             send: async () => {
-                const receiverPublicKey = await this.resolveReceiverPublicKey();
-                const encryptedText = await this.asymEncryption.encryptMessage(text, receiverPublicKey);
-                return this.sendMessage({ image, text: encryptedText })
+                this.assertChannelReady();
+                const seq = ++this.chatSeq;
+                const payload: ChatPlaintext = {
+                    seq,
+                    timestamp: Date.now(),
+                    text,
+                    image,
+                };
+                const envelope = await this.chatStrategy.encrypt(encodePayload(payload));
+                const { id, timestamp } = await this.socket.sendChatMessage(envelope);
+                return { id: String(id), timestamp: String(timestamp) };
             }
         })
-    }
-
-    /**
-     * Returns the receiver's public key, refreshing it once if it isn't known yet.
-     * Encrypting without it produces a confusing WebCrypto `DataError`, so fail
-     * with an actionable message instead.
-     */
-    private async resolveReceiverPublicKey(): Promise<string> {
-        if (!this.keyExchange.hasReceiverPublicKey) {
-            await this.keyExchange.refreshReceiverPublicKey(logger.createChild('encrypt'));
-        }
-
-        const receiverPublicKey = this.keyExchange.getReceiverPublicKey();
-        if (!receiverPublicKey) {
-            throw new Error('Cannot encrypt message: the receiver has not shared their public key yet.');
-        }
-
-        return receiverPublicKey;
     }
 
     public on(listener: string, callback: (...args: any[]) => void): void {
@@ -260,20 +252,17 @@ class ChatE2EE implements IChatE2EE {
         logger.log('dispose()');
         this.socket.dispose();
         this.subscriptions.clear();
+        this.clearChannelSecrets();
         this.initialized = false;
     }
 
-    public getKeyPair(): { privateKey: string, publicKey: string } {
-        this.checkInitialized();
-        return {
-            privateKey: this.privateKey!,
-            publicKey: this.publicKey!
-        }
-    }
-
     public async startCall(): Promise<E2ECall> {
+        // isSupported() is a basic RTCPeerConnection feature-detection check
+        // (see WebRTCCall.isSupported) — there is no encoded-transform
+        // capability gate any more, since media relies solely on WebRTC's
+        // standard DTLS-SRTP transport encryption.
         if(!WebRTCCall.isSupported()) {
-            throw new Error('createEncodedStreams not supported.');
+            throw new Error('WebRTC is not supported in this environment.');
         }
         if(this.callSignalRouter.activeCall) {
             throw new Error('Call already active');
@@ -295,10 +284,6 @@ class ChatE2EE implements IChatE2EE {
         if (!this.activeCallId) {
             throw new Error('Missing call identifier for incoming call.');
         }
-        // The caller's AES key may have been shared after our last key sync;
-        // without it every incoming media frame fails to decrypt and the call
-        // is silent even though packets keep flowing.
-        await this.keyExchange.refreshReceiverPublicKey(this.keyExchangeLogger);
         await this.sendControlSignal('call-accept');
         const call = this.callSignalRouter.acceptPendingOffer(this.activeCallId);
         if (call) {
@@ -331,6 +316,42 @@ class ChatE2EE implements IChatE2EE {
             await this.sendControlSignal('call-end', reason);
         }
         this.endLocalCall(reason);
+    }
+
+    /**
+     * Decrypts an incoming chat envelope and fans it out to `chat-message`
+     * subscribers. Any failure (unknown version, wrong room, bad auth tag)
+     * or replayed/duplicate sequence number drops the message outright —
+     * there is no plaintext fallback and no partial delivery.
+     */
+    private async handleRawChatMessage(msg: RawChatMessage): Promise<void> {
+        this.assertChannelReady();
+        this.assertEnvelopeMatchesStrategy(msg.envelope, this.chatStrategy);
+        const payload = decodePayload<ChatPlaintext>(await this.chatStrategy.decrypt(msg.envelope));
+        if (!this.chatReplayGuard.accept('chat', payload.seq)) {
+            this.chatLogger.log(`Dropping replayed/duplicate chat message, seq=${payload.seq}`);
+            return;
+        }
+        this.subscriptions.get('chat-message')?.forEach((cb) => cb({
+            sender: msg.sender,
+            message: payload.text,
+            image: payload.image,
+            id: msg.id,
+            timestamp: msg.timestamp,
+        }));
+    }
+
+    /**
+     * Decrypts an incoming WebRTC signaling envelope before handing it to
+     * the existing call-lifecycle/signal-routing logic. Any decryption
+     * failure is treated as a signaling failure — the payload is dropped,
+     * never interpreted as plaintext.
+     */
+    private async handleRawWebrtcSignal(msg: RawSignalMessage): Promise<void> {
+        this.assertChannelReady();
+        this.assertEnvelopeMatchesStrategy(msg.envelope, this.signalingStrategy);
+        const payload = decodePayload<WebRtcSignalPayload>(await this.signalingStrategy.decrypt(msg.envelope));
+        await this.handleCallSignal(payload);
     }
 
     private async handleCallSignal(data: WebRtcSignalPayload): Promise<void> {
@@ -400,7 +421,7 @@ class ChatE2EE implements IChatE2EE {
             this.updateCallLifecycle('no-peer');
             throw new Error('No user available to accept call');
         }
-        await this.resolveReceiverPublicKey();
+        this.assertChannelReady();
     }
 
     private async sendControlSignal(type: CallControlSignal['type'], reason?: CallEndReason): Promise<void> {
@@ -414,11 +435,14 @@ class ChatE2EE implements IChatE2EE {
             timestamp: Date.now(),
             ...(reason ? { reason } : {}),
         };
-        await webrtcSession({
-            signal,
-            sender: this.userId!,
-            channelId: this.channelId!,
-        });
+        await this.sendSignal(signal);
+    }
+
+    /** Seals a signaling payload through the configured strategy's signaling instance and relays it over the socket. */
+    private async sendSignal(payload: WebRtcSignalPayload): Promise<void> {
+        this.assertChannelReady();
+        const envelope = await this.signalingStrategy.encrypt(encodePayload(payload));
+        await this.socket.sendWebrtcSignal(envelope);
     }
 
     private scheduleOutgoingInviteTimeout(): void {
@@ -482,7 +506,19 @@ class ChatE2EE implements IChatE2EE {
 
     private createSocketSubcription(): void {
         const subscriptionContext = () => this.subscriptions as SubscriptionType;
-        this.socket = new SocketInstance(subscriptionContext, logger.createChild('Socket'));
+        this.socket = new SocketInstance(subscriptionContext, logger.createChild('Socket'), {
+            onRawChatMessage: (msg) => {
+                this.handleRawChatMessage(msg).catch((error) => {
+                    this.chatLogger.log('Rejected chat message (dropped, no fallback):', error);
+                });
+            },
+            onRawWebrtcSignal: (msg) => {
+                this.handleRawWebrtcSignal(msg).catch((error) => {
+                    this.callLogger.log('Rejected signaling message (dropped, no fallback):', error);
+                    this.updateCallLifecycle('signaling-failed');
+                });
+            },
+        });
     }
 
     private checkInitialized(): void {
@@ -491,13 +527,56 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
+    /** Throws unless setChannel() has established a ready encryption session for an active room. */
+    private assertChannelReady(): void {
+        if (!this.roomId || !this.channelReady) {
+            throw new Error('Channel is not ready: call setChannel() with a valid invite secret first.');
+        }
+    }
+
+    /**
+     * Protocol-validation duty `ChatE2EE` owns on behalf of every strategy:
+     * reject a malformed or foreign-strategy envelope outright, before ever
+     * calling into `strategy.decrypt()`. There is never a fallback to a
+     * different strategy instance.
+     */
+    private assertEnvelopeMatchesStrategy(envelope: EncryptionEnvelope, strategy: EncryptionStrategy): void {
+        if (!envelope || typeof envelope !== 'object') {
+            throw new Error('Invalid envelope: expected an object.');
+        }
+        if (envelope.strategy !== strategy.id) {
+            throw new Error(`Unsupported encryption strategy: expected "${strategy.id}", got "${String(envelope.strategy)}".`);
+        }
+    }
+
+    private clearChannelSecrets(): void {
+        // destroy() is synchronous, but a custom strategy's implementation
+        // throwing must still not prevent local state from being cleared or
+        // the sibling strategy from being torn down.
+        try {
+            this.chatStrategy.destroy();
+        } catch {
+            // ignore: best-effort teardown, see comment above.
+        }
+        try {
+            this.signalingStrategy.destroy();
+        } catch {
+            // ignore: best-effort teardown, see comment above.
+        }
+        this.channelReady = false;
+        this.roomId = undefined;
+        this.userId = undefined;
+        this.chatSeq = 0;
+        this.signalSeq = 0;
+        this.chatReplayGuard.clear();
+        this.lastSignalSeqByCall.clear();
+    }
+
     private createWebRtcCall(callId?: string): WebRTCCall {
         this.checkInitialized();
         const resolvedCallId = callId || generateUUID();
         const call = new WebRTCCall(
-            this.symEncryption,
-            this.userId!,
-            this.channelId!,
+            (payload) => this.sendSignal(payload),
             this.callLogger,
             () => ({
                 callId: resolvedCallId,
@@ -511,5 +590,22 @@ class ChatE2EE implements IChatE2EE {
 }
 
 export * from './public/types';
-export { EncryptionFactory, type EncryptionStrategyConfig, type BuiltinSymmetricStrategy, type BuiltinAsymmetricStrategy } from './crypto/encryptionFactory';
 export type { CallLifecycleState, CallEndReason, CallLifecycleUpdate } from './webrtc/types';
+
+// ---------------------------------------------------------------------------
+// Encryption strategy public API
+// ---------------------------------------------------------------------------
+// The SDK does not couple to any specific encryption primitive. Every
+// strategy (the AES-256-GCM secure default, the explicit "disabled" no-op,
+// or a custom one) is registered/selected through this factory-style API,
+// in keeping with the `createChatInstance()` factory pattern above.
+export {
+    registerEncryptionStrategy,
+    unregisterEncryptionStrategy,
+    hasEncryptionStrategy,
+    listEncryptionStrategyIds,
+    getEncryptionStrategy,
+    DEFAULT_ENCRYPTION_STRATEGY_ID,
+    NO_ENCRYPTION_STRATEGY_ID,
+} from './crypto/registry';
+export type { EncryptionStrategy, EncryptionStrategyFactory, EncryptionEnvelope } from './crypto/strategy';

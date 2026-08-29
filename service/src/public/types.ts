@@ -1,43 +1,47 @@
 import { SocketListenerType } from "../socket/socket";
 import { E2ECall, PeerConnectionEventType } from "../webrtc/webrtcCall";
-import { ISymmetricEncryption } from "../crypto/cryptoAES";
-import { IAsymmetricEncryption } from "../crypto/cryptoRSA";
 import { CallEndReason } from "../webrtc/types";
+import type { EncryptionStrategyFactory } from "../crypto/strategy";
 
+/**
+ * Invitation link/room descriptor.
+ *
+ * `secret` is generated entirely on this device and is never sent to the
+ * server — it only ever leaves via the URL fragment portion of `link` /
+ * `absoluteLink` (`#room=<hash>&secret=<secret>`), which browsers do not
+ * transmit as part of an HTTP request.
+ */
 export type LinkObjType = {
     hash: string,
+    secret: string,
     link: string,
     absoluteLink: string | undefined,
     expired: boolean,
     deleted: boolean,
-    pin: string,
-    pinCreatedAt: number
 }
 
 export interface ISendMessageReturn { id: string, timestamp: string };
-export interface IGetPublicKeyReturn { publicKey: string, aesKey: string };
 export type TypeUsersInChannel = { "uuid": string }[];
 
-/** Payload sent to the server when a user joins a chat channel. */
+/** Payload sent to the server when a user joins a chat channel. Contains no key material. */
 export type chatJoinPayloadType = {
     channelID: string,
     userID: string,
-    publicKey: string
 }
 
 export interface IChatE2EE {
     init(): Promise<void>;
-    getKeyPair(): { privateKey: string, publicKey: string };
     isEncrypted(): boolean;
     getLink(): Promise<LinkObjType>;
-    setChannel(channelId: string, userId: string, userName?: string): void;
+    /** Derive session keys from the invitation `secret` and join the room. `secret` is never transmitted. */
+    setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void>;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<TypeUsersInChannel>;
-    sendMessage(args: { image: string, text: string }): Promise<ISendMessageReturn>;
     dispose(): void;
+    /** Encrypts `text`/`image` with the invite-derived chat key. This is the only way to send a message. */
     encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> };
     on(listener: SocketListenerType | PeerConnectionEventType, callback: (...args: any) => void): void;
-    // webrtc call 
+    // webrtc call
     startCall(): Promise<E2ECall>;
     acceptCall(): Promise<void>;
     rejectCall(): Promise<void>;
@@ -47,25 +51,28 @@ export interface IChatE2EE {
 }
 
 export interface IUtils {
-    decryptMessage(ciphertext: string, privateKey: string): Promise<string>,
     generateUUID(): string,
 }
 
 /**
- * Pluggable encryption strategy passed to createChatInstance().
- * Both fields are required.
+ * Which encryption strategy a `ChatE2EE` instance should use.
+ *
+ *  - omitted → the secure AES-256-GCM default.
+ *  - a `string` → the id of a strategy registered via `registerEncryptionStrategy()`
+ *    (built-in ids: the secure default and `'disabled'`).
+ *  - a factory function (`() => EncryptionStrategy`) → called twice (once for
+ *    chat, once for signaling) to create two independent instances for this
+ *    ChatE2EE instance only, without requiring global registration.
  */
-export interface EncryptionStrategy {
-    symmetric: ISymmetricEncryption;
-    asymmetric: IAsymmetricEncryption;
+export type EncryptionConfig = {
+    strategy?: string | EncryptionStrategyFactory,
 }
-
-export type { ISymmetricEncryption, IAsymmetricEncryption };
 
 export type configType = {
     settings: {
         disableLog: boolean,
     },
     baseUrl?: string,
+    encryption?: EncryptionConfig,
 }
 export type SetConfigType = (config: Partial<configType>) => void;

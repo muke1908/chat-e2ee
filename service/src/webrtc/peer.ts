@@ -1,7 +1,5 @@
-import { type ISymmetricEncryption } from "../crypto/cryptoAES";
 import { Logger } from "../utils/logger";
 import { generateUUID } from "../utils/uuid";
-import { webrtcSession } from "../api/webrtcSession";
 import {
     type callEvents,
     type WebRtcSignalPayload,
@@ -10,9 +8,7 @@ import {
     type IceCandidateSignalWithMetadata,
     type SignalMetadata,
 } from "./types";
-import { FrameCodec } from "./frameCodec";
 import { AudioSink } from "./audioSink";
-import { applyEncodedTransform } from './encodedTransform';
 
 /** Public STUN servers used for ICE candidate gathering. */
 const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
@@ -28,35 +24,36 @@ const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
     { urls: "stun:stun4.l.google.com:5349" }
 ];
 
+/**
+ * Seals and sends a signaling payload (offer/answer/ICE candidate/call
+ * control) over the socket connection. Provided by the SDK facade so `Peer`
+ * never needs to know about encryption keys or the room id — it only knows
+ * how to hand a payload off.
+ */
+export type SignalSender = (signal: WebRtcSignalPayload) => Promise<void>;
+
 export class Peer {
     private state: RTCPeerConnectionState;
     private pc: RTCPeerConnection;
 
     private audioSink: AudioSink;
-    private frameCodec: FrameCodec;
     private audioStream?: MediaStream;
-    private encodedTransformCleanup: Array<() => void> = [];
     private fallbackSignalSeq = 0;
     private fallbackCallId = generateUUID();
 
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(
         private subCtx: () => Map<callEvents, Set<Function>>,
-        private encryption: ISymmetricEncryption,
-        private sender: string,
-        private channel: string,
+        private sendSignal: SignalSender,
         private logger: Logger,
         private signalMetadataProvider?: () => SignalMetadata,
     ) {
         this.audioSink = new AudioSink(this.logger.createChild('AudioSink'));
-        this.frameCodec = new FrameCodec(this.encryption, this.logger.createChild('FrameCodec'));
 
-        // The constructor is cast because `encodedInsertableStreams`
-        // is a non-standard constructor option not present in the lib.dom types.
-        this.pc = new (RTCPeerConnection as unknown as new (config: RTCConfiguration & { encodedInsertableStreams: boolean }) => RTCPeerConnection)({
-            encodedInsertableStreams: true,
-            iceServers: DEFAULT_ICE_SERVERS
-        });
+        // Media is protected exclusively by WebRTC's mandatory DTLS-SRTP
+        // transport encryption; no custom per-frame encryption is layered on
+        // top (see the signaling envelope for the E2E-encrypted layer).
+        this.pc = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
 
         this.pc.onconnectionstatechange = () => {
             this.logger.log('Peer Connection State: ', this.pc.connectionState);
@@ -75,18 +72,13 @@ export class Peer {
                     type: 'candidate',
                     ...metadata,
                 };
-                webrtcSession({
-                    signal,
-                    sender: this.sender,
-                    channelId: this.channel
-                });
+                this.sendSignal(signal).catch((error) => this.logger.log('Failed to send ICE candidate:', error));
             }
         };
 
         this.pc.ontrack = (event: RTCTrackEvent) => {
             event.streams[0].getAudioTracks().forEach(() => {
                 this.logger.log('Adding remote audio track');
-                this.applyDecryption(event.receiver);
                 this.audioSink.attach(event.streams[0], 'remote');
             })
         };
@@ -110,12 +102,7 @@ export class Peer {
             sdp: offer.sdp || '',
             ...metadata,
         };
-        await webrtcSession({
-            signal,
-            sender: this.sender,
-            channelId: this.channel
-        });
-
+        await this.sendSignal(signal);
     }
 
 
@@ -132,11 +119,7 @@ export class Peer {
                 sdp: answer.sdp || '',
                 ...metadata,
             };
-            await webrtcSession({
-                signal,
-                sender: this.sender,
-                channelId: this.channel
-            });
+            await this.sendSignal(signal);
         } else if (data.type === 'answer') {
             this.logger.log('Signal, answer');
             await this.pc.setRemoteDescription(new RTCSessionDescription(data));
@@ -155,8 +138,6 @@ export class Peer {
             this.audioStream = undefined;
         }
         this.audioSink.detach();
-        this.encodedTransformCleanup.forEach(cleanup => cleanup());
-        this.encodedTransformCleanup = [];
         this.logger.log('Dispose');
         this.pc?.close();
         this.pc = undefined as unknown as RTCPeerConnection;
@@ -166,33 +147,11 @@ export class Peer {
         this.logger.log('addLocalAudioTracks, adding local track to Peer Connection');
         this.audioStream = await this.getAudioStream();
         this.audioStream.getTracks().forEach(track => this.pc.addTrack(track, this.audioStream!));
-        this.applyEncryption('audio');
     }
 
     private async getAudioStream(): Promise<MediaStream> {
         this.logger.log('getAudioStream');
         return navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    }
-
-    private applyDecryption(receiver: RTCRtpReceiver): void {
-        try {
-            this.encodedTransformCleanup.push(
-                applyEncodedTransform(receiver, 'decrypt', this.encryption, this.frameCodec, this.logger),
-            );
-        } catch (error) {
-            this.logger.log('Unable to initialize incoming encoded-frame decryption:', error);
-        }
-    }
-
-    private applyEncryption(mediaType: 'audio' | 'video'): void {
-        const sender = this.pc.getSenders().find(r => r.track?.kind === mediaType);
-
-        if (!sender) {
-            throw new Error(`No ${mediaType} sender is available for encoded-frame encryption.`);
-        }
-        this.encodedTransformCleanup.push(
-            applyEncodedTransform(sender, 'encrypt', this.encryption, this.frameCodec, this.logger),
-        );
     }
 
     private resolveSignalMetadata(): SignalMetadata {

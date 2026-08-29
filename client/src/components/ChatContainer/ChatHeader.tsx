@@ -71,7 +71,7 @@ const handleDelete = async () => {
             {hashCopied && <span className="copy-feedback-small">Copied!</span>}
           </div>
         )}
-        <p className="participant-info">
+        <p id="participant-info" className="participant-info">
           {isConnected ? 'Peer joined. Communication is encrypted.' : 'Waiting for someone to join...'}
         </p>
       </div>

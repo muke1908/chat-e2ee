@@ -1,14 +1,9 @@
 import { v4 } from 'uuid';
 
 import generateLink from './link';
-import { generatePIN } from './pin';
 
 jest.mock('uuid', () => ({
   v4: jest.fn().mockReturnValue('hash'),
-}));
-
-jest.mock('./pin', () => ({
-  generatePIN: jest.fn().mockReturnValue('1234'),
 }));
 
 test('chat link generation', () => {
@@ -17,10 +12,9 @@ test('chat link generation', () => {
     hash: 'hash',
     expired: false,
     deleted: false,
-    pin: '1234',
-    pinCreatedAt: expect.any(Number),
   });
+  expect(generatedLink).not.toHaveProperty('pin');
+  expect(generatedLink).not.toHaveProperty('pinCreatedAt');
 
-  expect(generatePIN).toBeCalledTimes(1);
   expect(v4).toBeCalledTimes(1);
 });

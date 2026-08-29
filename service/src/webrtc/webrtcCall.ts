@@ -1,6 +1,5 @@
-import { type ISymmetricEncryption } from "../crypto/cryptoAES";
 import { Logger } from "../utils/logger";
-import { Peer } from "./peer";
+import { Peer, type SignalSender } from "./peer";
 import {
     type callEvents,
     type WebRtcSignalPayload,
@@ -10,7 +9,6 @@ import {
     type PeerConnectionEventType,
     peerConnectionEvents,
 } from "./types";
-import { supportsEncodedTransforms } from './encodedTransform';
 
 export type { WebRtcSignalPayload, callEvents, PeerConnectionEventType };
 export { peerConnectionEvents };
@@ -25,8 +23,13 @@ export class WebRTCCall {
     private peer: Peer | undefined;
     private subs: Map<callEvents, Set<Function>> = new Map()
 
+    /**
+     * Basic feature-detection for WebRTC support. Media is always protected
+     * by WebRTC's mandatory DTLS-SRTP transport encryption; there is no
+     * custom encoded-transform capability gate to check any more.
+     */
     public static isSupported(): boolean {
-        return supportsEncodedTransforms();
+        return typeof RTCPeerConnection !== 'undefined';
     }
 
     public on(listener: callEvents, cb: (state: RTCPeerConnectionState) => void): void {
@@ -42,18 +45,14 @@ export class WebRTCCall {
     }
 
     constructor(
-        encryption: ISymmetricEncryption,
-        sender: string,
-        channel: string,
+        sendSignal: SignalSender,
         private logger: Logger,
         private signalMetadataProvider?: () => SignalMetadata,
     ) {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
             () => this.subs,
-            encryption,
-            sender,
-            channel,
+            sendSignal,
             this.logger.createChild('Peer'),
             this.signalMetadataProvider,
         );

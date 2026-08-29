@@ -9,40 +9,11 @@ import generateHash from './utils/link';
 
 const router = express.Router({ mergeParams: true });
 
-const generateUniqueHash = async (): Promise<LinkType> => {
-  const link = generateHash();
-
-  // This ensures, PINs won't clash each other
-  // Best case loop is not even executed
-  // worst case, loop can take 2 or more iterations
-  const pinExists = await db.findOneFromDB<LinkType>({ pin: link.pin }, LINK_COLLECTION);
-  if (pinExists) {
-    return generateUniqueHash();
-  }
-  return link;
-};
-
 router.post(
   "/",
   asyncHandler(async (req, res) => {
-    const link = await generateUniqueHash();
+    const link = generateHash();
     await db.insertInDb(link, LINK_COLLECTION);
-    return res.send(link);
-  })
-);
-router.get(
-  "/:pin",
-  asyncHandler(async (req, res) => {
-    const { pin } = req.params;
-    if (!pin) {
-      return res.sendStatus(404).send("Invalid pin");
-    }
-    const link = await db.findOneFromDB<LinkType>({ pin: pin.toUpperCase() }, LINK_COLLECTION);
-    const currentTime = new Date().getTime();
-    const invalidLink = !link || currentTime - link.pinCreatedAt > 30 * 60 * 1000;
-    if (invalidLink) {
-      return res.sendStatus(404).send("Invalid pin");
-    }
     return res.send(link);
   })
 );

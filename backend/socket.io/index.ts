@@ -1,11 +1,13 @@
 import { Server, Socket } from "socket.io";
-import { ChatMessageType } from "../api/messaging/types";
 import connectionListener from "./listeners";
 
 export interface CustomSocket extends Socket {
   userID: string,
   channelID: string
 }
+
+/** Opaque, versioned envelope — the server never inspects its contents. */
+export type WireEnvelope = { version: number, strategy: string, data: unknown };
 
 let io: Server = null;
 export enum SOCKET_TOPIC {
@@ -19,16 +21,22 @@ export enum SOCKET_TOPIC {
 }
 
 type emitDataTypes = {
-  [SOCKET_TOPIC.CHAT_MESSAGE]: ChatMessageType,
+  // `sender`/`id`/`timestamp` are assigned by the server from the
+  // authenticated socket, never taken from client input. `envelope` is
+  // opaque — the server relays it verbatim.
+  [SOCKET_TOPIC.CHAT_MESSAGE]: { id: number, timestamp: number, sender: string, envelope: WireEnvelope },
   [SOCKET_TOPIC.LIMIT_REACHED]: null,
-  [SOCKET_TOPIC.DELIVERED]: string,
+  [SOCKET_TOPIC.DELIVERED]: string | number,
   [SOCKET_TOPIC.ON_ALICE_DISCONNECTED]: null,
-  [SOCKET_TOPIC.ON_ALICE_JOIN]: {
-    publicKey: string
-  },
+  // No key material is exchanged any more — this is purely a presence signal.
+  [SOCKET_TOPIC.ON_ALICE_JOIN]: null,
   [SOCKET_TOPIC.MESSAGE]: string,
+  [SOCKET_TOPIC.WEBRTC_SESSION_DESCRIPTION]: { envelope: WireEnvelope },
   [key: string]: unknown,
 }
+
+/** Bounds the size of any single socket.io packet at the transport level, ahead of any application-level checks. */
+const MAX_HTTP_BUFFER_SIZE = 64 * 1024;
 
 export const initSocket = (server) => {
   if (io) {
@@ -36,7 +44,9 @@ export const initSocket = (server) => {
   }
 
   io = new Server(server, {
-    allowEIO3: true, cors: {
+    allowEIO3: true,
+    maxHttpBufferSize: MAX_HTTP_BUFFER_SIZE,
+    cors: {
       origin: "*",
       credentials: true
     }

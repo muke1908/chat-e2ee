@@ -1,17 +1,21 @@
 import { v4 as uuidv4 } from 'uuid';
-import { generatePIN } from './pin';
 
 const { CHAT_LINK_DOMAIN } = process.env;
-const PIN_LENGTH = 4;
 
 export type LinkType = {
   hash: string,
   expired: boolean,
   deleted: boolean,
-  pin: string,
-  pinCreatedAt: number,
 }
 
+/**
+ * Generates a new public room id.
+ *
+ * There is no PIN any more: joining requires the invitation fragment
+ * (`#room=<hash>&secret=<...>`), which carries a 256-bit secret generated
+ * entirely on the client and never sent to this server. A short, guessable
+ * PIN would have defeated that guarantee.
+ */
 const generateHash = (): LinkType => {
   const hash = uuidv4();
 
@@ -24,8 +28,6 @@ const generateHash = (): LinkType => {
     hash,
     expired: false,
     deleted: false,
-    pin: generatePIN(hash, PIN_LENGTH),
-    pinCreatedAt: new Date().getTime()
   };
 };
 
