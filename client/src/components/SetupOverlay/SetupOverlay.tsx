@@ -4,13 +4,14 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
+import { parseInviteInput } from '../../utils/urlHash';
 import { InitialActions } from './InitialActions';
 import { CreateHashView } from './CreateHashView';
 import { JoinHashView } from './JoinHashView';
 import './SetupOverlay.css';
 
 interface SetupOverlayProps {
-  onSetupComplete: (hash: string) => Promise<void>;
+  onSetupComplete: (roomId: string, secret: string) => Promise<void>;
   isHidden: boolean;
 }
 
@@ -19,29 +20,29 @@ type ViewType = 'initial' | 'create' | 'join' | 'deleted';
 export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isHidden }) => {
   const { createNewChannel } = useChat();
   const [view, setView] = useState<ViewType>('initial');
-  const [generatedHash, setGeneratedHash] = useState<string>('');
-  const [joinHash, setJoinHash] = useState<string>('');
+  const [invite, setInvite] = useState<{ roomId: string; secret: string; link: string } | null>(null);
+  const [joinInput, setJoinInput] = useState<string>('');
   const [status, setStatus] = useState<string>('');
   const [, setIsLoading] = useState<boolean>(false);
 
-  // Generate hash when entering create view
-  const generateHash = useCallback(async () => {
+  // Generate the invitation (room id from the server + a locally generated secret) when entering create view
+  const generateInvite = useCallback(async () => {
     try {
-      setStatus('Generating secure hash...');
-      const hash = await createNewChannel();
-      setGeneratedHash(hash);
+      setStatus('Generating a secure invitation...');
+      const created = await createNewChannel();
+      setInvite({ roomId: created.roomId, secret: created.secret, link: created.absoluteLink || created.link });
       setStatus('');
     } catch (err) {
-      setStatus('Failed to generate hash. Please try again.');
-      console.error('Hash generation error:', err);
+      setStatus('Failed to generate invitation. Please try again.');
+      console.error('Invite generation error:', err);
     }
   }, [createNewChannel]);
 
   useEffect(() => {
-    if (view === 'create' && !generatedHash) {
-      generateHash();
+    if (view === 'create' && !invite) {
+      generateInvite();
     }
-  }, [view, generatedHash, generateHash]);
+  }, [view, invite, generateInvite]);
 
   const handleCreateClick = () => {
     setView('create');
@@ -53,24 +54,26 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
 
   const handleBack = () => {
     setView('initial');
-    setGeneratedHash('');
-    setJoinHash('');
+    setInvite(null);
+    setJoinInput('');
     setStatus('');
   };
 
   const handleCopyHash = () => {
-    navigator.clipboard.writeText(generatedHash);
+    if (invite) {
+      navigator.clipboard.writeText(invite.link);
+    }
   };
 
   const handleCreateNext = async () => {
-    if (!generatedHash) {
-      setStatus('Please generate a hash first.');
+    if (!invite) {
+      setStatus('Please generate an invitation first.');
       return;
     }
     try {
       setIsLoading(true);
       setStatus('Connecting...');
-      await onSetupComplete(generatedHash);
+      await onSetupComplete(invite.roomId, invite.secret);
     } catch (err) {
       setStatus('Failed to connect. Please try again.');
       console.error('Setup error:', err);
@@ -80,20 +83,21 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
   };
 
   const handleJoinNext = async () => {
-    if (!joinHash.trim()) {
-      setStatus('Please enter a hash.');
+    const parsed = parseInviteInput(joinInput);
+    if (!parsed) {
+      setStatus('Please enter a valid invitation link.');
       return;
     }
     try {
       setIsLoading(true);
       setStatus('Connecting...');
-      await onSetupComplete(joinHash);
+      await onSetupComplete(parsed.roomId, parsed.secret);
     } catch (err: any) {
       if (err.message === 'CHANNEL_DELETED') {
         setView('deleted');
         setStatus('');
       } else {
-        setStatus('Failed to join channel. Please check the hash and try again.');
+        setStatus('Failed to join channel. Please check the invitation link and try again.');
       }
       console.error('Join error:', err);
     } finally {
@@ -116,7 +120,7 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
 
         {view === 'create' && (
           <CreateHashView
-            hash={generatedHash}
+            inviteLink={invite?.link || ''}
             onCopyClick={handleCopyHash}
             onBack={handleBack}
             onNext={handleCreateNext}
@@ -125,8 +129,8 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
 
         {view === 'join' && (
           <JoinHashView
-            hash={joinHash}
-            onHashChange={setJoinHash}
+            inviteInput={joinInput}
+            onInviteInputChange={setJoinInput}
             onBack={handleBack}
             onJoin={handleJoinNext}
           />
@@ -142,7 +146,7 @@ export const SetupOverlay: React.FC<SetupOverlayProps> = ({ onSetupComplete, isH
           </div>
         )}
 
-        {status && <div className="setup-status">{status}</div>}
+        {status && <div id="setup-status" className="setup-status">{status}</div>}
       </div>
     </div>
   );

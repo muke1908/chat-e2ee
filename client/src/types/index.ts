@@ -16,12 +16,20 @@ export interface Message {
 // Setup view states
 export type SetupView = 'initial' | 'create' | 'join';
 
+// A freshly created invitation: a public room id + a client-generated secret
+// that is only ever shared via the URL fragment, never sent to the server.
+export interface InviteInfo {
+  roomId: string;
+  secret: string;
+  link: string;
+  absoluteLink: string | undefined;
+}
+
 // Chat app state
 export interface AppState {
   chat: IChatE2EE | null;
   userId: string;
   channelHash: string;
-  privateKey: string;
   setupView: SetupView;
   messages: Message[];
   isConnected: boolean;
@@ -34,7 +42,6 @@ export interface ChatContextType {
   chat: IChatE2EE | null;
   userId: string;
   channelHash: string;
-  privateKey: string;
   messages: Message[];
   isConnected: boolean;
   callActive: boolean;
@@ -45,8 +52,8 @@ export interface ChatContextType {
 
   // Methods
   initializeChat: () => Promise<void>;
-  createNewChannel: () => Promise<string>;
-  joinChannel: (hash: string) => Promise<void>;
+  createNewChannel: () => Promise<InviteInfo>;
+  joinChannel: (roomId: string, secret: string) => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
   startCall: () => Promise<void>;
   acceptCall: () => Promise<void>;
@@ -68,6 +75,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export interface InputProps {
+  id?: string;
   label?: string;
   placeholder?: string;
   value: string;
@@ -81,6 +89,6 @@ export interface InputProps {
 export interface SetupOverlayProps {
   setupView: SetupView;
   onViewChange: (view: SetupView) => void;
-  onChannelJoin: (hash: string) => Promise<void>;
+  onChannelJoin: (roomId: string, secret: string) => Promise<void>;
   status?: string;
 }

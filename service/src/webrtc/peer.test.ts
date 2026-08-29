@@ -1,30 +1,15 @@
 import { Logger } from '../utils/logger';
-import type { ISymmetricEncryption } from '../crypto/cryptoAES';
 import type { callEvents, WebRtcSignalPayload } from './types';
 
 // ---------------------------------------------------------------------------
 // Mocks for the WebRTC/DOM globals + collaborator modules Peer depends on.
 // ---------------------------------------------------------------------------
-const mockWebrtcSession = jest.fn().mockResolvedValue(undefined);
-jest.mock('../api/webrtcSession', () => ({
-    webrtcSession: (...args: unknown[]) => mockWebrtcSession(...args),
-}));
-
 const mockAttach = jest.fn().mockResolvedValue(undefined);
 const mockDetach = jest.fn();
 jest.mock('./audioSink', () => ({
     AudioSink: jest.fn().mockImplementation(() => ({
         attach: mockAttach,
         detach: mockDetach,
-    })),
-}));
-
-const mockEncryptTransform = { __brand: 'encrypt-transform' };
-const mockDecryptTransform = { __brand: 'decrypt-transform' };
-jest.mock('./frameCodec', () => ({
-    FrameCodec: jest.fn().mockImplementation(() => ({
-        createEncryptTransform: jest.fn().mockReturnValue(mockEncryptTransform),
-        createDecryptTransform: jest.fn().mockReturnValue(mockDecryptTransform),
     })),
 }));
 
@@ -46,11 +31,6 @@ function makeFakeStream(tracks: FakeTrack[]) {
     };
 }
 
-function makeFakeEncodedStreamsPair() {
-    const readable = { pipeThrough: jest.fn().mockReturnThis(), pipeTo: jest.fn().mockResolvedValue(undefined) };
-    return { readable, writable: {} };
-}
-
 class FakeRTCPeerConnection {
     public connectionState: RTCPeerConnectionState = 'new';
     public onconnectionstatechange: (() => void) | null = null;
@@ -63,36 +43,13 @@ class FakeRTCPeerConnection {
     public setRemoteDescription = jest.fn().mockResolvedValue(undefined);
     public addIceCandidate = jest.fn().mockResolvedValue(undefined);
     public close = jest.fn();
-    public addTrack = jest.fn((track: FakeTrack) => {
-        this.__addSender(track);
-    });
-
-    private senders: { track: FakeTrack | null; createEncodedStreams: jest.Mock }[] = [];
+    public addTrack = jest.fn();
 
     constructor(public config: unknown) {}
-
-    public getSenders() {
-        return this.senders;
-    }
-
-    /** Test helper: register a fake sender so applyEncryption() can find it. */
-    public __addSender(track: FakeTrack) {
-        const sender = { track, createEncodedStreams: jest.fn().mockReturnValue(makeFakeEncodedStreamsPair()) };
-        this.senders.push(sender);
-        return sender;
-    }
 }
 
 function installWebRtcGlobals() {
-    class FakeRTCRtpSender {
-    }
-    class FakeRTCRtpReceiver {
-    }
-    (FakeRTCRtpSender.prototype as any).createEncodedStreams = jest.fn().mockReturnValue(makeFakeEncodedStreamsPair());
-    (FakeRTCRtpReceiver.prototype as any).createEncodedStreams = jest.fn().mockReturnValue(makeFakeEncodedStreamsPair());
     (globalThis as any).RTCPeerConnection = FakeRTCPeerConnection;
-    (globalThis as any).RTCRtpSender = FakeRTCRtpSender;
-    (globalThis as any).RTCRtpReceiver = FakeRTCRtpReceiver;
     (globalThis as any).RTCSessionDescription = class {
         type: string; sdp: string;
         constructor(init: { type: string; sdp: string }) { this.type = init.type; this.sdp = init.sdp; }
@@ -110,26 +67,23 @@ function installWebRtcGlobals() {
 
 function uninstallWebRtcGlobals() {
     delete (globalThis as any).RTCPeerConnection;
-    delete (globalThis as any).RTCRtpSender;
-    delete (globalThis as any).RTCRtpReceiver;
     delete (globalThis as any).RTCSessionDescription;
     delete (globalThis as any).RTCIceCandidate;
     delete (globalThis as any).navigator;
 }
 
-async function createPeer(subs: Map<callEvents, Set<Function>> = new Map()): Promise<{ peer: Peer; pc: FakeRTCPeerConnection }> {
+async function createPeer(subs: Map<callEvents, Set<Function>> = new Map()): Promise<{ peer: Peer; pc: FakeRTCPeerConnection; sendSignal: jest.Mock }> {
+    const sendSignal = jest.fn().mockResolvedValue(undefined);
     const peer = new Peer(
         () => subs,
-        {} as ISymmetricEncryption,
-        'sender-1',
-        'channel-1',
+        sendSignal,
         new Logger('test'),
     );
     // Flush the local-stream-acquisition promise kicked off by the constructor.
     await Promise.resolve();
     await Promise.resolve();
     const pc = (peer as unknown as { pc: FakeRTCPeerConnection }).pc;
-    return { peer, pc };
+    return { peer, pc, sendSignal };
 }
 
 function withMeta<T extends { type: string }>(signal: T): T & { callId: string; seq: number; timestamp: number } {
@@ -146,29 +100,32 @@ describe('Peer', () => {
         uninstallWebRtcGlobals();
     });
 
-    it('acquires the local audio stream, adds it as a track, and applies encryption on construction', async () => {
+    it('acquires the local audio stream and adds it as a track (no per-frame encryption is applied)', async () => {
         const { pc } = await createPeer();
 
         expect((globalThis as any).navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({ audio: true, video: false });
         expect(pc.addTrack).toHaveBeenCalledTimes(1);
     });
 
-    it('createAndSendOffer() creates + sets a local offer and sends it via webrtcSession', async () => {
-        const { peer, pc } = await createPeer();
+    it('constructs the RTCPeerConnection without the legacy encodedInsertableStreams option', async () => {
+        const { pc } = await createPeer();
+        expect((pc.config as any).encodedInsertableStreams).toBeUndefined();
+    });
+
+    it('createAndSendOffer() creates + sets a local offer and sends it via the injected sendSignal', async () => {
+        const { peer, pc, sendSignal } = await createPeer();
 
         await peer.createAndSendOffer();
 
         expect(pc.createOffer).toHaveBeenCalled();
         expect(pc.setLocalDescription).toHaveBeenCalledWith({ type: 'offer', sdp: 'offer-sdp' });
-        expect(mockWebrtcSession).toHaveBeenCalledWith({
-            signal: expect.objectContaining({ type: 'offer', sdp: 'offer-sdp', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
-            sender: 'sender-1',
-            channelId: 'channel-1',
-        });
+        expect(sendSignal).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'offer', sdp: 'offer-sdp', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
+        );
     });
 
     it('signal() with an offer sets the remote description and replies with an answer', async () => {
-        const { peer, pc } = await createPeer();
+        const { peer, pc, sendSignal } = await createPeer();
         const offer: WebRtcSignalPayload = withMeta({ type: 'offer', sdp: 'remote-offer' });
 
         await peer.signal(offer);
@@ -176,11 +133,9 @@ describe('Peer', () => {
         expect(pc.setRemoteDescription).toHaveBeenCalledWith(expect.objectContaining({ type: 'offer', sdp: 'remote-offer' }));
         expect(pc.createAnswer).toHaveBeenCalled();
         expect(pc.setLocalDescription).toHaveBeenCalledWith({ type: 'answer', sdp: 'answer-sdp' });
-        expect(mockWebrtcSession).toHaveBeenCalledWith({
-            signal: expect.objectContaining({ type: 'answer', sdp: 'answer-sdp', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
-            sender: 'sender-1',
-            channelId: 'channel-1',
-        });
+        expect(sendSignal).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'answer', sdp: 'answer-sdp', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
+        );
     });
 
     it('signal() with an answer only sets the remote description', async () => {
@@ -202,26 +157,24 @@ describe('Peer', () => {
         expect(pc.addIceCandidate).toHaveBeenCalledWith(expect.objectContaining({ candidate: 'ice-1' }));
     });
 
-    it('onicecandidate forwards gathered local candidates via webrtcSession', async () => {
-        const { pc } = await createPeer();
-        mockWebrtcSession.mockClear();
+    it('onicecandidate forwards gathered local candidates via the injected sendSignal', async () => {
+        const { pc, sendSignal } = await createPeer();
+        sendSignal.mockClear();
 
         pc.onicecandidate!({ candidate: { candidate: 'local-ice' } });
 
-        expect(mockWebrtcSession).toHaveBeenCalledWith({
-            signal: expect.objectContaining({ candidate: { candidate: 'local-ice' }, type: 'candidate', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
-            sender: 'sender-1',
-            channelId: 'channel-1',
-        });
+        expect(sendSignal).toHaveBeenCalledWith(
+            expect.objectContaining({ candidate: { candidate: 'local-ice' }, type: 'candidate', callId: expect.any(String), seq: expect.any(Number), timestamp: expect.any(Number) }),
+        );
     });
 
     it('onicecandidate is a no-op once ICE gathering completes (candidate is null)', async () => {
-        const { pc } = await createPeer();
-        mockWebrtcSession.mockClear();
+        const { pc, sendSignal } = await createPeer();
+        sendSignal.mockClear();
 
         pc.onicecandidate!({ candidate: null });
 
-        expect(mockWebrtcSession).not.toHaveBeenCalled();
+        expect(sendSignal).not.toHaveBeenCalled();
     });
 
     it('onconnectionstatechange notifies all state-changed subscribers with the new state', async () => {
@@ -239,15 +192,13 @@ describe('Peer', () => {
         expect(cb2).toHaveBeenCalledWith('connected');
     });
 
-    it('ontrack attaches the remote stream to the AudioSink and decrypts incoming frames', async () => {
+    it('ontrack attaches the remote stream to the AudioSink', async () => {
         const { pc } = await createPeer();
         const remoteTrack = makeFakeTrack('audio');
         const remoteStream = makeFakeStream([remoteTrack]);
-        const receiver = { createEncodedStreams: jest.fn().mockReturnValue(makeFakeEncodedStreamsPair()) };
 
-        pc.ontrack!({ streams: [remoteStream], receiver });
+        pc.ontrack!({ streams: [remoteStream] });
 
-        expect(receiver.createEncodedStreams).toHaveBeenCalled();
         expect(mockAttach).toHaveBeenCalledWith(remoteStream, 'remote');
     });
 

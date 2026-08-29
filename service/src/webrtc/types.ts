@@ -98,15 +98,3 @@ export const peerConnectionEvents: PeerConnectionEventType[] = [
     "call-ended",
     "call-timeout",
 ];
-
-/**
- * RTCRtpSender / RTCRtpReceiver extended with the non-standard
- * `createEncodedStreams()` method (Insertable Streams API).
- */
-export interface RTCRtpSenderWithStreams extends RTCRtpSender {
-    createEncodedStreams(): { readable: ReadableStream; writable: WritableStream };
-}
-
-export interface RTCRtpReceiverWithStreams extends RTCRtpReceiver {
-    createEncodedStreams(): { readable: ReadableStream; writable: WritableStream };
-}

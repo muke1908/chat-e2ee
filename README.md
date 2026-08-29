@@ -14,8 +14,7 @@ Demo: https://chat-e2ee-2.azurewebsites.net
 ## Features
 
 1. :negative_squared_cross_mark: No login/signup - the end users **don't identify** themselves.
-2. :closed_lock_with_key:	End-to-end encrypted Audio-Call  (Experimental - added on [19th September, 2024](https://github.com/muke1908/chat-e2ee/commit/efae545c4c378dd7cae3c133843c1d58fded8a56)).  
-:warning: Note that Audio encryption in webrtc call is done diffrently, please refer [Wiki](https://github.com/muke1908/chat-e2ee/wiki/End%E2%80%90to%E2%80%90end-encryption-in-Webrtc-audio-call). It internally uses RTCRtpSender API: `createEncodedStreams` that has [limited Support](https://caniuse.com/mdn-api_rtcrtpsender_createencodedstreams)
+2. :closed_lock_with_key:	Audio calls, signaled over an end-to-end encrypted channel (invite-derived AES-GCM key + HKDF-SHA256). Media itself relies on WebRTC's standard mandatory DTLS-SRTP transport encryption — there is no custom per-frame encryption layer or encoded-transform capability gate any more, so calls work in any standards-compliant WebRTC browser.
 4. :no_entry_sign: Data is **not** stored on any remote server, encrypted data is just relayed to other users, the data can't be decrypted by any man in the middle. **No history** i.e. once chat is closed the data is not recoverable, however encrypted data can be found on memory trace. [Read More](https://github.com/muke1908/chat-e2ee/wiki/How-and-when-your-data-can-be-compromised%3F)  
 
 ## :star: JS SDK 
@@ -34,22 +33,20 @@ For installation instruction, go to [developer section](https://github.com/muke1
 
 ### How to initiate chat
 
-1. Generate a unique link.
-2. Share the link or PIN with the person you want to chat with.
+1. Generate a unique invitation link.
+2. Share the link with the person you want to chat with.
 3. Start chatting.
-4. The messages are end-to-end encrypted; therefore, no one can decrypt your message other than you.
+4. Messages and WebRTC call signaling are end-to-end encrypted; no one but the two participants can decrypt them.
 
 **How the encryption works**
 
-1. Alice and Bob generate a public and private key pair.
-2. Alice and Bob share their public keys with each other.
-3. Alice encrypts her message with Bob's public key and sends it to Bob.
-4. Bob receives the encrypted message and decrypts it with his private key.
+1. The device creating the room generates a 256-bit secret locally and never sends it anywhere. It is only carried in the invitation link's URL fragment — `#room=<public-room-id>&secret=<secret>` — which browsers never transmit as part of an HTTP request.
+2. Both participants derive the same pair of AES-256-GCM keys from that shared secret via HKDF-SHA256: one key for chat messages, one for WebRTC signaling (offer/answer/ICE candidates), so a compromise of one cannot be used to attack the other.
+3. Every message/signal is sealed into a versioned, room-bound AEAD envelope before it ever reaches the server. The server relays this opaque envelope between the two sockets in the room — it cannot read, modify, or replay it into another room without the receiver rejecting it outright (there is no plaintext fallback).
 
-In this way, no one else can decrypt the message because your private key is never exposed/shared to the internet.
-More detailed explanation: https://www.youtube.com/watch?v=GSIDS_lvRv4&t=1s
+In this way, no one else can decrypt anything because the secret is never exposed to, or stored by, the server.
 
-> We are using browser [window.crypto library](https://developer.mozilla.org/en-US/docs/Web/API/crypto_property)  for encryption.  
+> We are using the browser [window.crypto library](https://developer.mozilla.org/en-US/docs/Web/API/crypto_property) (AES-GCM + HKDF-SHA256) for encryption.
 
 ---
 

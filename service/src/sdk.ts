@@ -1,13 +1,11 @@
-import { type ISymmetricEncryption } from './crypto/cryptoAES';
 import { setConfig } from './configContext';
-import { cryptoUtils } from './crypto/cryptoRSA';
-import { type IAsymmetricEncryption } from './crypto/cryptoRSA';
-import { EncryptionFactory } from './crypto/encryptionFactory';
+import { deriveInviteKeys, type InviteKeys } from './crypto/inviteCrypto';
+import { openEnvelope, sealEnvelope } from './crypto/secureEnvelope';
+import { ReplayGuard } from './utils/replayGuard';
 import { deleteLink, getLink } from './api/links';
-import { getUsersInChannel, sendMessage } from './api/messages';
-import { configType, type EncryptionStrategy, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
-import { KeyExchangeManager } from './keyExchange/keyExchangeManager';
-import { SocketInstance, type SubscriptionType } from './socket/socket';
+import { getUsersInChannel } from './api/messages';
+import { configType, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
+import { SocketInstance, type RawChatMessage, type RawSignalMessage, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
 export { setConfig } from './configContext';
 import { generateUUID } from './utils/uuid';
@@ -20,26 +18,27 @@ import {
     type WebRtcSignalPayload,
 } from './webrtc/webrtcCall';
 import { type CallControlSignal, type CallEndReason, type CallLifecycleState, type CallLifecycleUpdate } from './webrtc/types';
-import { webrtcSession } from './api/webrtcSession';
 export type { IE2ECall } from './webrtc/webrtcCall';
 
 export const utils = {
-    decryptMessage: (ciphertext: string, privateKey: string) => cryptoUtils.decryptMessage(ciphertext, privateKey),
     generateUUID
 }
 
 const logger = new Logger();
-export const createChatInstance = (config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy): IChatE2EE => {
+export const createChatInstance = (config?: Partial<configType>): IChatE2EE => {
     logger.log('Creating new instance');
-    return new ChatE2EE(config, encryptionStrategy);
+    return new ChatE2EE(config);
 }
 
+/** Shape of a decrypted chat payload (see `handleRawChatMessage`). */
+type ChatPlaintext = { seq: number, timestamp: number, text: string, image?: string };
+
 class ChatE2EE implements IChatE2EE {
-    private channelId?: string;
+    private roomId?: string;
     private userId?: string;
 
-    private privateKey?: string;
-    private publicKey?: string;
+    /** Non-extractable AES-256-GCM keys derived from the invitation secret. Never persisted. */
+    private inviteKeys?: InviteKeys;
 
     //To Do: Fix types
     private subscriptions: Map<string, Set<Function>> = new Map();
@@ -48,18 +47,16 @@ class ChatE2EE implements IChatE2EE {
 
     private subscriptionLogger = logger.createChild('Subscription');
     private callLogger = logger.createChild('Call');
-    private keyExchangeLogger = logger.createChild('KeyExchange');
+    private chatLogger = logger.createChild('Chat');
     private signalSeq = 0;
+    private chatSeq = 0;
     private activeCallId?: string;
     private outgoingInviteTimeout?: ReturnType<typeof setTimeout>;
     private callLifecycleState: CallLifecycleState = 'idle';
     private lastSignalSeqByCall: Map<string, number> = new Map();
+    private chatReplayGuard: ReplayGuard = new ReplayGuard();
 
     private initialized = false;
-
-    private symEncryption: ISymmetricEncryption;
-    private asymEncryption: IAsymmetricEncryption;
-    private keyExchange: KeyExchangeManager;
 
     private callSignalRouter: CallSignalRouter = new CallSignalRouter(
         () => this.createWebRtcCall(this.activeCallId || this.callSignalRouter.pendingCallId),
@@ -94,58 +91,16 @@ class ChatE2EE implements IChatE2EE {
             }
         })
     }
-    constructor(config?: Partial<configType>, encryptionStrategy?: EncryptionStrategy) {
+    constructor(config?: Partial<configType>) {
         config && setConfig(config);
-        const defaults = EncryptionFactory.create();
-        this.symEncryption = encryptionStrategy?.symmetric ?? defaults.symmetric;
-        this.asymEncryption = encryptionStrategy?.asymmetric ?? defaults.asymmetric;
-        this.keyExchange = new KeyExchangeManager(
-            this.symEncryption,
-            this.asymEncryption,
-            () => ({
-                userId: this.userId,
-                channelId: this.channelId,
-                publicKey: this.publicKey,
-                privateKey: this.privateKey,
-            }),
-            this.keyExchangeLogger,
-        );
     }
 
     public async init(): Promise<void> {
         const initLogger = logger.createChild('Init');
-        const evetLogger = logger.createChild('Events');
         initLogger.log(`Started.`);
 
         this.createSocketSubcription();
-        const { privateKey, publicKey } = await this.asymEncryption.generateKeypairs();
 
-        this.privateKey = privateKey;
-        this.publicKey = publicKey;
-
-        this.on('on-alice-join', async () => {
-            evetLogger.log("Receiver connected.");
-            // Now that the receiver has joined, sync their RSA public key and,
-            // if now known, share our AES key encrypted with it.
-            await this.keyExchange.syncWithReceiver(initLogger);
-        })
-
-        this.on("on-alice-disconnect", () => {
-            evetLogger.log("Receiver disconnected");
-            this.keyExchange.onReceiverDisconnected();
-        });
-
-        this.on('webrtc-session-description', (data: WebRtcSignalPayload) => {
-            this.handleCallSignal(data).catch((error) => {
-                this.callLogger.log('Failed to handle call signal', error);
-                this.updateCallLifecycle('signaling-failed');
-            });
-        });
-
-
-        initLogger.log(`Initializing symmetric Encryption for webrtc`);
-        await this.symEncryption.init();
-        initLogger.log(`Initialized symmetric Encryption for webrtc`);
         initLogger.log(`Finished.`);
         this.initialized = true;
     }
@@ -163,43 +118,47 @@ class ChatE2EE implements IChatE2EE {
         return getLink();
     }
 
-    public async setChannel(channelId: string, userId: string, userName?: string): Promise<void> {
+    /**
+     * Derives the signaling/chat AEAD keys from the invitation `secret` via
+     * HKDF-SHA256 and joins the room. `secret` never leaves this device —
+     * only `roomId` and `userId` are sent to the server.
+     */
+    public async setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void> {
         this.checkInitialized();
-        logger.log(`setChannel(), ${JSON.stringify({ channelId, userId,userName })}`);
-        this.channelId = channelId;
+        logger.log(`setChannel(), ${JSON.stringify({ roomId, userId, userName })}`);
+        if (!roomId || !secret) {
+            throw new Error('setChannel() requires both a roomId and an invitation secret.');
+        }
+        this.inviteKeys = await deriveInviteKeys(secret, roomId);
+        this.roomId = roomId;
         this.userId = userId;
-
-        // Share RSA public key (without AES key until we have receiver's RSA public key)
-        await this.keyExchange.shareOwnPublicKey();
-        this.socket.joinChat({ publicKey: this.publicKey!, userID: this.userId!, channelID: this.channelId!})
-        // If the receiver's RSA public key is now known, share AES key encrypted with it
-        await this.keyExchange.syncWithReceiver(logger);
+        // A fresh room join starts a fresh sequence-number space: forget any
+        // sequence numbers remembered from a previous setChannel() call on
+        // this instance, otherwise a peer restarting their own counter would
+        // have every message rejected as a replay.
+        this.chatSeq = 0;
+        this.chatReplayGuard.clear();
+        this.socket.joinChat({ userID: this.userId, channelID: this.roomId });
         return;
     }
 
+    /** True once the invite-derived keys are ready, i.e. as soon as setChannel() has resolved. */
     public isEncrypted(): boolean {
         this.checkInitialized();
         logger.log(`isEncrypted()`);
-        return this.keyExchange.hasReceiverPublicKey;
+        return !!this.inviteKeys;
     }
 
     public async delete(): Promise<void> {
         logger.log(`delete()`);
         this.checkInitialized();
-        await deleteLink({ channelID: this.channelId });
+        await deleteLink({ channelID: this.roomId });
     }
 
     public async getUsersInChannel(): Promise<TypeUsersInChannel> {
         logger.log(`getUsersInChannel()`);
         this.checkInitialized();
-        await this.keyExchange.refreshReceiverPublicKey(logger.createChild('getUsersInChannel'));
-        return getUsersInChannel({ channelID: this.channelId });
-    }
-
-    public async sendMessage({ image, text }: { image: string, text: string }): Promise<ISendMessageReturn> {
-        logger.log(`sendMessage()`);
-        this.checkInitialized();
-        return sendMessage({ channelID: this.channelId, userId: this.userId, image, text })
+        return getUsersInChannel({ channelID: this.roomId });
     }
 
     public encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> } {
@@ -208,29 +167,18 @@ class ChatE2EE implements IChatE2EE {
 
         return ({
             send: async () => {
-                const receiverPublicKey = await this.resolveReceiverPublicKey();
-                const encryptedText = await this.asymEncryption.encryptMessage(text, receiverPublicKey);
-                return this.sendMessage({ image, text: encryptedText })
+                this.assertChannelReady();
+                const seq = ++this.chatSeq;
+                const envelope = await sealEnvelope(this.inviteKeys!.chatKey, this.roomId!, {
+                    seq,
+                    timestamp: Date.now(),
+                    text,
+                    image,
+                });
+                const { id, timestamp } = await this.socket.sendChatMessage(envelope);
+                return { id: String(id), timestamp: String(timestamp) };
             }
         })
-    }
-
-    /**
-     * Returns the receiver's public key, refreshing it once if it isn't known yet.
-     * Encrypting without it produces a confusing WebCrypto `DataError`, so fail
-     * with an actionable message instead.
-     */
-    private async resolveReceiverPublicKey(): Promise<string> {
-        if (!this.keyExchange.hasReceiverPublicKey) {
-            await this.keyExchange.refreshReceiverPublicKey(logger.createChild('encrypt'));
-        }
-
-        const receiverPublicKey = this.keyExchange.getReceiverPublicKey();
-        if (!receiverPublicKey) {
-            throw new Error('Cannot encrypt message: the receiver has not shared their public key yet.');
-        }
-
-        return receiverPublicKey;
     }
 
     public on(listener: string, callback: (...args: any[]) => void): void {
@@ -263,17 +211,13 @@ class ChatE2EE implements IChatE2EE {
         this.initialized = false;
     }
 
-    public getKeyPair(): { privateKey: string, publicKey: string } {
-        this.checkInitialized();
-        return {
-            privateKey: this.privateKey!,
-            publicKey: this.publicKey!
-        }
-    }
-
     public async startCall(): Promise<E2ECall> {
+        // isSupported() is a basic RTCPeerConnection feature-detection check
+        // (see WebRTCCall.isSupported) — there is no encoded-transform
+        // capability gate any more, since media relies solely on WebRTC's
+        // standard DTLS-SRTP transport encryption.
         if(!WebRTCCall.isSupported()) {
-            throw new Error('createEncodedStreams not supported.');
+            throw new Error('WebRTC is not supported in this environment.');
         }
         if(this.callSignalRouter.activeCall) {
             throw new Error('Call already active');
@@ -295,10 +239,6 @@ class ChatE2EE implements IChatE2EE {
         if (!this.activeCallId) {
             throw new Error('Missing call identifier for incoming call.');
         }
-        // The caller's AES key may have been shared after our last key sync;
-        // without it every incoming media frame fails to decrypt and the call
-        // is silent even though packets keep flowing.
-        await this.keyExchange.refreshReceiverPublicKey(this.keyExchangeLogger);
         await this.sendControlSignal('call-accept');
         const call = this.callSignalRouter.acceptPendingOffer(this.activeCallId);
         if (call) {
@@ -331,6 +271,40 @@ class ChatE2EE implements IChatE2EE {
             await this.sendControlSignal('call-end', reason);
         }
         this.endLocalCall(reason);
+    }
+
+    /**
+     * Decrypts an incoming chat envelope and fans it out to `chat-message`
+     * subscribers. Any failure (unknown version, wrong room, bad auth tag)
+     * or replayed/duplicate sequence number drops the message outright —
+     * there is no plaintext fallback and no partial delivery.
+     */
+    private async handleRawChatMessage(msg: RawChatMessage): Promise<void> {
+        this.assertChannelReady();
+        const payload = await openEnvelope<ChatPlaintext>(this.inviteKeys!.chatKey, this.roomId!, msg.envelope);
+        if (!this.chatReplayGuard.accept('chat', payload.seq)) {
+            this.chatLogger.log(`Dropping replayed/duplicate chat message, seq=${payload.seq}`);
+            return;
+        }
+        this.subscriptions.get('chat-message')?.forEach((cb) => cb({
+            sender: msg.sender,
+            message: payload.text,
+            image: payload.image,
+            id: msg.id,
+            timestamp: msg.timestamp,
+        }));
+    }
+
+    /**
+     * Decrypts an incoming WebRTC signaling envelope before handing it to
+     * the existing call-lifecycle/signal-routing logic. Any decryption
+     * failure is treated as a signaling failure — the payload is dropped,
+     * never interpreted as plaintext.
+     */
+    private async handleRawWebrtcSignal(msg: RawSignalMessage): Promise<void> {
+        this.assertChannelReady();
+        const payload = await openEnvelope<WebRtcSignalPayload>(this.inviteKeys!.signalingKey, this.roomId!, msg.envelope);
+        await this.handleCallSignal(payload);
     }
 
     private async handleCallSignal(data: WebRtcSignalPayload): Promise<void> {
@@ -400,7 +374,7 @@ class ChatE2EE implements IChatE2EE {
             this.updateCallLifecycle('no-peer');
             throw new Error('No user available to accept call');
         }
-        await this.resolveReceiverPublicKey();
+        this.assertChannelReady();
     }
 
     private async sendControlSignal(type: CallControlSignal['type'], reason?: CallEndReason): Promise<void> {
@@ -414,11 +388,14 @@ class ChatE2EE implements IChatE2EE {
             timestamp: Date.now(),
             ...(reason ? { reason } : {}),
         };
-        await webrtcSession({
-            signal,
-            sender: this.userId!,
-            channelId: this.channelId!,
-        });
+        await this.sendSignal(signal);
+    }
+
+    /** Seals a signaling payload with the invite-derived signaling key and relays it over the socket. */
+    private async sendSignal(payload: WebRtcSignalPayload): Promise<void> {
+        this.assertChannelReady();
+        const envelope = await sealEnvelope(this.inviteKeys!.signalingKey, this.roomId!, payload);
+        await this.socket.sendWebrtcSignal(envelope);
     }
 
     private scheduleOutgoingInviteTimeout(): void {
@@ -482,7 +459,19 @@ class ChatE2EE implements IChatE2EE {
 
     private createSocketSubcription(): void {
         const subscriptionContext = () => this.subscriptions as SubscriptionType;
-        this.socket = new SocketInstance(subscriptionContext, logger.createChild('Socket'));
+        this.socket = new SocketInstance(subscriptionContext, logger.createChild('Socket'), {
+            onRawChatMessage: (msg) => {
+                this.handleRawChatMessage(msg).catch((error) => {
+                    this.chatLogger.log('Rejected chat message (dropped, no fallback):', error);
+                });
+            },
+            onRawWebrtcSignal: (msg) => {
+                this.handleRawWebrtcSignal(msg).catch((error) => {
+                    this.callLogger.log('Rejected signaling message (dropped, no fallback):', error);
+                    this.updateCallLifecycle('signaling-failed');
+                });
+            },
+        });
     }
 
     private checkInitialized(): void {
@@ -491,13 +480,18 @@ class ChatE2EE implements IChatE2EE {
         }
     }
 
+    /** Throws unless setChannel() has derived invite keys for an active room. */
+    private assertChannelReady(): void {
+        if (!this.roomId || !this.inviteKeys) {
+            throw new Error('Channel is not ready: call setChannel() with a valid invite secret first.');
+        }
+    }
+
     private createWebRtcCall(callId?: string): WebRTCCall {
         this.checkInitialized();
         const resolvedCallId = callId || generateUUID();
         const call = new WebRTCCall(
-            this.symEncryption,
-            this.userId!,
-            this.channelId!,
+            (payload) => this.sendSignal(payload),
             this.callLogger,
             () => ({
                 callId: resolvedCallId,
@@ -511,5 +505,4 @@ class ChatE2EE implements IChatE2EE {
 }
 
 export * from './public/types';
-export { EncryptionFactory, type EncryptionStrategyConfig, type BuiltinSymmetricStrategy, type BuiltinAsymmetricStrategy } from './crypto/encryptionFactory';
 export type { CallLifecycleState, CallEndReason, CallLifecycleUpdate } from './webrtc/types';

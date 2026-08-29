@@ -1,5 +1,4 @@
 import { Logger } from '../utils/logger';
-import type { ISymmetricEncryption } from '../crypto/cryptoAES';
 import type { WebRtcSignalPayload } from './types';
 
 const mockPeerSignal = jest.fn();
@@ -18,7 +17,7 @@ jest.mock('./peer', () => ({
 import { WebRTCCall, CallSignalRouter } from './webrtcCall';
 
 function makeCall(): WebRTCCall {
-    return new WebRTCCall({} as ISymmetricEncryption, 'sender-1', 'channel-1', new Logger('test'));
+    return new WebRTCCall(jest.fn().mockResolvedValue(undefined), new Logger('test'));
 }
 
 function withMeta<T extends { type: string }>(signal: T, seq = 1): T & { callId: string; seq: number; timestamp: number } {
@@ -28,6 +27,13 @@ function withMeta<T extends { type: string }>(signal: T, seq = 1): T & { callId:
 describe('WebRTCCall', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    it('isSupported() reflects basic RTCPeerConnection availability (no encoded-transform gate)', () => {
+        (globalThis as any).RTCPeerConnection = function () {};
+        expect(WebRTCCall.isSupported()).toBe(true);
+        delete (globalThis as any).RTCPeerConnection;
+        expect(WebRTCCall.isSupported()).toBe(false);
     });
 
     it('startCall() delegates to the underlying Peer', async () => {

@@ -4,7 +4,7 @@
 
 # @chat-e2ee/service
 
-`@chat-e2ee/service` is a powerful client-side SDK designed to facilitate end-to-end encrypted (E2EE) real-time messaging. It enables developers to build secure chat applications on top of the chat-e2ee infrastructure using [Socket.io](https://socket.io/) for signaling and WebRTC for peer-to-peer communication.
+`@chat-e2ee/service` is a client-side SDK designed to facilitate end-to-end encrypted (E2EE) real-time messaging. It enables developers to build secure chat applications on top of the chat-e2ee infrastructure using [Socket.io](https://socket.io/) for signaling and WebRTC for peer-to-peer communication.
 
 [![npm version](https://img.shields.io/npm/v/@chat-e2ee/service.svg)](https://www.npmjs.com/package/@chat-e2ee/service)
 [![size](https://img.shields.io/bundlephobia/minzip/@chat-e2ee/service.svg)](https://bundlephobia.com/package/@chat-e2ee/service)
@@ -19,10 +19,18 @@ npm i @chat-e2ee/service
 
 ---
 
+## How it works
+
+There is no key exchange handshake and no PIN. Instead:
+
+1. The device that creates a room asks the server for a public room id, then generates a **256-bit secret entirely on the client** (`window.crypto.getRandomValues`). The secret is only ever carried in the invitation link's URL fragment — `#room=<public-room-id>&secret=<base64url-secret>` — which browsers never send as part of an HTTP request. It is never transmitted to, or stored on, the server.
+2. Both participants call `setChannel(roomId, secret, userId)` with the same `roomId`/`secret`. Each derives the same pair of non-extractable AES-256-GCM keys locally via **HKDF-SHA256** — one for chat messages, one for WebRTC signaling — so a compromise of one cannot be used to attack the other (domain separation).
+3. Every chat message and WebRTC signal (offer/answer/ICE candidate/call control) is sealed into a versioned, room-bound AEAD envelope (`{ v, room, iv, ct }`) before it ever reaches the socket. The room id and protocol version are bound into the AEAD additional-authenticated-data, so an envelope sealed for one room/version can never be decrypted successfully in another. The server only ever relays this opaque envelope between the two sockets in a room — it cannot read, modify, or replay it elsewhere. Any decryption failure (wrong secret, wrong room, unsupported version, tampered ciphertext) or replayed/duplicate sequence number causes the message to be dropped outright; there is **no plaintext fallback**.
+4. Audio call media itself relies on WebRTC's mandatory DTLS-SRTP transport encryption. There is no custom per-frame encryption layered on top, and therefore no encoded-transform capability gate — calls work in any standards-compliant WebRTC browser.
+
 ## Quick Start
 
 ### 1. Initialize the SDK
-Create an instance and initialize it to generate encryption keys and prepare the socket connection.
 
 ```javascript
 import { createChatInstance } from '@chat-e2ee/service';
@@ -34,34 +42,32 @@ const chat = createChatInstance({
 await chat.init();
 ```
 
-### 2. Setup a Channel
-Create or join a secure communication channel.
+### 2. Create or join a room
 
 ```javascript
-// Guest 1: Create a channel
-const { hash } = await chat.getLink();
-const userId = 'user-1'; 
-await chat.setChannel(hash, userId);
+// Guest 1: create a room. `secret` is generated locally and must be shared
+// out of band (e.g. via `link`/`absoluteLink`) — never send it to your own backend.
+const { hash: roomId, secret, absoluteLink } = await chat.getLink();
+const userId = 'user-1';
+await chat.setChannel(roomId, secret, userId);
 
-// Guest 2: Join the channel using the same hash
-await chat.setChannel(hash, 'user-2');
+// share `absoluteLink` (or `roomId` + `secret` separately) with Guest 2 out of band
+
+// Guest 2: join using the same roomId + secret parsed from the invitation link
+await chat.setChannel(roomId, secret, 'user-2');
 ```
 
-### 3. Send and Receive Messages
-Messages are encrypted before leaving the client and must be decrypted upon receipt.
+### 3. Send and receive messages
+
+Messages are encrypted with the invite-derived chat key before they ever leave the device, and decrypted by the SDK before your `chat-message` callback ever sees them.
 
 ```javascript
-import { utils } from '@chat-e2ee/service';
-
-// Sending an encrypted message
+// Sending
 await chat.encrypt({ text: 'Hello, world!' }).send();
 
-// Listening for incoming messages and decrypting them
-const { privateKey } = chat.getKeyPair();
-
-chat.on('chat-message', async (msg) => {
-    const plainText = await utils.decryptMessage(msg.message, privateKey);
-    console.log('Decrypted Message:', plainText);
+// Receiving — `msg.message` is already plaintext
+chat.on('chat-message', (msg) => {
+    console.log('Received:', msg.message);
 });
 ```
 
@@ -83,124 +89,17 @@ setConfig({
 });
 ```
 
-### `createChatInstance(config?, encryptionStrategy?): IChatE2EE`
+### `createChatInstance(config?): IChatE2EE`
 Factory function to create a new chat session instance.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `config` | `Partial<ConfigType>` | Optional. Sets `baseUrl` and `settings` inline. |
-| `encryptionStrategy` | `EncryptionStrategy` | Optional. Plug in custom symmetric / asymmetric ciphers. Use `EncryptionFactory.create()` to produce this value (see [Pluggable Encryption](#pluggable-encryption)). |
 
 ```typescript
-import { createChatInstance, EncryptionFactory } from '@chat-e2ee/service';
+import { createChatInstance } from '@chat-e2ee/service';
 
-// Default — AES-256-GCM + RSA-OAEP
 const chat = createChatInstance({ baseUrl: 'https://your-api.example.com' });
-
-// Explicit strategy via factory
-const chat = createChatInstance(config, EncryptionFactory.create({ symmetric: 'AES-GCM' }));
-```
-
----
-
-## Pluggable Encryption
-
-The SDK ships with two built-in ciphers:
-
-| Layer | Default | Purpose |
-| :--- | :--- | :--- |
-| Asymmetric | `RSA-OAEP` (2048-bit, SHA-256) | Key-pair generation, message encryption, symmetric key wrapping |
-| Symmetric | `AES-GCM` (256-bit) | Frame-by-frame WebRTC audio/video encryption |
-
-Both are swappable at construction time via `EncryptionFactory`.
-
-### EncryptionFactory
-
-`EncryptionFactory` is a registry-based singleton. Register a cipher once under a name, then reference it by that name anywhere.
-
-#### Built-in strategies
-
-| Name | Type |
-| :--- | :--- |
-| `'AES-GCM'` | symmetric |
-| `'RSA-OAEP'` | asymmetric |
-
-#### `EncryptionFactory.create(config?)`
-
-Returns an `EncryptionStrategy` ready to pass to `createChatInstance`. Omit either field to keep its built-in default.
-
-```typescript
-// Both defaults
-EncryptionFactory.create()
-
-// Override one layer, keep the other default
-EncryptionFactory.create({ symmetric: 'ChaCha20' })
-EncryptionFactory.create({ asymmetric: 'X25519' })
-
-// Override both
-EncryptionFactory.create({ symmetric: 'ChaCha20', asymmetric: 'X25519' })
-```
-
-Requesting an unregistered name throws immediately:
-> `Unknown symmetric strategy: "ChaCha20". Register it first with EncryptionFactory.registerSymmetric().`
-
-#### `EncryptionFactory.registerSymmetric(name, factory)`
-#### `EncryptionFactory.registerAsymmetric(name, factory)`
-
-Register a custom implementation under a name. Both methods return `this` for chaining.
-
-```typescript
-EncryptionFactory
-    .registerSymmetric('ChaCha20', () => new ChaCha20Encryption())
-    .registerAsymmetric('X25519',  () => new X25519Exchange());
-```
-
-### Implementing a custom strategy
-
-#### `ISymmetricEncryption`
-
-```typescript
-import type { ISymmetricEncryption } from '@chat-e2ee/service';
-
-class ChaCha20Encryption implements ISymmetricEncryption {
-    async init(): Promise<void> { /* generate local key */ }
-    async encryptData(data: ArrayBuffer): Promise<{ encryptedData: Uint8Array<ArrayBuffer>; iv: Uint8Array<ArrayBuffer> }> { /* … */ }
-    async decryptData(data: BufferSource, iv: BufferSource): Promise<ArrayBuffer> { /* … */ }
-    async exportKey(): Promise<string> { /* serialise local key for transmission */ }
-    async importRemoteKey(key: string): Promise<void> { /* import peer's key */ }
-    getEncodedTransformKey?(direction: 'encrypt' | 'decrypt'): CryptoKey | undefined { /* optional */ }
-}
-```
-
-#### `IAsymmetricEncryption`
-
-```typescript
-import type { IAsymmetricEncryption } from '@chat-e2ee/service';
-
-class X25519Exchange implements IAsymmetricEncryption {
-    async generateKeypairs(): Promise<{ privateKey: string; publicKey: string }> { /* … */ }
-    async encryptMessage(plaintext: string, publicKey: string): Promise<string> { /* … */ }
-    async decryptMessage(ciphertext: string, privateKey: string): Promise<string> { /* … */ }
-}
-```
-
-#### Full example
-
-```typescript
-import { createChatInstance, EncryptionFactory } from '@chat-e2ee/service';
-
-// 1. Register at app startup
-EncryptionFactory
-    .registerSymmetric('ChaCha20', () => new ChaCha20Encryption())
-    .registerAsymmetric('X25519',  () => new X25519Exchange());
-
-// 2. Use by name
-const chat = createChatInstance(config, EncryptionFactory.create({
-    symmetric:  'ChaCha20',
-    asymmetric: 'X25519',
-}));
-
-await chat.init();
 ```
 
 ---
@@ -208,32 +107,22 @@ await chat.init();
 ### `ChatInstance` (IChatE2EE) Methods
 
 #### `await init(): Promise<void>`
-Initializes the instance:
-- Generates RSA and AES key pairs.
-- Establishes the socket connection.
-- Sets up WebRTC listeners.
+Establishes the socket connection and sets up internal WebRTC/signal listeners. No key material is generated up front — keys are derived per-room in `setChannel()`.
 
 #### `await getLink(): Promise<LinkObjType>`
-Requests a new channel link from the server.
-Returns an object containing `hash`, `link`, `absoluteLink`, `pin`, etc.
+Asks the server for a new public room id, generates a fresh 256-bit invitation secret locally, and returns both together with a ready-to-share invitation link.
 
-#### `await setChannel(hash: string, userId: string, userName?: string): Promise<void>`
-Joins a specific channel. Automatically shares the public key with the other peer once they join.
+#### `await setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void>`
+Derives the signaling/chat AEAD keys from `secret` via HKDF-SHA256 and joins the room. `secret` is never sent to the server — only `roomId` and `userId` are.
 
 #### `isEncrypted(): boolean`
-Returns `true` if the receiver's public key is present and communication is fully encrypted.
-
-#### `async sendMessage({ text, image }): Promise<ISendMessageReturn>`
-Sends a message without automatic encryption. Use this if you are handling encryption manually or sending plain text.
+Returns `true` once `setChannel()` has resolved (i.e. the invite-derived keys are ready). Unlike the old RSA handshake, this does not depend on the peer having joined yet.
 
 #### `encrypt({ text, image }): { send: () => Promise<ISendMessageReturn> }`
-Encrypts the `text` content with the receiver's public key and returns an object with a `.send()` method.
+Seals `text`/`image` into an AEAD envelope with the invite-derived chat key and delivers it over the socket. This is the only way to send a message — there is no unencrypted `sendMessage()` any more.
 
 #### `await getUsersInChannel(): Promise<TypeUsersInChannel>`
 Returns a list of users currently connected to the active channel.
-
-#### `getKeyPair(): { privateKey: string, publicKey: string }`
-Returns the current session's RSA keys.
 
 #### `dispose(): void`
 Closes socket connections, clears event listeners, and resets the instance state.
@@ -243,9 +132,7 @@ Closes socket connections, clears event listeners, and resets the instance state
 ### Call & WebRTC API
 
 #### `await startCall(): Promise<E2ECall>`
-Initiates an end-to-end encrypted audio call. The SDK prefers `RTCRtpScriptTransform` when available and falls back to `createEncodedStreams()`. It throws an error if neither encoded-frame API is supported or a call is already active.
-
-The built-in AES-GCM strategy supports both APIs. A custom symmetric strategy can support Script Transform by exposing `getEncodedTransformKey`; otherwise it continues to work through `createEncodedStreams()` where that API is available.
+Initiates an audio call, signaled entirely over the encrypted signaling channel. Throws if WebRTC isn't supported (`typeof RTCPeerConnection === 'undefined'`) or a call is already active.
 
 #### `await endCall(): void`
 Terminates the active call session.
@@ -262,23 +149,13 @@ The SDK uses an event-driven architecture. Listen to events using `chat.on(event
 | :--- | :--- | :--- |
 | `on-alice-join` | Fired when the second user joins the channel. | `null` |
 | `on-alice-disconnect` | Fired when the other user leaves the channel. | `null` |
-| `chat-message` | Fired when a new message is received. | `MessageObject` |
-| `delivered` | Fired when your message is successfully received by the peer. | `messageId` |
+| `chat-message` | Fired once a message has been decrypted (and passed replay checks). | `{ sender, message, image, id, timestamp }` |
+| `delivered` | Fired when your message is successfully received by the peer. | `id` |
 | `limit-reached` | Fired if the channel already has 2 participants. | `null` |
 | `call-added` | Fired when an incoming call is received. | `E2ECall` |
 | `call-removed` | Fired when a call is disconnected/ended. | `null` |
 
-#### Message Object Structure:
-```typescript
-{
-    channel: string;
-    sender: string;
-    message: string; // Ciphertext if encrypted
-    id: number;
-    timestamp: number;
-    image?: string; // Optional base64 image
-}
-```
+A decryption failure or replayed/duplicate sequence number silently drops the message — `chat-message` is simply never fired for it.
 
 ---
 
@@ -287,9 +164,6 @@ The SDK uses an event-driven architecture. Listen to events using `chat.on(event
 #### `utils.generateUUID(): string`
 Helper function to generate a unique user or channel identifier.
 
-#### `async utils.decryptMessage(ciphertext: string, privateKey: string): Promise<string>`
-Helper to decrypt incoming messages using the session's private key.
-
 ---
 
 ## Data Types
@@ -297,13 +171,12 @@ Helper to decrypt incoming messages using the session's private key.
 ### `LinkObjType`
 ```typescript
 {
-    hash: string;
-    link: string;
+    hash: string;          // public room id
+    secret: string;        // client-generated 256-bit secret, base64url — never sent to the server
+    link: string;           // relative path + `#room=<hash>&secret=<secret>` fragment
     absoluteLink: string | undefined;
     expired: boolean;
     deleted: boolean;
-    pin: string;
-    pinCreatedAt: number;
 }
 ```
 

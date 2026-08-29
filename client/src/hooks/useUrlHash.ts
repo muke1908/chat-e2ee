@@ -1,29 +1,29 @@
 /**
- * Custom hook for URL hash management
+ * Custom hook for invite-fragment URL management
+ * (`#room=<public-room-id>&secret=<secret>`).
  */
 
 import { useEffect, useState } from 'react';
-import { getUrlHash, updateUrlHash, hasValidHash } from '../utils/urlHash';
+import { getUrlInvite, updateUrlInvite, hasValidInvite, type ParsedInvite } from '../utils/urlHash';
 
 export const useUrlHash = () => {
-  const [hash, setHash] = useState<string>('');
+  const [invite, setInvite] = useState<ParsedInvite | null>(null);
 
   useEffect(() => {
-    const initialHash = getUrlHash();
-    if (hasValidHash()) {
-      setHash(initialHash);
+    if (hasValidInvite()) {
+      setInvite(getUrlInvite());
     }
   }, []);
 
-  const updateHash = (newHash: string) => {
-    setHash(newHash);
-    updateUrlHash(newHash);
+  const updateInvite = (roomId: string, secret: string) => {
+    setInvite({ roomId, secret });
+    updateUrlInvite(roomId, secret);
   };
 
   return {
-    hash,
-    setHash,
-    updateHash,
-    hasValidHash: hasValidHash(),
+    invite,
+    setInvite,
+    updateInvite,
+    hasValidInvite: hasValidInvite(),
   };
 };
