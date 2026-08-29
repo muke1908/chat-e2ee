@@ -153,6 +153,7 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`delete()`);
         this.checkInitialized();
         await deleteLink({ channelID: this.roomId });
+        this.clearChannelSecrets();
     }
 
     public async getUsersInChannel(): Promise<TypeUsersInChannel> {
@@ -208,6 +209,7 @@ class ChatE2EE implements IChatE2EE {
         logger.log('dispose()');
         this.socket.dispose();
         this.subscriptions.clear();
+        this.clearChannelSecrets();
         this.initialized = false;
     }
 
@@ -485,6 +487,16 @@ class ChatE2EE implements IChatE2EE {
         if (!this.roomId || !this.inviteKeys) {
             throw new Error('Channel is not ready: call setChannel() with a valid invite secret first.');
         }
+    }
+
+    private clearChannelSecrets(): void {
+        this.inviteKeys = undefined;
+        this.roomId = undefined;
+        this.userId = undefined;
+        this.chatSeq = 0;
+        this.signalSeq = 0;
+        this.chatReplayGuard.clear();
+        this.lastSignalSeqByCall.clear();
     }
 
     private createWebRtcCall(callId?: string): WebRTCCall {
