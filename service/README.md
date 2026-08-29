@@ -24,17 +24,19 @@ npm i @chat-e2ee/service
 There is no key exchange handshake and no PIN. Instead:
 
 1. The device that creates a room asks the server for a public room id, then generates a **256-bit secret entirely on the client** (`window.crypto.getRandomValues`). The secret is only ever carried in the invitation link's URL fragment — `#room=<public-room-id>&secret=<base64url-secret>` — which browsers never send as part of an HTTP request. It is never transmitted to, or stored on, the server.
-2. Both participants call `setChannel(roomId, secret, userId)` with the same `roomId`/`secret`. Each derives the same session key material locally via the SDK's currently configured **encryption strategy** — by default that means a pair of non-extractable AES-256-GCM keys derived via **HKDF-SHA256**, one for chat messages, one for WebRTC signaling, so a compromise of one cannot be used to attack the other (domain separation). See [Encryption strategies](#encryption-strategies) below for how to select or supply a different strategy (including an explicit no-encryption mode).
-3. Every chat message and WebRTC signal (offer/answer/ICE candidate/call control) is sealed into a versioned, room-bound, strategy-tagged envelope (`{ v, strategy, room, data }`) before it ever reaches the socket. The room id, protocol version, and strategy id are all bound into (or checked against) the envelope, so an envelope sealed for one room/version/strategy can never be interpreted successfully by a receiver configured differently — tampering with any of them is rejected outright. The server only ever relays this opaque envelope between the two sockets in a room — it cannot read, modify, or replay it elsewhere. Any failure to open an envelope (wrong secret, wrong room, unsupported version, unexpected strategy, tampered ciphertext) or a replayed/duplicate sequence number causes the message to be dropped outright; there is **no plaintext fallback** — not even when the configured strategy is the explicit "disabled" one (see below).
+2. Both participants call `setChannel(roomId, secret, userId)` with the same `roomId`/`secret`. `ChatE2EE` derives two opaque, domain-separated secrets from the invitation `secret` alone via HKDF-SHA256 — one for chat messages, one for WebRTC signaling — entirely *outside* the encryption strategy layer, and hands each one to its own independent **encryption strategy** instance (secure default, disabled, or a custom registered strategy). A compromise of one derived secret cannot be used to attack the other (domain separation). `roomId` is never folded into this derivation — it remains purely routing state, known to (and used by) the server to place both participants in the same room, with no cryptographic role. See [Encryption strategies](#encryption-strategies) below for how to select or supply a different strategy (including an explicit no-encryption mode).
+3. Every chat message and WebRTC signal (offer/answer/ICE candidate/call control) is sealed into a versioned, strategy-tagged envelope (`{ version, strategy, data }`) before it ever reaches the socket. `ChatE2EE` — never the strategy itself — checks the protocol version and strategy id on receipt, and rejects (drops) anything that doesn't match the active strategy instance for that channel; there is no fallback to a different strategy or envelope version. The server only ever relays this opaque envelope between the two sockets in a room — it cannot read, modify, or replay it elsewhere. Any failure to open an envelope (wrong secret, unsupported version, unexpected strategy, tampered ciphertext) or a replayed/duplicate sequence number causes the message to be dropped outright; there is **no plaintext fallback** — not even when the configured strategy is the explicit "disabled" one (see below).
 4. Audio call media itself relies on WebRTC's mandatory DTLS-SRTP transport encryption. There is no custom per-frame encryption layered on top, and therefore no encoded-transform capability gate — calls work in any standards-compliant WebRTC browser.
 
 ## Encryption strategies
 
-The SDK never hard-codes a specific key-exchange/cryptographic primitive. Every channel (chat + WebRTC signaling) is sealed/opened through a generic `EncryptionStrategy` interface, driven by an internal `KeyExchangeManager`, and selected through a small global registry/factory. This means:
+The SDK never hard-codes a specific cryptographic primitive, and an `EncryptionStrategy` is entirely application-agnostic: it knows nothing about rooms, users, chat, signaling, WebRTC, payload shapes, sessions, or key exchange. `ChatE2EE` owns all of that — routing, JSON<->bytes serialization, and replay/protocol validation — around two independent strategy *instances* it creates and drives itself (one for chat, one for signaling), selected through a small global registry/factory. This means:
 
-- the **secure default** (invite-secret HKDF-SHA256 → independent AES-256-GCM keys per channel) is just the strategy registered under `DEFAULT_ENCRYPTION_STRATEGY_ID`,
-- an explicit, opt-in **`disabled`** strategy (`NO_ENCRYPTION_STRATEGY_ID`) is available for local development/testing — it relays payloads as versioned plaintext envelopes instead of ciphertext, but is never a silent fallback: it must be selected explicitly, and it still rejects incompatible/mismatched envelopes rather than guessing,
-- anyone can **register a custom strategy** (a different KDF/AEAD, a hardware-backed key store, ...) and select it by id, or pass an ad-hoc strategy instance directly without registering it globally.
+- the **secure default** (AES-256-GCM, keyed from an opaque secret `ChatE2EE` derives via HKDF-SHA256 before ever reaching the strategy) is just the strategy registered under `DEFAULT_ENCRYPTION_STRATEGY_ID`,
+- an explicit, opt-in **`disabled`** strategy (`NO_ENCRYPTION_STRATEGY_ID`) is available for local development/testing — it relays payloads as versioned, base64url-encoded plaintext envelopes instead of ciphertext, but is never a silent fallback: it must be selected explicitly, and it still rejects incompatible/mismatched envelopes rather than guessing,
+- anyone can **register a custom strategy factory** (a different AEAD, a hardware-backed key store, ...) and select it by id, or pass an ad-hoc factory function directly without registering it globally.
+
+Strategies are **stateful** (each instance holds its own key material after `initialize()`), so the registry stores *factories*, never a shared instance — every lookup creates a brand new instance, and `ChatE2EE` always calls the resolved factory twice so its chat and signaling instances never share state.
 
 ```typescript
 import {
@@ -43,42 +45,49 @@ import {
     DEFAULT_ENCRYPTION_STRATEGY_ID,
     NO_ENCRYPTION_STRATEGY_ID,
     type EncryptionStrategy,
+    type EncryptionStrategyFactory,
 } from '@chat-e2ee/service';
 
-// 1) Default — secure invite-secret HKDF + AES-256-GCM (no config needed):
+// 1) Default — secure AES-256-GCM (no config needed):
 const secureChat = createChatInstance();
 
 // 2) Explicitly disabled encryption (opt-in only, e.g. local dev):
 const plaintextChat = createChatInstance({ encryption: { strategy: NO_ENCRYPTION_STRATEGY_ID } });
 
-// 3) A custom strategy, registered globally and then selected by id:
-const myStrategy: EncryptionStrategy<MySessionType> = {
-    id: 'my-org:custom-strategy-v1',
-    encrypts: true,
-    async createSession(secret, roomId) { /* derive/establish session key material */ },
-    async seal(session, channel, room, payload) { /* return { v, strategy: this.id, room, data } */ },
-    async open(session, channel, room, envelope) { /* validate + return the original payload, or throw */ },
+// 3) A custom strategy factory, registered globally and then selected by id:
+const myStrategyFactory: EncryptionStrategyFactory = () => {
+    let key /* whatever key material this strategy needs */;
+    const strategy: EncryptionStrategy = {
+        id: 'my-org:custom-strategy-v1',
+        encrypted: true,
+        async initialize(secret) { /* turn the opaque secret into usable key material */ },
+        async encrypt(data) { /* return { version, strategy: this.id, data } */ return { version: 1, strategy: 'my-org:custom-strategy-v1', data: null }; },
+        async decrypt(envelope) { /* validate + return the original bytes, or throw */ return new ArrayBuffer(0); },
+        destroy() { /* release key material */ },
+    };
+    return strategy;
 };
-registerEncryptionStrategy(myStrategy);
+registerEncryptionStrategy('my-org:custom-strategy-v1', myStrategyFactory);
 const customChat = createChatInstance({ encryption: { strategy: 'my-org:custom-strategy-v1' } });
 
-// 4) Or supply a strategy instance directly, without registering it globally:
-const adHocChat = createChatInstance({ encryption: { strategy: myStrategy } });
+// 4) Or supply a factory function directly, without registering it globally:
+const adHocChat = createChatInstance({ encryption: { strategy: myStrategyFactory } });
 ```
 
-An unknown strategy id throws immediately from `createChatInstance()` — there is no lazy/deferred failure once you try to use the channel. `chat.isEncrypted()` reflects both channel readiness *and* whether the configured strategy actually provides confidentiality (`encrypts: true`), so it always reports `false` when the disabled strategy is in use, even though the channel is otherwise fully functional.
+An unknown strategy id throws immediately from `createChatInstance()` — there is no lazy/deferred failure once you try to use the channel. `chat.isEncrypted()` reflects both channel readiness *and* whether the configured strategy actually provides confidentiality (`encrypted: true`), so it always reports `false` when the disabled strategy is in use, even though the channel is otherwise fully functional.
 
 ### `EncryptionStrategy` contract
 
 | Member | Description |
 | :--- | :--- |
 | `id: string` | Stable, unique id embedded in every envelope this strategy produces; used to register/select the strategy and to reject envelopes from an incompatible strategy on receipt. |
-| `encrypts: boolean` | Whether this strategy provides real confidentiality (`false` for the disabled strategy). |
-| `createSession(secret, roomId)` | Establishes per-room session key material from the invitation secret. Fully opaque to the SDK core. |
-| `seal(session, channel, room, payload)` | Seals a JSON-serialisable payload for `'chat'` or `'signaling'` into `{ v, strategy, room, data }`. |
-| `open(session, channel, room, envelope)` | Opens/validates an envelope. Must throw — never fall back — on any incompatibility (wrong strategy/version/room, failed auth tag, malformed shape). |
+| `encrypted: boolean` | Whether this strategy provides real confidentiality (`false` for the disabled strategy). |
+| `initialize(secret)` | Prepares the instance to seal/open data using an opaque, already domain-separated secret string. The strategy never sees where the secret came from. |
+| `encrypt(data: ArrayBuffer)` | Seals raw bytes into `{ version, strategy, data }`. |
+| `decrypt(envelope)` | Opens/validates an envelope, returning the original bytes. Must throw — never fall back — on any incompatibility (wrong strategy/version, failed auth tag, malformed shape). |
+| `destroy()` | Synchronously releases any key material/state held by the instance. |
 
-Registry helpers exported alongside `createChatInstance`: `registerEncryptionStrategy(strategy, { override? })`, `unregisterEncryptionStrategy(id)`, `hasEncryptionStrategy(id)`, `listEncryptionStrategyIds()`, `getEncryptionStrategy(id)` (throws a descriptive error for an unknown id), plus the `KeyExchangeManager` class itself for advanced/standalone use.
+Registry helpers exported alongside `createChatInstance`: `registerEncryptionStrategy(id, factory, { override? })`, `unregisterEncryptionStrategy(id)`, `hasEncryptionStrategy(id)`, `listEncryptionStrategyIds()`, `getEncryptionStrategy(id)` (creates and returns a fresh instance; throws a descriptive error for an unknown id).
 
 ## Quick Start
 
@@ -168,13 +177,13 @@ Establishes the socket connection and sets up internal WebRTC/signal listeners. 
 Asks the server for a new public room id, generates a fresh 256-bit invitation secret locally, and returns both together with a ready-to-share invitation link.
 
 #### `await setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void>`
-Establishes the chat/signaling encryption session from `secret` via the configured strategy (HKDF-SHA256 + AES-256-GCM by default) and joins the room. `secret` is never sent to the server — only `roomId` and `userId` are.
+Derives domain-separated chat/signaling secrets from `secret` (HKDF-SHA256), initializes the two independent encryption strategy instances with them (AES-256-GCM by default), and joins the room. `secret` is never sent to the server — only `roomId` and `userId` are.
 
 #### `isEncrypted(): boolean`
 Returns `true` once `setChannel()` has resolved *and* the configured strategy actually provides confidentiality. Always `false` when the explicit `disabled` strategy is selected, even though the channel is otherwise ready and functional. Unlike the old RSA handshake, this does not depend on the peer having joined yet.
 
 #### `encrypt({ text, image }): { send: () => Promise<ISendMessageReturn> }`
-Seals `text`/`image` into an envelope via the configured encryption strategy (AES-GCM AEAD by default) and delivers it over the socket. This is the only way to send a message — there is no unencrypted `sendMessage()` any more.
+Seals `text`/`image` into an envelope via the configured chat encryption strategy instance (AES-GCM AEAD by default) and delivers it over the socket. This is the only way to send a message — there is no unencrypted `sendMessage()` any more.
 
 #### `await getUsersInChannel(): Promise<TypeUsersInChannel>`
 Returns a list of users currently connected to the active channel.

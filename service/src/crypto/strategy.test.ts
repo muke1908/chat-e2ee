@@ -7,164 +7,99 @@ if (typeof window === 'undefined') {
     (globalThis as any).window = globalThis;
 }
 
-import { KeyExchangeManager, type EncryptionEnvelope, type EncryptionStrategy } from './strategy';
+import type { EncryptionEnvelope, EncryptionStrategy } from './strategy';
 
 /**
- * Fake strategy used purely to observe delegation: every call is recorded
- * and forwarded through jest mocks so tests can assert `KeyExchangeManager`
- * calls the strategy with the right arguments, at the right time, and never
- * bypasses it.
+ * Fake strategy used to exercise the generic `EncryptionStrategy` contract
+ * in isolation, without pulling in any real cryptography. Every call is
+ * recorded via jest mocks.
  */
-function buildFakeStrategy(overrides: Partial<EncryptionStrategy<{ secret: string; roomId: string }>> = {}): {
-    strategy: EncryptionStrategy<{ secret: string; roomId: string }>;
-    createSession: jest.Mock;
-    seal: jest.Mock;
-    open: jest.Mock;
+function buildFakeStrategy(overrides: Partial<EncryptionStrategy> = {}): {
+    strategy: EncryptionStrategy;
+    initialize: jest.Mock;
+    encrypt: jest.Mock;
+    decrypt: jest.Mock;
+    destroy: jest.Mock;
 } {
-    const createSession = jest.fn(async (secret: string, roomId: string) => ({ secret, roomId }));
-    const seal = jest.fn(async (session: { secret: string; roomId: string }, channel: string, room: string, payload: unknown): Promise<EncryptionEnvelope> => ({
-        v: 1,
+    let initializedSecret: string | undefined;
+    const initialize = jest.fn(async (secret: string) => {
+        initializedSecret = secret;
+    });
+    const encrypt = jest.fn(async (data: ArrayBuffer): Promise<EncryptionEnvelope> => ({
+        version: 1,
         strategy: 'fake-strategy',
-        room,
-        data: { channel, session, payload },
+        data: { secret: initializedSecret, bytes: Array.from(new Uint8Array(data)) },
     }));
-    const open = jest.fn(async (_session: unknown, _channel: string, _room: string, envelope: EncryptionEnvelope) => (envelope.data as any).payload);
-
-    const strategy: EncryptionStrategy<{ secret: string; roomId: string }> = {
-        id: 'fake-strategy',
-        encrypts: true,
-        createSession,
-        seal,
-        open,
-        ...overrides,
-    };
-    return { strategy, createSession, seal, open };
-}
-
-describe('KeyExchangeManager', () => {
-    describe('lifecycle', () => {
-        it('is not ready before begin() is called', () => {
-            const { strategy } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            expect(manager.isReady).toBe(false);
-        });
-
-        it('becomes ready once begin() resolves', async () => {
-            const { strategy } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('secret', 'room-1');
-            expect(manager.isReady).toBe(true);
-        });
-
-        it('exposes the configured strategy id and encrypts flag', () => {
-            const { strategy } = buildFakeStrategy({ id: 'my-strategy', encrypts: false });
-            const manager = new KeyExchangeManager(strategy);
-            expect(manager.strategyId).toBe('my-strategy');
-            expect(manager.encrypts).toBe(false);
-        });
-
-        it('reset() tears the session down; isReady becomes false again', async () => {
-            const { strategy } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('secret', 'room-1');
-            expect(manager.isReady).toBe(true);
-
-            manager.reset();
-            expect(manager.isReady).toBe(false);
-        });
-
-        it('begin() throws without a roomId, and never calls the strategy', async () => {
-            const { strategy, createSession } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await expect(manager.begin('secret', '')).rejects.toThrow(/roomId/);
-            expect(createSession).not.toHaveBeenCalled();
-        });
-
-        it('seal()/open() throw "not ready" before begin(), and after reset()', async () => {
-            const { strategy } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await expect(manager.seal('chat', { hello: 'world' })).rejects.toThrow(/not ready/i);
-            await expect(manager.open('chat', { v: 1, strategy: 'fake-strategy', room: 'r', data: {} })).rejects.toThrow(/not ready/i);
-
-            await manager.begin('secret', 'room-1');
-            manager.reset();
-            await expect(manager.seal('chat', { hello: 'world' })).rejects.toThrow(/not ready/i);
-        });
-
-        it('begin() called again establishes a brand new session (old one is discarded)', async () => {
-            const { strategy, createSession } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('secret-a', 'room-a');
-            await manager.begin('secret-b', 'room-b');
-
-            expect(createSession).toHaveBeenNthCalledWith(1, 'secret-a', 'room-a');
-            expect(createSession).toHaveBeenNthCalledWith(2, 'secret-b', 'room-b');
-
-            const envelope = await manager.seal('chat', { x: 1 });
-            expect(envelope.room).toBe('room-b');
-        });
+    const decrypt = jest.fn(async (envelope: EncryptionEnvelope): Promise<ArrayBuffer> => {
+        const bytes = (envelope.data as { bytes: number[] }).bytes;
+        return new Uint8Array(bytes).buffer;
+    });
+    const destroy = jest.fn(() => {
+        initializedSecret = undefined;
     });
 
-    describe('delegation', () => {
-        it('begin() delegates to strategy.createSession() with the given secret/roomId', async () => {
-            const { strategy, createSession } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('my-secret', 'room-42');
-            expect(createSession).toHaveBeenCalledWith('my-secret', 'room-42');
-        });
+    const strategy: EncryptionStrategy = {
+        id: 'fake-strategy',
+        encrypted: true,
+        initialize,
+        encrypt,
+        decrypt,
+        destroy,
+        ...overrides,
+    };
+    return { strategy, initialize, encrypt, decrypt, destroy };
+}
 
-        it('seal() delegates to strategy.seal() with the active session/channel/room/payload', async () => {
-            const { strategy, seal } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('my-secret', 'room-42');
+const toBytes = (text: string): ArrayBuffer => new TextEncoder().encode(text).buffer as ArrayBuffer;
+const toText = (bytes: ArrayBuffer): string => new TextDecoder().decode(bytes);
 
-            const payload = { text: 'hi' };
-            const envelope = await manager.seal('chat', payload);
+describe('EncryptionStrategy contract', () => {
+    it('exposes id and encrypted as plain, synchronous properties', () => {
+        const { strategy } = buildFakeStrategy({ id: 'my-strategy', encrypted: false });
+        expect(strategy.id).toBe('my-strategy');
+        expect(strategy.encrypted).toBe(false);
+    });
 
-            expect(seal).toHaveBeenCalledWith({ secret: 'my-secret', roomId: 'room-42' }, 'chat', 'room-42', payload);
-            expect(envelope.room).toBe('room-42');
-        });
+    it('initialize() is called with an opaque secret string', async () => {
+        const { strategy, initialize } = buildFakeStrategy();
+        await strategy.initialize('opaque-secret-value');
+        expect(initialize).toHaveBeenCalledWith('opaque-secret-value');
+    });
 
-        it('open() delegates to strategy.open() with the active session/channel/room/envelope', async () => {
-            const { strategy, seal, open } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('my-secret', 'room-42');
+    it('encrypt() takes an ArrayBuffer and returns an EncryptionEnvelope with only version/strategy/data', async () => {
+        const { strategy } = buildFakeStrategy();
+        await strategy.initialize('secret');
 
-            const sealed = await manager.seal('signaling', { kind: 'offer' });
-            const opened = await manager.open('signaling', sealed);
+        const envelope = await strategy.encrypt(toBytes('hello world'));
 
-            expect(open).toHaveBeenCalledWith({ secret: 'my-secret', roomId: 'room-42' }, 'signaling', 'room-42', sealed);
-            expect(opened).toEqual({ kind: 'offer' });
-            expect(seal).toHaveBeenCalledTimes(1);
-        });
+        expect(Object.keys(envelope).sort()).toEqual(['data', 'strategy', 'version']);
+        expect(envelope.strategy).toBe('fake-strategy');
+        expect(typeof envelope.version).toBe('number');
+    });
 
-        it('open() rejects an envelope from a different strategy id before ever calling strategy.open() (no cross-strategy fallback)', async () => {
-            const { strategy, open } = buildFakeStrategy({ id: 'expected-strategy' });
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('secret', 'room-1');
+    it('decrypt() round-trips the bytes originally passed to encrypt()', async () => {
+        const { strategy } = buildFakeStrategy();
+        await strategy.initialize('secret');
 
-            const foreignEnvelope: EncryptionEnvelope = { v: 1, strategy: 'some-other-strategy', room: 'room-1', data: {} };
-            await expect(manager.open('chat', foreignEnvelope)).rejects.toThrow(/expected-strategy[\s\S]*some-other-strategy/);
-            expect(open).not.toHaveBeenCalled();
-        });
+        const envelope = await strategy.encrypt(toBytes('round-trip me'));
+        const recovered = await strategy.decrypt(envelope);
 
-        it('open() rejects a non-object envelope without delegating to the strategy', async () => {
-            const { strategy, open } = buildFakeStrategy();
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('secret', 'room-1');
+        expect(toText(recovered)).toBe('round-trip me');
+    });
 
-            await expect(manager.open('chat', null as unknown as EncryptionEnvelope)).rejects.toThrow(/expected an object/);
-            expect(open).not.toHaveBeenCalled();
-        });
+    it('destroy() tears the instance down synchronously without throwing', async () => {
+        const { strategy, destroy } = buildFakeStrategy();
+        await strategy.initialize('secret');
+        expect(() => strategy.destroy()).not.toThrow();
+        expect(destroy).toHaveBeenCalledTimes(1);
+    });
 
-        it('propagates errors thrown by the strategy itself (e.g. failed auth tag) without swallowing them', async () => {
-            const failingOpen = jest.fn().mockRejectedValue(new Error('boom: auth tag mismatch'));
-            const { strategy } = buildFakeStrategy({ open: failingOpen });
-            const manager = new KeyExchangeManager(strategy);
-            await manager.begin('secret', 'room-1');
+    it('propagates errors thrown by decrypt() (e.g. a failed auth tag) without any fallback', async () => {
+        const failingDecrypt = jest.fn().mockRejectedValue(new Error('boom: auth tag mismatch'));
+        const { strategy } = buildFakeStrategy({ decrypt: failingDecrypt });
+        await strategy.initialize('secret');
 
-            const envelope: EncryptionEnvelope = { v: 1, strategy: 'fake-strategy', room: 'room-1', data: {} };
-            await expect(manager.open('chat', envelope)).rejects.toThrow('boom: auth tag mismatch');
-        });
+        const envelope: EncryptionEnvelope = { version: 1, strategy: 'fake-strategy', data: {} };
+        await expect(strategy.decrypt(envelope)).rejects.toThrow('boom: auth tag mismatch');
     });
 });

@@ -18,7 +18,7 @@ export type RawSignalMessage = { envelope: EncryptionEnvelope };
 /**
  * Raw, still-encrypted payloads are handed to these callbacks instead of
  * going through the generic subscription map: the SDK must decrypt them
- * first (strict version/room checks, replay protection) before any consumer
+ * first (strict strategy/version checks, replay protection) before any consumer
  * ever sees `chat-message`/call-signal data. This keeps `SocketInstance`
  * ignorant of key material — it only ever relays opaque envelopes.
  */
@@ -60,7 +60,7 @@ export class SocketInstance {
         this.socket.on(WIRE_EVENTS.WEBRTC_SIGNAL, (msg: RawSignalMessage) => {
             this.rawHandlers.onRawWebrtcSignal(msg);
         });
-        logger.log('Initiialized');
+        logger.log('Initialized');
     }
 
     /** Join a room. Carries no key material — the shared secret never leaves the device. */

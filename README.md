@@ -42,7 +42,7 @@ For installation instruction, go to [developer section](https://github.com/muke1
 
 1. The device creating the room generates a 256-bit secret locally and never sends it anywhere. It is only carried in the invitation link's URL fragment — `#room=<public-room-id>&secret=<secret>` — which browsers never transmit as part of an HTTP request.
 2. Both participants derive the same pair of AES-256-GCM keys from that shared secret via HKDF-SHA256: one key for chat messages, one for WebRTC signaling (offer/answer/ICE candidates), so a compromise of one cannot be used to attack the other.
-3. Every message/signal is sealed into a versioned, room-bound AEAD envelope before it ever reaches the server. The server relays this opaque envelope between the two sockets in the room — it cannot read, modify, or replay it into another room without the receiver rejecting it outright (there is no plaintext fallback).
+3. Every message/signal is sealed into a versioned envelope before it ever reaches the server. The server relays this opaque envelope between the two sockets in the room — it cannot read or modify it, and the receiver rejects outright (no plaintext fallback) anything that doesn't match the expected protocol version or encryption strategy.
 
 In this way, no one else can decrypt anything because the secret is never exposed to, or stored by, the server.
 

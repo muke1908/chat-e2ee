@@ -16,7 +16,7 @@ Chat messages and WebRTC signaling are **not** sent over REST any more — they
 are relayed over the socket connection established at `chat-join`, using the
 identity (`userID`/`channelID`) bound to that socket, never a client-supplied
 `sender`/`channel` field. Every payload the server relays for these two
-events is an **opaque, versioned AEAD envelope** (`{ v, room, iv, ct }`); the
+events is an **opaque, versioned envelope** (`{ version, strategy, data }`); the
 server never decrypts or inspects its contents.
 
 | event (client → server) | payload                | ack                                    | description                                        |

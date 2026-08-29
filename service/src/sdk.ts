@@ -1,6 +1,7 @@
 import { setConfig } from './configContext';
-import { KeyExchangeManager } from './crypto/strategy';
-import { resolveEncryptionStrategy } from './crypto/registry';
+import type { EncryptionEnvelope, EncryptionStrategy } from './crypto/strategy';
+import { resolveEncryptionStrategyFactory } from './crypto/registry';
+import { deriveChannelSecrets } from './crypto/inviteCrypto';
 import { ReplayGuard } from './utils/replayGuard';
 import { deleteLink, getLink } from './api/links';
 import { getUsersInChannel } from './api/messages';
@@ -33,17 +34,29 @@ export const createChatInstance = (config?: Partial<configType>): IChatE2EE => {
 /** Shape of a decrypted chat payload (see `handleRawChatMessage`). */
 type ChatPlaintext = { seq: number, timestamp: number, text: string, image?: string };
 
+/** JSON-serialize an arbitrary payload into raw bytes — the wire format `EncryptionStrategy.encrypt()` expects. */
+const encodePayload = (payload: unknown): ArrayBuffer => new TextEncoder().encode(JSON.stringify(payload)).buffer as ArrayBuffer;
+
+/** Deserialize raw bytes produced by `EncryptionStrategy.decrypt()` back into JSON. */
+const decodePayload = <T>(bytes: ArrayBuffer): T => JSON.parse(new TextDecoder().decode(bytes)) as T;
+
 class ChatE2EE implements IChatE2EE {
     private roomId?: string;
     private userId?: string;
 
     /**
-     * Delegates all sealing/opening of chat + signaling traffic to the
-     * configured `EncryptionStrategy` (secure default, disabled, or a
-     * custom registered strategy). `ChatE2EE` never touches key material
-     * (e.g. `CryptoKey`) directly.
+     * Two independent `EncryptionStrategy` instances, one per logical
+     * channel this SDK maintains (chat, WebRTC signaling) — created from
+     * the same factory (secure default, disabled, or a custom registered
+     * strategy) but never sharing in-memory state with each other. `ChatE2EE`
+     * owns all routing, JSON<->byte serialization, and replay/protocol
+     * validation around them; a strategy itself never sees a room id,
+     * channel name, or anything else application-specific.
      */
-    private keyExchange: KeyExchangeManager;
+    private chatStrategy: EncryptionStrategy;
+    private signalingStrategy: EncryptionStrategy;
+    /** True once `setChannel()` has initialized both strategy instances for the active room. */
+    private channelReady = false;
 
     //To Do: Fix types
     private subscriptions: Map<string, Set<Function>> = new Map();
@@ -62,6 +75,7 @@ class ChatE2EE implements IChatE2EE {
     private chatReplayGuard: ReplayGuard = new ReplayGuard();
 
     private initialized = false;
+
 
     private callSignalRouter: CallSignalRouter = new CallSignalRouter(
         () => this.createWebRtcCall(this.activeCallId || this.callSignalRouter.pendingCallId),
@@ -102,7 +116,12 @@ class ChatE2EE implements IChatE2EE {
         // config) so multiple ChatE2EE instances can run different
         // strategies concurrently. Throws immediately for an unknown
         // strategy id — no lazy/deferred failure at setChannel() time.
-        this.keyExchange = new KeyExchangeManager(resolveEncryptionStrategy(config?.encryption?.strategy));
+        // The factory is called twice so the chat and signaling strategy
+        // instances are always genuinely distinct, even though they share
+        // the same underlying implementation.
+        const strategyFactory = resolveEncryptionStrategyFactory(config?.encryption?.strategy);
+        this.chatStrategy = strategyFactory();
+        this.signalingStrategy = strategyFactory();
     }
 
     public async init(): Promise<void> {
@@ -140,7 +159,14 @@ class ChatE2EE implements IChatE2EE {
         if (!roomId || !secret) {
             throw new Error('setChannel() requires both a roomId and an invitation secret.');
         }
-        await this.keyExchange.begin(secret, roomId);
+        // Domain-separated opaque secrets are derived here, entirely outside
+        // the strategy layer — each strategy instance only ever sees its
+        // own secret, never the roomId or the fact that a sibling instance
+        // exists for the other channel.
+        const { chatSecret, signalingSecret } = await deriveChannelSecrets(secret);
+        await this.chatStrategy.initialize(chatSecret);
+        await this.signalingStrategy.initialize(signalingSecret);
+        this.channelReady = true;
         this.roomId = roomId;
         this.userId = userId;
         // A fresh room join starts a fresh sequence-number space: forget any
@@ -162,7 +188,7 @@ class ChatE2EE implements IChatE2EE {
     public isEncrypted(): boolean {
         this.checkInitialized();
         logger.log(`isEncrypted()`);
-        return this.keyExchange.isReady && this.keyExchange.encrypts;
+        return this.channelReady && this.chatStrategy.encrypted;
     }
 
     public async delete(): Promise<void> {
@@ -186,12 +212,13 @@ class ChatE2EE implements IChatE2EE {
             send: async () => {
                 this.assertChannelReady();
                 const seq = ++this.chatSeq;
-                const envelope = await this.keyExchange.seal('chat', {
+                const payload: ChatPlaintext = {
                     seq,
                     timestamp: Date.now(),
                     text,
                     image,
-                });
+                };
+                const envelope = await this.chatStrategy.encrypt(encodePayload(payload));
                 const { id, timestamp } = await this.socket.sendChatMessage(envelope);
                 return { id: String(id), timestamp: String(timestamp) };
             }
@@ -299,7 +326,8 @@ class ChatE2EE implements IChatE2EE {
      */
     private async handleRawChatMessage(msg: RawChatMessage): Promise<void> {
         this.assertChannelReady();
-        const payload = await this.keyExchange.open<ChatPlaintext>('chat', msg.envelope);
+        this.assertEnvelopeMatchesStrategy(msg.envelope, this.chatStrategy);
+        const payload = decodePayload<ChatPlaintext>(await this.chatStrategy.decrypt(msg.envelope));
         if (!this.chatReplayGuard.accept('chat', payload.seq)) {
             this.chatLogger.log(`Dropping replayed/duplicate chat message, seq=${payload.seq}`);
             return;
@@ -321,7 +349,8 @@ class ChatE2EE implements IChatE2EE {
      */
     private async handleRawWebrtcSignal(msg: RawSignalMessage): Promise<void> {
         this.assertChannelReady();
-        const payload = await this.keyExchange.open<WebRtcSignalPayload>('signaling', msg.envelope);
+        this.assertEnvelopeMatchesStrategy(msg.envelope, this.signalingStrategy);
+        const payload = decodePayload<WebRtcSignalPayload>(await this.signalingStrategy.decrypt(msg.envelope));
         await this.handleCallSignal(payload);
     }
 
@@ -409,10 +438,10 @@ class ChatE2EE implements IChatE2EE {
         await this.sendSignal(signal);
     }
 
-    /** Seals a signaling payload through the configured strategy's signaling channel and relays it over the socket. */
+    /** Seals a signaling payload through the configured strategy's signaling instance and relays it over the socket. */
     private async sendSignal(payload: WebRtcSignalPayload): Promise<void> {
         this.assertChannelReady();
-        const envelope = await this.keyExchange.seal('signaling', payload);
+        const envelope = await this.signalingStrategy.encrypt(encodePayload(payload));
         await this.socket.sendWebrtcSignal(envelope);
     }
 
@@ -500,13 +529,41 @@ class ChatE2EE implements IChatE2EE {
 
     /** Throws unless setChannel() has established a ready encryption session for an active room. */
     private assertChannelReady(): void {
-        if (!this.roomId || !this.keyExchange.isReady) {
+        if (!this.roomId || !this.channelReady) {
             throw new Error('Channel is not ready: call setChannel() with a valid invite secret first.');
         }
     }
 
+    /**
+     * Protocol-validation duty `ChatE2EE` owns on behalf of every strategy:
+     * reject a malformed or foreign-strategy envelope outright, before ever
+     * calling into `strategy.decrypt()`. There is never a fallback to a
+     * different strategy instance.
+     */
+    private assertEnvelopeMatchesStrategy(envelope: EncryptionEnvelope, strategy: EncryptionStrategy): void {
+        if (!envelope || typeof envelope !== 'object') {
+            throw new Error('Invalid envelope: expected an object.');
+        }
+        if (envelope.strategy !== strategy.id) {
+            throw new Error(`Unsupported encryption strategy: expected "${strategy.id}", got "${String(envelope.strategy)}".`);
+        }
+    }
+
     private clearChannelSecrets(): void {
-        this.keyExchange.reset();
+        // destroy() is synchronous, but a custom strategy's implementation
+        // throwing must still not prevent local state from being cleared or
+        // the sibling strategy from being torn down.
+        try {
+            this.chatStrategy.destroy();
+        } catch {
+            // ignore: best-effort teardown, see comment above.
+        }
+        try {
+            this.signalingStrategy.destroy();
+        } catch {
+            // ignore: best-effort teardown, see comment above.
+        }
+        this.channelReady = false;
         this.roomId = undefined;
         this.userId = undefined;
         this.chatSeq = 0;
@@ -538,10 +595,10 @@ export type { CallLifecycleState, CallEndReason, CallLifecycleUpdate } from './w
 // ---------------------------------------------------------------------------
 // Encryption strategy public API
 // ---------------------------------------------------------------------------
-// The SDK does not couple to any specific key-exchange/crypto primitive.
-// Every strategy (the secure HKDF+AES-GCM default, the explicit "disabled"
-// no-op, or a custom one) is registered/selected through this factory-style
-// API, in keeping with the `createChatInstance()` factory pattern above.
+// The SDK does not couple to any specific encryption primitive. Every
+// strategy (the AES-256-GCM secure default, the explicit "disabled" no-op,
+// or a custom one) is registered/selected through this factory-style API,
+// in keeping with the `createChatInstance()` factory pattern above.
 export {
     registerEncryptionStrategy,
     unregisterEncryptionStrategy,
@@ -551,4 +608,4 @@ export {
     DEFAULT_ENCRYPTION_STRATEGY_ID,
     NO_ENCRYPTION_STRATEGY_ID,
 } from './crypto/registry';
-export { KeyExchangeManager, type EncryptionStrategy, type EncryptionChannel, type EncryptionEnvelope } from './crypto/strategy';
+export type { EncryptionStrategy, EncryptionStrategyFactory, EncryptionEnvelope } from './crypto/strategy';

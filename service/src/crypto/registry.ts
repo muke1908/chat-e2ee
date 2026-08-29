@@ -1,4 +1,4 @@
-import type { EncryptionStrategy } from './strategy';
+import type { EncryptionStrategy, EncryptionStrategyFactory } from './strategy';
 import { createSecureStrategy, SECURE_STRATEGY_ID } from './strategies/secureStrategy';
 import { createDisabledStrategy, DISABLED_STRATEGY_ID } from './strategies/disabledStrategy';
 
@@ -13,34 +13,48 @@ export const NO_ENCRYPTION_STRATEGY_ID = DISABLED_STRATEGY_ID;
 /**
  * Global registry/factory for `EncryptionStrategy` implementations.
  *
- * The two built-ins — the secure invite-secret HKDF + AES-GCM default and
- * the explicit "disabled" strategy — are registered up front. Any other
- * strategy (a different KDF/AEAD, a hardware-backed key store, ...) can be
- * added at runtime via `registerEncryptionStrategy()` and then selected by
- * id from `createChatInstance({ encryption: { strategy: '<id>' } })`.
+ * Strategies are stateful (each holds its own key material once
+ * `initialize()`d), so the registry stores *factories* — never a shared
+ * instance — keyed by id. Every lookup that ultimately reaches a caller
+ * (`createChatInstance()`, `getEncryptionStrategy()`, ...) creates a brand
+ * new instance, so e.g. `ChatE2EE`'s independent chat/signaling strategy
+ * instances never share in-memory state.
+ *
+ * The two built-ins — the AES-256-GCM secure default and the explicit
+ * "disabled" strategy — are registered up front. Any other strategy (a
+ * different AEAD, a hardware-backed key store, ...) can be added at runtime
+ * via `registerEncryptionStrategy()` and then selected by id from
+ * `createChatInstance({ encryption: { strategy: '<id>' } })`.
  */
-const registry = new Map<string, EncryptionStrategy<any>>();
+const registry = new Map<string, EncryptionStrategyFactory>();
 
 const registerBuiltins = (): void => {
-    registry.set(SECURE_STRATEGY_ID, createSecureStrategy());
-    registry.set(DISABLED_STRATEGY_ID, createDisabledStrategy());
+    registry.set(SECURE_STRATEGY_ID, createSecureStrategy);
+    registry.set(DISABLED_STRATEGY_ID, createDisabledStrategy);
 };
 registerBuiltins();
 
 /**
- * Register a custom encryption strategy so it can later be selected by id.
- * Throws if `strategy.id` is missing, or if a strategy is already
+ * Register a custom encryption strategy factory so it can later be
+ * selected by id. Throws if `id` is missing, or if a strategy is already
  * registered under that id (pass `{ override: true }` to intentionally
  * replace it — e.g. in tests).
  */
-export const registerEncryptionStrategy = (strategy: EncryptionStrategy<any>, options: { override?: boolean } = {}): void => {
-    if (!strategy || typeof strategy.id !== 'string' || !strategy.id) {
+export const registerEncryptionStrategy = (
+    id: string,
+    factory: EncryptionStrategyFactory,
+    options: { override?: boolean } = {},
+): void => {
+    if (typeof id !== 'string' || !id) {
         throw new Error('Cannot register an encryption strategy without a non-empty string id.');
     }
-    if (registry.has(strategy.id) && !options.override) {
-        throw new Error(`Encryption strategy "${strategy.id}" is already registered. Pass { override: true } to replace it intentionally.`);
+    if (typeof factory !== 'function') {
+        throw new Error('Cannot register an encryption strategy without a factory function.');
     }
-    registry.set(strategy.id, strategy);
+    if (registry.has(id) && !options.override) {
+        throw new Error(`Encryption strategy "${id}" is already registered. Pass { override: true } to replace it intentionally.`);
+    }
+    registry.set(id, factory);
 };
 
 /** Remove a previously registered strategy (built-ins may be removed too, e.g. to force an "unknown strategy" scenario in tests). */
@@ -54,32 +68,37 @@ export const hasEncryptionStrategy = (id: string): boolean => registry.has(id);
 /** List every currently registered strategy id. */
 export const listEncryptionStrategyIds = (): string[] => Array.from(registry.keys());
 
-/** Look up a registered strategy by id. Throws a descriptive error — never silently substitutes another strategy — if `id` is unknown. */
-export const getEncryptionStrategy = (id: string): EncryptionStrategy<any> => {
-    const strategy = registry.get(id);
-    if (!strategy) {
+/** Look up a registered strategy's factory by id. Throws a descriptive error — never silently substitutes another strategy — if `id` is unknown. */
+export const getEncryptionStrategyFactory = (id: string): EncryptionStrategyFactory => {
+    const factory = registry.get(id);
+    if (!factory) {
         throw new Error(`Unknown encryption strategy: "${id}". Registered strategies: ${listEncryptionStrategyIds().join(', ') || '(none)'}.`);
     }
-    return strategy;
+    return factory;
 };
 
+/** Look up a registered strategy by id and create a brand new instance of it. Throws for an unknown id. */
+export const getEncryptionStrategy = (id: string): EncryptionStrategy => getEncryptionStrategyFactory(id)();
+
 /**
- * Resolve the strategy `createChatInstance()` should use:
- *  - `undefined` → the secure default.
+ * Resolve the strategy factory `createChatInstance()` should use to create
+ * its (independent) chat/signaling strategy instances:
+ *
+ *  - `undefined` → the secure default's factory.
  *  - a `string` → looked up in the global registry (throws if unknown).
- *  - an `EncryptionStrategy` instance → used directly, whether or not it is
- *    also registered globally (handy for one-off/ad-hoc strategies in tests
+ *  - a factory function → used directly, whether or not it is also
+ *    registered globally (handy for one-off/ad-hoc strategies in tests
  *    without polluting the shared registry).
  */
-export const resolveEncryptionStrategy = (strategy?: string | EncryptionStrategy<any>): EncryptionStrategy<any> => {
+export const resolveEncryptionStrategyFactory = (strategy?: string | EncryptionStrategyFactory): EncryptionStrategyFactory => {
     if (!strategy) {
-        return getEncryptionStrategy(DEFAULT_ENCRYPTION_STRATEGY_ID);
+        return getEncryptionStrategyFactory(DEFAULT_ENCRYPTION_STRATEGY_ID);
     }
     if (typeof strategy === 'string') {
-        return getEncryptionStrategy(strategy);
+        return getEncryptionStrategyFactory(strategy);
     }
-    if (typeof strategy.id !== 'string' || !strategy.id) {
-        throw new Error('A custom encryption strategy instance must have a non-empty string id.');
+    if (typeof strategy !== 'function') {
+        throw new Error('A custom encryption strategy must be a factory function that returns an EncryptionStrategy instance.');
     }
     return strategy;
 };

@@ -6,8 +6,8 @@ export interface CustomSocket extends Socket {
   channelID: string
 }
 
-/** Opaque, versioned AEAD envelope — the server never inspects its contents. */
-export type WireEnvelope = { v: number, room: string, iv: string, ct: string };
+/** Opaque, versioned envelope — the server never inspects its contents. */
+export type WireEnvelope = { version: number, strategy: string, data: unknown };
 
 let io: Server = null;
 export enum SOCKET_TOPIC {

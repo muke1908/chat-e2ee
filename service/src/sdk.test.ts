@@ -5,7 +5,7 @@ if (!globalThis.crypto) {
     (globalThis as any).crypto = webcrypto;
 }
 
-// inviteCrypto/secureEnvelope access `window.crypto`, `window.btoa`, and
+// inviteCrypto/crypto strategies access `window.crypto`, `window.btoa`, and
 // `window.atob`. In a Node (non-jsdom) environment `window` is undefined, so
 // point it at globalThis, which already has btoa/atob (Node 16+) and crypto
 // (Node 19+).
@@ -50,9 +50,9 @@ jest.mock('./api/links', () => ({
 // Import after all mocks are in place
 // ---------------------------------------------------------------------------
 import { createChatInstance } from './sdk';
-import { generateInviteSecret } from './crypto/inviteCrypto';
+import { generateInviteSecret, deriveChannelSecrets } from './crypto/inviteCrypto';
 import { getEncryptionStrategy, DEFAULT_ENCRYPTION_STRATEGY_ID, NO_ENCRYPTION_STRATEGY_ID, registerEncryptionStrategy, unregisterEncryptionStrategy } from './crypto/registry';
-import type { EncryptionStrategy } from './crypto/strategy';
+import type { EncryptionEnvelope, EncryptionStrategyFactory } from './crypto/strategy';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -67,16 +67,24 @@ async function buildInitializedInstance() {
     return instance;
 }
 
+/** Mirrors the private JSON<->bytes serialization `ChatE2EE` uses around every `EncryptionStrategy`. */
+const encodePayload = (payload: unknown): ArrayBuffer => new TextEncoder().encode(JSON.stringify(payload)).buffer as ArrayBuffer;
+const decodePayload = <T>(bytes: ArrayBuffer): T => JSON.parse(new TextDecoder().decode(bytes)) as T;
+
 /**
  * Builds a wire-shaped envelope exactly the way the real default strategy
  * (registered under `DEFAULT_ENCRYPTION_STRATEGY_ID`) would, for tests that
  * simulate an incoming message from a peer without going through a second
- * full `ChatE2EE` instance.
+ * full `ChatE2EE` instance. Domain separation between `'chat'` and
+ * `'signaling'` happens entirely outside the strategy, exactly as `ChatE2EE`
+ * itself does it: a fresh strategy instance is initialized with the secret
+ * derived for that specific channel.
  */
-async function sealWithDefaultStrategy(channel: 'chat' | 'signaling', room: string, payload: unknown) {
+async function sealWithDefaultStrategy(channel: 'chat' | 'signaling', payload: unknown): Promise<EncryptionEnvelope> {
     const strategy = getEncryptionStrategy(DEFAULT_ENCRYPTION_STRATEGY_ID);
-    const session = await strategy.createSession(SECRET, room);
-    return strategy.seal(session, channel, room, payload);
+    const { chatSecret, signalingSecret } = await deriveChannelSecrets(SECRET);
+    await strategy.initialize(channel === 'chat' ? chatSecret : signalingSecret);
+    return strategy.encrypt(encodePayload(payload));
 }
 
 // Each test builds a fresh ChatE2EE instance (and thus a fresh SocketInstance)
@@ -221,6 +229,11 @@ describe('dispose()', () => {
         instance.dispose();
         expect(() => instance.isEncrypted()).toThrow('ChatE2EE is not initialized, call init()');
     });
+
+    it('succeeds even if setChannel() was never called (strategies were never initialized)', async () => {
+        const instance = await buildInitializedInstance();
+        expect(() => instance.dispose()).not.toThrow();
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -298,7 +311,7 @@ describe('encrypt()', () => {
         await expect(instance.encrypt({ image: '', text: 'hello' }).send()).rejects.toThrow(/Channel is not ready/);
     });
 
-    it('send() seals the message with the chat key and delivers via the socket, never sending plaintext', async () => {
+    it('send() seals the message with the chat strategy and delivers via the socket into a { version, strategy, data } envelope, never sending plaintext', async () => {
         mockSocket.emit.mockImplementation((event: string, payload: unknown, ack?: (r: unknown) => void) => {
             if (event === 'chat-message') {
                 ack?.({ id: 42, timestamp: 1234 });
@@ -312,9 +325,9 @@ describe('encrypt()', () => {
 
         expect(result).toEqual({ id: '42', timestamp: '1234' });
         const [, sentPayload] = mockSocket.emit.mock.calls.find(([event]) => event === 'chat-message')!;
-        const envelope = (sentPayload as { envelope: { room: string; v: number; strategy: string; data: { ct: string } } }).envelope;
-        expect(envelope.room).toBe(ROOM_ID);
-        expect(envelope.v).toBe(1);
+        const envelope = (sentPayload as { envelope: EncryptionEnvelope & { data: { ct: string } } }).envelope;
+        expect(Object.keys(envelope).sort()).toEqual(['data', 'strategy', 'version']);
+        expect(envelope.version).toBe(1);
         expect(envelope.strategy).toBe(DEFAULT_ENCRYPTION_STRATEGY_ID);
         expect(envelope.data.ct).not.toContain('hello');
     });
@@ -351,7 +364,7 @@ describe('receiving chat-message', () => {
         const cb = jest.fn();
         instance.on('chat-message', cb);
 
-        const envelope = await sealWithDefaultStrategy('chat', ROOM_ID, { seq: 1, timestamp: 111, text: 'hi there', image: '' });
+        const envelope = await sealWithDefaultStrategy('chat', { seq: 1, timestamp: 111, text: 'hi there', image: '' });
 
         wireHandlerFor('chat-message')({ id: 1, timestamp: 111, sender: 'bob', envelope });
         await flushAsync();
@@ -365,7 +378,7 @@ describe('receiving chat-message', () => {
         const cb = jest.fn();
         instance.on('chat-message', cb);
 
-        const envelope = await sealWithDefaultStrategy('chat', ROOM_ID, { seq: 1, timestamp: 1, text: 'hi', image: '' });
+        const envelope = await sealWithDefaultStrategy('chat', { seq: 1, timestamp: 1, text: 'hi', image: '' });
         const data = envelope.data as { iv: string; ct: string };
         const tampered = { ...envelope, data: { ...data, ct: data.ct.slice(0, -2) + (data.ct.slice(-2) === 'AA' ? 'BB' : 'AA') } };
 
@@ -381,7 +394,7 @@ describe('receiving chat-message', () => {
         const cb = jest.fn();
         instance.on('chat-message', cb);
 
-        const envelope = await sealWithDefaultStrategy('chat', ROOM_ID, { seq: 7, timestamp: 1, text: 'hi', image: '' });
+        const envelope = await sealWithDefaultStrategy('chat', { seq: 7, timestamp: 1, text: 'hi', image: '' });
         const handler = wireHandlerFor('chat-message');
 
         handler({ id: 1, timestamp: 1, sender: 'bob', envelope });
@@ -398,10 +411,25 @@ describe('receiving chat-message', () => {
         const cb = jest.fn();
         instance.on('chat-message', cb);
 
-        const envelope = await sealWithDefaultStrategy('chat', ROOM_ID, { seq: 1, timestamp: 1, text: 'hi', image: '' });
+        const envelope = await sealWithDefaultStrategy('chat', { seq: 1, timestamp: 1, text: 'hi', image: '' });
         const mismatched = { ...envelope, strategy: 'not-the-configured-strategy' };
 
         wireHandlerFor('chat-message')({ id: 1, timestamp: 1, sender: 'bob', envelope: mismatched });
+        await flushAsync();
+
+        expect(cb).not.toHaveBeenCalled();
+    });
+
+    it('drops an envelope sealed for the wrong logical channel (signaling secret used for a chat message) — domain separation holds even within the same room', async () => {
+        const instance = await buildInitializedInstance();
+        await instance.setChannel(ROOM_ID, SECRET, USER_ID);
+        const cb = jest.fn();
+        instance.on('chat-message', cb);
+
+        // Sealed with the *signaling* secret, but delivered as a chat-message.
+        const envelope = await sealWithDefaultStrategy('signaling', { seq: 1, timestamp: 1, text: 'hi', image: '' });
+
+        wireHandlerFor('chat-message')({ id: 1, timestamp: 1, sender: 'bob', envelope });
         await flushAsync();
 
         expect(cb).not.toHaveBeenCalled();
@@ -411,39 +439,48 @@ describe('receiving chat-message', () => {
 // ---------------------------------------------------------------------------
 // createChatInstance() encryption strategy selection
 // ---------------------------------------------------------------------------
-/** Minimal custom strategy used to prove the registry/factory is genuinely pluggable (not just secure-vs-disabled). */
+/** Minimal custom strategy factory used to prove the registry/factory is genuinely pluggable (not just secure-vs-disabled). It knows nothing about rooms/channels/payload shape — only opaque bytes. */
 const CUSTOM_STRATEGY_ID = 'test-reverse-base64-strategy';
-const buildCustomStrategy = (): EncryptionStrategy<{ ready: true }> => ({
-    id: CUSTOM_STRATEGY_ID,
-    encrypts: true,
-    async createSession() {
-        return { ready: true };
-    },
-    async seal(_session, _channel, room, payload) {
-        if (!room) {
-            throw new Error('Cannot seal without a room id.');
-        }
-        const obfuscated = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64').split('').reverse().join('');
-        return { v: 1, strategy: CUSTOM_STRATEGY_ID, room, data: obfuscated };
-    },
-    async open(_session, _channel, room, envelope) {
-        if (envelope.v !== 1) {
-            throw new Error(`Unsupported envelope version: ${String(envelope.v)}`);
-        }
-        if (envelope.room !== room) {
-            throw new Error('Envelope room does not match the active channel.');
-        }
-        const restored = (envelope.data as string).split('').reverse().join('');
-        return JSON.parse(Buffer.from(restored, 'base64').toString('utf8'));
-    },
-});
+const buildCustomStrategyFactory: EncryptionStrategyFactory = () => {
+    let ready = false;
+    return {
+        id: CUSTOM_STRATEGY_ID,
+        encrypted: true,
+        async initialize() {
+            ready = true;
+        },
+        async encrypt(data: ArrayBuffer): Promise<EncryptionEnvelope> {
+            if (!ready) {
+                throw new Error('not initialized');
+            }
+            const obfuscated = Buffer.from(data).toString('base64').split('').reverse().join('');
+            return { version: 1, strategy: CUSTOM_STRATEGY_ID, data: obfuscated };
+        },
+        async decrypt(envelope: EncryptionEnvelope): Promise<ArrayBuffer> {
+            if (!ready) {
+                throw new Error('not initialized');
+            }
+            if (envelope.version !== 1) {
+                throw new Error(`Unsupported envelope version: ${String(envelope.version)}`);
+            }
+            if (envelope.strategy !== CUSTOM_STRATEGY_ID) {
+                throw new Error(`Unsupported encryption strategy: expected "${CUSTOM_STRATEGY_ID}", got "${String(envelope.strategy)}".`);
+            }
+            const restored = (envelope.data as string).split('').reverse().join('');
+            return Uint8Array.from(Buffer.from(restored, 'base64')).buffer as ArrayBuffer;
+        },
+        destroy() {
+            ready = false;
+        },
+    };
+};
 
 describe('createChatInstance() encryption strategy selection', () => {
     afterEach(() => {
         unregisterEncryptionStrategy(CUSTOM_STRATEGY_ID);
     });
 
-    it('defaults to the secure invite-secret HKDF + AES-GCM strategy when unconfigured', async () => {
+    it('defaults to the secure AES-256-GCM strategy when unconfigured', async () => {
         mockSocket.emit.mockClear();
         mockSocket.emit.mockImplementation((event: string, _payload: unknown, ack?: (r: unknown) => void) => {
             if (event === 'chat-message') ack?.({ id: 1, timestamp: 1 });
@@ -459,7 +496,7 @@ describe('createChatInstance() encryption strategy selection', () => {
     });
 
     it('uses a custom strategy registered via registerEncryptionStrategy(), selected by id', async () => {
-        registerEncryptionStrategy(buildCustomStrategy());
+        registerEncryptionStrategy(CUSTOM_STRATEGY_ID, buildCustomStrategyFactory);
         mockSocket.emit.mockClear();
         mockSocket.emit.mockImplementation((event: string, _payload: unknown, ack?: (r: unknown) => void) => {
             if (event === 'chat-message') ack?.({ id: 1, timestamp: 1 });
@@ -481,21 +518,23 @@ describe('createChatInstance() encryption strategy selection', () => {
 
         // Round-trip a message "from the peer" through the same custom strategy.
         const strategy = getEncryptionStrategy(CUSTOM_STRATEGY_ID);
-        const session = await strategy.createSession(SECRET, ROOM_ID);
-        const incoming = await strategy.seal(session, 'chat', ROOM_ID, { seq: 1, timestamp: 1, text: 'hi from peer', image: '' });
+        await strategy.initialize('unused-secret-custom-strategy-ignores-it');
+        const incoming = await strategy.encrypt(encodePayload({ seq: 1, timestamp: 1, text: 'hi from peer', image: '' }));
         wireHandlerFor('chat-message')({ id: 2, timestamp: 2, sender: 'bob', envelope: incoming });
         await flushAsync();
         expect(cb).toHaveBeenCalledWith(expect.objectContaining({ message: 'hi from peer' }));
     });
 
-    it('accepts an ad-hoc custom strategy instance without requiring global registration', async () => {
-        const instance = createChatInstance({ encryption: { strategy: buildCustomStrategy() } });
+    it('accepts an ad-hoc custom strategy factory without requiring global registration, and calls it twice for distinct chat/signaling instances', async () => {
+        const factory = jest.fn(buildCustomStrategyFactory);
+        const instance = createChatInstance({ encryption: { strategy: factory } });
         await instance.init();
         await expect(instance.setChannel(ROOM_ID, SECRET, USER_ID)).resolves.toBeUndefined();
         expect(instance.isEncrypted()).toBe(true);
+        expect(factory).toHaveBeenCalledTimes(2);
     });
 
-    it('supports the built-in disabled/no-encryption strategy, using versioned plaintext envelopes', async () => {
+    it('supports the built-in disabled/no-encryption strategy, using versioned envelopes with base64url-encoded plaintext', async () => {
         mockSocket.emit.mockClear();
         mockSocket.emit.mockImplementation((event: string, _payload: unknown, ack?: (r: unknown) => void) => {
             if (event === 'chat-message') ack?.({ id: 1, timestamp: 1 });
@@ -512,29 +551,17 @@ describe('createChatInstance() encryption strategy selection', () => {
 
         await instance.encrypt({ image: '', text: 'plaintext hello' }).send();
         const [, sentPayload] = mockSocket.emit.mock.calls.find(([event]) => event === 'chat-message')!;
-        const envelope = (sentPayload as { envelope: { strategy: string; v: number; room: string; data: { text: string } } }).envelope;
+        const envelope = (sentPayload as { envelope: { strategy: string; version: number; data: string } }).envelope;
+        expect(Object.keys(envelope).sort()).toEqual(['data', 'strategy', 'version']);
         expect(envelope.strategy).toBe(NO_ENCRYPTION_STRATEGY_ID);
-        expect(envelope.v).toBe(1);
-        expect(envelope.data.text).toBe('plaintext hello'); // intentionally plaintext, never ciphertext
+        expect(envelope.version).toBe(1);
+        const decoded = decodePayload<{ text: string }>(Uint8Array.from(Buffer.from(envelope.data, 'base64url')).buffer as ArrayBuffer);
+        expect(decoded.text).toBe('plaintext hello'); // intentionally plaintext, never ciphertext
 
         // Still round-trips normally end-to-end.
         wireHandlerFor('chat-message')({ id: 2, timestamp: 2, sender: 'bob', envelope });
         await flushAsync();
         expect(cb).toHaveBeenCalledWith(expect.objectContaining({ message: 'plaintext hello' }));
-    });
-
-    it('disabled strategy rejects (never silently accepts) a room-mismatched envelope', async () => {
-        const instance = createChatInstance({ encryption: { strategy: NO_ENCRYPTION_STRATEGY_ID } });
-        await instance.init();
-        await instance.setChannel(ROOM_ID, SECRET, USER_ID);
-        const cb = jest.fn();
-        instance.on('chat-message', cb);
-
-        const tampered = { v: 1, strategy: NO_ENCRYPTION_STRATEGY_ID, room: 'a-different-room', data: { seq: 1, timestamp: 1, text: 'hi', image: '' } };
-        wireHandlerFor('chat-message')({ id: 1, timestamp: 1, sender: 'bob', envelope: tampered });
-        await flushAsync();
-
-        expect(cb).not.toHaveBeenCalled();
     });
 
     it('disabled strategy rejects an envelope with an unsupported protocol version (no silent fallback)', async () => {
@@ -544,7 +571,8 @@ describe('createChatInstance() encryption strategy selection', () => {
         const cb = jest.fn();
         instance.on('chat-message', cb);
 
-        const tampered = { v: 99, strategy: NO_ENCRYPTION_STRATEGY_ID, room: ROOM_ID, data: { seq: 1, timestamp: 1, text: 'hi', image: '' } };
+        const envelope = await sealWithDefaultStrategy('chat', { seq: 1, timestamp: 1, text: 'hi', image: '' });
+        const tampered = { version: 99, strategy: NO_ENCRYPTION_STRATEGY_ID, data: envelope.data };
         wireHandlerFor('chat-message')({ id: 1, timestamp: 1, sender: 'bob', envelope: tampered });
         await flushAsync();
 
@@ -558,7 +586,7 @@ describe('createChatInstance() encryption strategy selection', () => {
         const cb = jest.fn();
         instance.on('chat-message', cb);
 
-        const secureEnvelope = await sealWithDefaultStrategy('chat', ROOM_ID, { seq: 1, timestamp: 1, text: 'hi', image: '' });
+        const secureEnvelope = await sealWithDefaultStrategy('chat', { seq: 1, timestamp: 1, text: 'hi', image: '' });
         wireHandlerFor('chat-message')({ id: 1, timestamp: 1, sender: 'bob', envelope: secureEnvelope });
         await flushAsync();
 
