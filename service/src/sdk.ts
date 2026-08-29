@@ -295,6 +295,10 @@ class ChatE2EE implements IChatE2EE {
         if (!this.activeCallId) {
             throw new Error('Missing call identifier for incoming call.');
         }
+        // The caller's AES key may have been shared after our last key sync;
+        // without it every incoming media frame fails to decrypt and the call
+        // is silent even though packets keep flowing.
+        await this.keyExchange.refreshReceiverPublicKey(this.keyExchangeLogger);
         await this.sendControlSignal('call-accept');
         const call = this.callSignalRouter.acceptPendingOffer(this.activeCallId);
         if (call) {
