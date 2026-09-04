@@ -1,6 +1,6 @@
 import { SocketListenerType } from "../socket/socket";
 import { E2ECall, PeerConnectionEventType } from "../webrtc/webrtcCall";
-import { CallEndReason } from "../webrtc/types";
+import { CallEndReason, WebRtcConfig } from "../webrtc/types";
 import type { EncryptionStrategyFactory } from "../crypto/strategy";
 
 /**
@@ -74,5 +74,6 @@ export type configType = {
     },
     baseUrl?: string,
     encryption?: EncryptionConfig,
+    webrtc?: WebRtcConfig,
 }
 export type SetConfigType = (config: Partial<configType>) => void;

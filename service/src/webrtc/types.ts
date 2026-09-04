@@ -71,6 +71,70 @@ export interface CallLifecycleUpdate {
     callId?: string;
 }
 
+export interface WebRtcDiagnosticsConfig {
+    enabled?: boolean;
+    intervalMs?: number;
+}
+
+export interface WebRtcSelfHealingConfig {
+    enabled?: boolean;
+    restartOnDisconnected?: boolean;
+    restartOnFailed?: boolean;
+    disconnectedRestartDelayMs?: number;
+}
+
+export interface WebRtcConfig {
+    iceServers?: RTCIceServer[];
+    iceTransportPolicy?: RTCIceTransportPolicy;
+    diagnostics?: WebRtcDiagnosticsConfig;
+    selfHealing?: WebRtcSelfHealingConfig;
+}
+
+export interface CallMetrics {
+    timestamp: number;
+    bitrateKbps?: number;
+    availableOutgoingBitrateKbps?: number;
+    rttMs?: number;
+    packetsLost?: number;
+    packetLossRatio?: number;
+    jitterMs?: number;
+    localAudioLevel?: number;
+    remoteAudioLevel?: number;
+    selectedCandidatePairId?: string;
+    localCandidateType?: RTCIceCandidateType | string;
+    remoteCandidateType?: RTCIceCandidateType | string;
+    localCandidate?: string;
+    remoteCandidate?: string;
+    iceConnectionState?: RTCIceConnectionState;
+    connectionState?: RTCPeerConnectionState;
+}
+
+export type IceJourneyEventType =
+    | 'connection-state'
+    | 'gathering-state'
+    | 'local-candidate'
+    | 'remote-candidate'
+    | 'selected-candidate-pair-change'
+    | 'ice-restart';
+
+export interface IceJourneyEvent {
+    type: IceJourneyEventType;
+    timestamp: number;
+    connectionState?: RTCPeerConnectionState;
+    iceConnectionState?: RTCIceConnectionState;
+    gatheringState?: RTCIceGatheringState;
+    candidate?: RTCIceCandidateInit;
+    candidateType?: RTCIceCandidateType | string;
+    protocol?: string;
+    address?: string;
+    port?: number;
+    selectedCandidatePairId?: string;
+    previousSelectedCandidatePairId?: string;
+    localCandidateType?: RTCIceCandidateType | string;
+    remoteCandidateType?: RTCIceCandidateType | string;
+    reason?: string;
+}
+
 /** Union of all signaling payload shapes exchanged over the socket connection. */
 export type WebRtcSignalPayload =
     | OfferSignalData
@@ -78,7 +142,7 @@ export type WebRtcSignalPayload =
     | IceCandidateSignalWithMetadata
     | CallControlSignal;
 
-export type callEvents = 'state-changed';
+export type callEvents = 'state-changed' | 'call-metrics' | 'ice-journey';
 export type PeerConnectionEventType =
     | "call-added"
     | "call-removed"
@@ -87,7 +151,9 @@ export type PeerConnectionEventType =
     | "call-rejected"
     | "call-cancelled"
     | "call-ended"
-    | "call-timeout";
+    | "call-timeout"
+    | "call-metrics"
+    | "ice-journey";
 export const peerConnectionEvents: PeerConnectionEventType[] = [
     "call-added",
     "call-removed",
@@ -97,4 +163,6 @@ export const peerConnectionEvents: PeerConnectionEventType[] = [
     "call-cancelled",
     "call-ended",
     "call-timeout",
+    "call-metrics",
+    "ice-journey",
 ];
