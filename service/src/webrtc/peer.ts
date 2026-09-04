@@ -55,7 +55,7 @@ export class Peer {
     private restartTimer?: ReturnType<typeof setTimeout>;
     private audioContext?: AudioContext;
     private audioAnalyser?: AnalyserNode;
-    private audioSamples?: Uint8Array;
+    private audioSamples?: Uint8Array<ArrayBuffer>;
 
     private localStreamAcquisatonPromise?: Promise<void>
     constructor(

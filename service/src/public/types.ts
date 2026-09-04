@@ -47,6 +47,7 @@ export interface IChatE2EE {
     rejectCall(): Promise<void>;
     cancelCall(): Promise<void>;
     endCall(reason?: CallEndReason): Promise<void>;
+    restartIce(): Promise<void>;
     activeCall: E2ECall | null
 }
 

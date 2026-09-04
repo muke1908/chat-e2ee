@@ -1,4 +1,4 @@
-import { setConfig } from './configContext';
+import { configContext, setConfig } from './configContext';
 import type { EncryptionEnvelope, EncryptionStrategy } from './crypto/strategy';
 import { resolveEncryptionStrategyFactory } from './crypto/registry';
 import { deriveChannelSecrets } from './crypto/inviteCrypto';
@@ -103,14 +103,24 @@ class ChatE2EE implements IChatE2EE {
             }
             if(state === 'failed' || state === 'closed') {
                 this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
+                if (state === 'failed' && this.isSelfHealingEnabled()) {
+                    this.updateCallLifecycle('connecting');
+                    return;
+                }
                 const reason: CallEndReason = state === 'failed' ? 'failed' : 'remote-end';
                 this.endCall(reason);
             } else if (state === 'disconnected') {
-                this.updateCallLifecycle('ice-failed');
+                this.updateCallLifecycle(this.isSelfHealingEnabled() ? 'connecting' : 'ice-failed');
             }
         })
+        call.on('call-metrics', (metrics) => {
+            this.callSubscriptions.get("call-metrics")?.forEach((cb) => cb(metrics));
+        });
+        call.on('ice-journey', (event) => {
+            this.callSubscriptions.get("ice-journey")?.forEach((cb) => cb(event));
+        });
     }
-    constructor(config?: Partial<configType>) {
+    constructor(private readonly config: Partial<configType> = {}) {
         config && setConfig(config);
         // Resolved once per instance (not persisted to the shared global
         // config) so multiple ChatE2EE instances can run different
@@ -316,6 +326,14 @@ class ChatE2EE implements IChatE2EE {
             await this.sendControlSignal('call-end', reason);
         }
         this.endLocalCall(reason);
+    }
+
+    public async restartIce(): Promise<void> {
+        const call = this.callSignalRouter.activeCall;
+        if (!call) {
+            throw new Error('No active call to restart ICE.');
+        }
+        await call.restartIce();
     }
 
     /**
@@ -583,14 +601,26 @@ class ChatE2EE implements IChatE2EE {
                 seq: ++this.signalSeq,
                 timestamp: Date.now(),
             }),
+            this.config.webrtc || configContext().webrtc,
+            (reason) => {
+                this.callLogger.log(`Self-healing ICE restart requested after ${reason}`);
+                call.restartIce(`auto-${reason}`).catch((error) => {
+                    this.callLogger.log('Automatic ICE restart failed:', error);
+                    this.endCall('failed');
+                });
+            },
         );
         this.setupCallSubs(call)
         return call;
     }
+
+    private isSelfHealingEnabled(): boolean {
+        return Boolean((this.config.webrtc || configContext().webrtc)?.selfHealing?.enabled);
+    }
 }
 
 export * from './public/types';
-export type { CallLifecycleState, CallEndReason, CallLifecycleUpdate } from './webrtc/types';
+export type { CallLifecycleState, CallEndReason, CallLifecycleUpdate, WebRtcConfig, CallMetrics, IceJourneyEvent } from './webrtc/types';
 
 // ---------------------------------------------------------------------------
 // Encryption strategy public API

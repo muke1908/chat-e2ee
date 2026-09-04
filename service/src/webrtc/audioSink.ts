@@ -37,4 +37,15 @@ export class AudioSink {
             this.audioEl = undefined;
         }
     }
+
+    public async setOutputDevice(deviceId: string): Promise<void> {
+        if (!this.audioEl) {
+            return;
+        }
+        const audioWithSink = this.audioEl as HTMLAudioElement & { setSinkId?: (sinkId: string) => Promise<void> };
+        if (typeof audioWithSink.setSinkId !== 'function') {
+            throw new Error('Audio output device selection is not supported in this browser.');
+        }
+        await audioWithSink.setSinkId(deviceId);
+    }
 }

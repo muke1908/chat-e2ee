@@ -8,15 +8,25 @@ import {
     type SignalMetadata,
     type PeerConnectionEventType,
     peerConnectionEvents,
+    type WebRtcConfig,
+    type CallMetrics,
 } from "./types";
 
 export type { WebRtcSignalPayload, callEvents, PeerConnectionEventType };
 export { peerConnectionEvents };
 
 export interface IE2ECall {
-    on(event: callEvents, cb: () => void): void;
+    on(event: callEvents, cb: (...args: any[]) => void): void;
     state: RTCPeerConnectionState;
+    muted: boolean;
     endCall(): Promise<void>;
+    restartIce(): Promise<void>;
+    mute(): void;
+    unmute(): void;
+    setMuted(muted: boolean): void;
+    switchInputDevice(deviceId: string): Promise<void>;
+    setOutputDevice(deviceId: string): Promise<void>;
+    getStatsSnapshot(): Promise<CallMetrics>;
 }
 
 export class WebRTCCall {
@@ -48,6 +58,8 @@ export class WebRTCCall {
         sendSignal: SignalSender,
         private logger: Logger,
         private signalMetadataProvider?: () => SignalMetadata,
+        private webrtcConfig?: WebRtcConfig,
+        private onAutoRestartNeeded?: (reason: RTCPeerConnectionState) => void,
     ) {
         this.logger.log('Creating WebRTCCall');
         this.peer = new Peer(
@@ -55,6 +67,10 @@ export class WebRTCCall {
             sendSignal,
             this.logger.createChild('Peer'),
             this.signalMetadataProvider,
+            {
+                webrtc: this.webrtcConfig,
+                onAutoRestartNeeded: this.onAutoRestartNeeded,
+            },
         );
     }
 
@@ -65,6 +81,39 @@ export class WebRTCCall {
     async startCall(): Promise<void> {
         this.logger.log('startCall');
         return this.peer!.createAndSendOffer();
+    }
+
+    async restartIce(reason = 'manual'): Promise<void> {
+        this.logger.log('restartIce');
+        return this.peer!.restartIce(reason);
+    }
+
+    public mute(): void {
+        this.peer!.mute();
+    }
+
+    public unmute(): void {
+        this.peer!.unmute();
+    }
+
+    public setMuted(muted: boolean): void {
+        this.peer!.setMuted(muted);
+    }
+
+    public get muted(): boolean {
+        return this.peer!.muted;
+    }
+
+    public switchInputDevice(deviceId: string): Promise<void> {
+        return this.peer!.switchInputDevice(deviceId);
+    }
+
+    public setOutputDevice(deviceId: string): Promise<void> {
+        return this.peer!.setOutputDevice(deviceId);
+    }
+
+    public getStatsSnapshot(): Promise<CallMetrics> {
+        return this.peer!.getStatsSnapshot();
     }
 
     public endCall(): void {
@@ -222,13 +271,37 @@ export class CallSignalRouter {
 // Public facing class
 export class E2ECall implements IE2ECall {
     constructor(private readonly webRtcCall: WebRTCCall) {}
-    public on(event: callEvents, cb: () => void): void {
+    public on(event: callEvents, cb: (...args: any[]) => void): void {
         this.webRtcCall.on(event, cb);
     }
     public get state(): RTCPeerConnectionState {
         return this.webRtcCall.callState;
     }
+    public get muted(): boolean {
+        return this.webRtcCall.muted;
+    }
     public async endCall(): Promise<void> {
         return this.webRtcCall.endCall();
+    }
+    public async restartIce(): Promise<void> {
+        return this.webRtcCall.restartIce();
+    }
+    public mute(): void {
+        this.webRtcCall.mute();
+    }
+    public unmute(): void {
+        this.webRtcCall.unmute();
+    }
+    public setMuted(muted: boolean): void {
+        this.webRtcCall.setMuted(muted);
+    }
+    public switchInputDevice(deviceId: string): Promise<void> {
+        return this.webRtcCall.switchInputDevice(deviceId);
+    }
+    public setOutputDevice(deviceId: string): Promise<void> {
+        return this.webRtcCall.setOutputDevice(deviceId);
+    }
+    public getStatsSnapshot(): Promise<CallMetrics> {
+        return this.webRtcCall.getStatsSnapshot();
     }
 }
