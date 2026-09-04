@@ -136,7 +136,6 @@ export class Peer {
 
         this.state = this.pc.connectionState;
         this.localStreamAcquisitionPromise = this.addLocalAudioTracks();
-        this.startDiagnostics();
     }
 
     public get callState(): RTCPeerConnectionState {
@@ -148,6 +147,7 @@ export class Peer {
         this.logger.log('createAndSendOffer');
         const offer = await this.pc.createOffer();
         await this.pc.setLocalDescription(offer);
+        this.startDiagnostics();
         const metadata = this.resolveSignalMetadata();
         const signal: OfferSignalData = {
             type: 'offer',
@@ -165,6 +165,7 @@ export class Peer {
             await this.pc.setRemoteDescription(new RTCSessionDescription(data));
             const answer = await this.pc.createAnswer();
             await this.pc.setLocalDescription(answer);
+            this.startDiagnostics();
             const metadata = this.resolveSignalMetadata();
             const signal: AnswerSignalData = {
                 type: 'answer',
@@ -237,8 +238,10 @@ export class Peer {
         const oldStream = this.audioStream;
         const oldTrack = oldStream?.getAudioTracks()[0];
         nextTrack.enabled = oldTrack ? oldTrack.enabled : !this.muted;
-        if (this.audioSender && typeof this.audioSender.replaceTrack === 'function') {
-            await this.audioSender.replaceTrack(nextTrack);
+        const sender = this.audioSender || this.findAudioSender();
+        if (sender && typeof sender.replaceTrack === 'function') {
+            this.audioSender = sender;
+            await sender.replaceTrack(nextTrack);
         } else {
             this.audioSender = this.pc.addTrack(nextTrack, nextStream);
         }
@@ -302,6 +305,9 @@ export class Peer {
 
     private startDiagnostics(): void {
         if (!this.options.webrtc?.diagnostics?.enabled) {
+            return;
+        }
+        if (this.diagnosticsTimer) {
             return;
         }
         const intervalMs = Math.max(250, this.options.webrtc.diagnostics.intervalMs || 5000);
@@ -475,7 +481,7 @@ export class Peer {
             this.audioAnalyser.fftSize = 256;
             const source = this.audioContext.createMediaStreamSource(this.audioStream!);
             source.connect(this.audioAnalyser);
-            this.audioSamples = new Uint8Array(this.audioAnalyser.fftSize);
+            this.audioSamples = new Uint8Array(this.audioAnalyser.frequencyBinCount);
         } catch {
             this.audioContext = undefined;
             this.audioAnalyser = undefined;
@@ -494,5 +500,12 @@ export class Peer {
             sum += centered * centered;
         });
         return Math.sqrt(sum / this.audioSamples.length);
+    }
+
+    private findAudioSender(): RTCRtpSender | undefined {
+        if (typeof this.pc.getSenders !== 'function') {
+            return undefined;
+        }
+        return this.pc.getSenders().find((sender) => sender.track?.kind === 'audio');
     }
 }
