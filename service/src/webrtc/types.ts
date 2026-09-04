@@ -111,6 +111,7 @@ export interface CallMetrics {
 
 export type IceJourneyEventType =
     | 'connection-state'
+    | 'ice-connection-state'
     | 'gathering-state'
     | 'local-candidate'
     | 'remote-candidate'

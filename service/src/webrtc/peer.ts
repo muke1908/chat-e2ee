@@ -57,7 +57,7 @@ export class Peer {
     private audioAnalyser?: AnalyserNode;
     private audioSamples?: Uint8Array<ArrayBuffer>;
 
-    private localStreamAcquisatonPromise?: Promise<void>
+    private localStreamAcquisitionPromise?: Promise<void>
     constructor(
         private subCtx: () => Map<callEvents, Set<Function>>,
         private sendSignal: SignalSender,
@@ -85,14 +85,14 @@ export class Peer {
                 iceConnectionState: this.pc.iceConnectionState,
             });
             const sub = this.subCtx();
-            const stateChangeHanlder = sub.get('state-changed');
-            stateChangeHanlder?.forEach(cb => cb(this.state));
+            const stateChangeHandler = sub.get('state-changed');
+            stateChangeHandler?.forEach(cb => cb(this.state));
             this.maybeAutoRestart(this.pc.connectionState);
         };
 
         this.pc.oniceconnectionstatechange = () => {
             this.emitIceJourney({
-                type: 'connection-state',
+                type: 'ice-connection-state',
                 timestamp: Date.now(),
                 connectionState: this.pc.connectionState,
                 iceConnectionState: this.pc.iceConnectionState,
@@ -135,7 +135,7 @@ export class Peer {
         };
 
         this.state = this.pc.connectionState;
-        this.localStreamAcquisatonPromise = this.addLocalAudioTracks();
+        this.localStreamAcquisitionPromise = this.addLocalAudioTracks();
         this.startDiagnostics();
     }
 
@@ -144,7 +144,7 @@ export class Peer {
     }
 
     public async createAndSendOffer() {
-        await this.localStreamAcquisatonPromise;
+        await this.localStreamAcquisitionPromise;
         this.logger.log('createAndSendOffer');
         const offer = await this.pc.createOffer();
         await this.pc.setLocalDescription(offer);
@@ -160,7 +160,7 @@ export class Peer {
 
     public async signal(data: WebRtcSignalPayload) {
         if (data.type === 'offer') {
-            await this.localStreamAcquisatonPromise;
+            await this.localStreamAcquisitionPromise;
             this.logger.log('Signal, offer');
             await this.pc.setRemoteDescription(new RTCSessionDescription(data));
             const answer = await this.pc.createAnswer();
@@ -189,7 +189,7 @@ export class Peer {
     }
 
     public async restartIce(reason = 'manual'): Promise<void> {
-        await this.localStreamAcquisatonPromise;
+        await this.localStreamAcquisitionPromise;
         this.clearRestartTimer();
         this.emitIceJourney({ type: 'ice-restart', timestamp: Date.now(), reason });
         if (typeof this.pc.restartIce === 'function') {
@@ -271,9 +271,10 @@ export class Peer {
     private async addLocalAudioTracks(): Promise<void> {
         this.logger.log('addLocalAudioTracks, adding local track to Peer Connection');
         this.audioStream = await this.getAudioStream();
-        this.audioStream.getAudioTracks().forEach(track => {
-            this.audioSender = this.pc.addTrack(track, this.audioStream!);
-        });
+        const track = this.audioStream.getAudioTracks()[0];
+        if (track) {
+            this.audioSender = this.pc.addTrack(track, this.audioStream);
+        }
         this.setupAudioMeter();
     }
 
@@ -369,7 +370,7 @@ export class Peer {
         const previous = this.previousStats;
         this.previousStats = { timestamp, bytesSent, bytesReceived };
         const bitrateKbps = previous && timestamp > previous.timestamp
-            ? ((totalBytes - previous.bytesSent - previous.bytesReceived) * 8) / (timestamp - previous.timestamp)
+            ? (((totalBytes - previous.bytesSent - previous.bytesReceived) * 8) / ((timestamp - previous.timestamp) / 1000)) / 1000
             : undefined;
         const packetTotal = packetsLost + packetsReceived;
         const packetLossRatio = packetTotal > 0 ? packetsLost / packetTotal : undefined;
@@ -427,11 +428,11 @@ export class Peer {
         if (!selfHealing?.enabled) {
             return;
         }
+        this.clearRestartTimer();
         if (state === 'failed' && selfHealing.restartOnFailed !== false) {
             this.options.onAutoRestartNeeded?.(state);
         }
         if (state === 'disconnected' && selfHealing.restartOnDisconnected !== false) {
-            this.clearRestartTimer();
             const delay = Math.max(0, selfHealing.disconnectedRestartDelayMs ?? 2000);
             this.restartTimer = setTimeout(() => this.options.onAutoRestartNeeded?.(state), delay);
         }
