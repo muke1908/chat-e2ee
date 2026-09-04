@@ -8,6 +8,7 @@ function makeFakeAudioElement() {
         setAttribute: jest.fn((name: string, value: string) => { attributes[name] = value; }),
         getAttribute: (name: string) => attributes[name],
         play: jest.fn().mockResolvedValue(undefined),
+        setSinkId: jest.fn().mockResolvedValue(undefined),
         srcObject: null as unknown,
     };
 }
@@ -74,5 +75,14 @@ describe('AudioSink', () => {
 
         // detach() again should be a no-op and not throw.
         expect(() => sink.detach()).not.toThrow();
+    });
+
+    it('setOutputDevice() delegates to the audio element setSinkId API', async () => {
+        const sink = new AudioSink(new Logger('test'));
+        await sink.attach({} as MediaStream, 'remote');
+
+        await sink.setOutputDevice('speaker-1');
+
+        expect(fakeAudioEl.setSinkId).toHaveBeenCalledWith('speaker-1');
     });
 });

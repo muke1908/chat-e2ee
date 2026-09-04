@@ -42,7 +42,7 @@ export class WebRTCCall {
         return typeof RTCPeerConnection !== 'undefined';
     }
 
-    public on(listener: callEvents, cb: (state: RTCPeerConnectionState) => void): void {
+    public on(listener: callEvents, cb: (...args: any[]) => void): void {
         const sub = this.subs.get(listener);
         if (sub) {
             if (sub.has(cb)) {

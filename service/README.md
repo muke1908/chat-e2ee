@@ -140,6 +140,10 @@ chat.on('chat-message', (msg) => {
 Global configuration for the SDK.
 - `settings.disableLog`: Boolean to toggle console logging (Default: `false`).
 - `baseUrl`: Base URL of the chat-e2ee backend API (Default: `'http://localhost:3001'`).
+- `webrtc.iceServers`: Custom STUN/TURN servers passed to `RTCPeerConnection`.
+- `webrtc.iceTransportPolicy`: Use `'relay'` to force TURN-only connectivity, or `'all'` for normal host/srflx/relay gathering.
+- `webrtc.diagnostics`: Enables periodic `getStats()` snapshots through `call-metrics`.
+- `webrtc.selfHealing`: Enables automatic ICE restarts for disconnected/failed calls.
 
 ```javascript
 import { setConfig } from '@chat-e2ee/service';
@@ -164,6 +168,16 @@ const chat = createChatInstance({ baseUrl: 'https://your-api.example.com' });
 
 // Selecting a non-default encryption strategy for this instance only:
 const disabledChat = createChatInstance({ baseUrl: '...', encryption: { strategy: 'disabled' } });
+
+// Supplying TURN and enabling diagnostics/self-healing for calls:
+const turnChat = createChatInstance({
+    webrtc: {
+        iceServers: [{ urls: 'turn:turn.example.com', username: 'u', credential: 'p' }],
+        iceTransportPolicy: 'relay',
+        diagnostics: { enabled: true, intervalMs: 5000 },
+        selfHealing: { enabled: true },
+    },
+});
 ```
 
 ---
@@ -201,8 +215,13 @@ Initiates an audio call, signaled entirely over the encrypted signaling channel.
 #### `await endCall(): void`
 Terminates the active call session.
 
+#### `await restartIce(): void`
+Restarts ICE on the active call and sends a fresh ICE-restart offer. The same method is also available on `E2ECall`.
+
 #### `activeCall: E2ECall | null`
 Getter that returns the current active call object.
+
+`E2ECall` also exposes `mute()`, `unmute()`, `setMuted(boolean)`, `switchInputDevice(deviceId)`, `setOutputDevice(deviceId)`, and `getStatsSnapshot()` for per-call audio and diagnostics control.
 
 ---
 
@@ -218,6 +237,8 @@ The SDK uses an event-driven architecture. Listen to events using `chat.on(event
 | `limit-reached` | Fired if the channel already has 2 participants. | `null` |
 | `call-added` | Fired when an incoming call is received. | `E2ECall` |
 | `call-removed` | Fired when a call is disconnected/ended. | `null` |
+| `call-metrics` | Fired periodically when `webrtc.diagnostics.enabled` is true, and available on demand with `getStatsSnapshot()`. | `{ bitrateKbps, rttMs, packetsLost, packetLossRatio, jitterMs, localAudioLevel, remoteAudioLevel, selectedCandidatePairId, localCandidateType, remoteCandidateType, ... }` |
+| `ice-journey` | Fired for ICE gathering/connection transitions, local/remote candidates, selected pair changes, and ICE restarts. | `{ type, timestamp, candidateType, connectionState, iceConnectionState, selectedCandidatePairId, reason, ... }` |
 
 A decryption failure or replayed/duplicate sequence number silently drops the message — `chat-message` is simply never fired for it.
 
@@ -248,8 +269,16 @@ Helper function to generate a unique user or channel identifier.
 ```typescript
 {
     state: RTCPeerConnectionState;
+    muted: boolean;
     endCall(): Promise<void>;
-    on(event: 'state-changed', cb: (state: RTCPeerConnectionState) => void): void;
+    restartIce(): Promise<void>;
+    mute(): void;
+    unmute(): void;
+    setMuted(muted: boolean): void;
+    switchInputDevice(deviceId: string): Promise<void>;
+    setOutputDevice(deviceId: string): Promise<void>;
+    getStatsSnapshot(): Promise<CallMetrics>;
+    on(event: 'state-changed' | 'call-metrics' | 'ice-journey', cb: (...args: any[]) => void): void;
 }
 ```
 

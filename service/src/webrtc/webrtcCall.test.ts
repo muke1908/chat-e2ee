@@ -4,17 +4,32 @@ import type { WebRtcSignalPayload } from './types';
 const mockPeerSignal = jest.fn();
 const mockPeerDispose = jest.fn();
 const mockCreateAndSendOffer = jest.fn().mockResolvedValue(undefined);
+const mockRestartIce = jest.fn().mockResolvedValue(undefined);
+const mockMute = jest.fn();
+const mockUnmute = jest.fn();
+const mockSetMuted = jest.fn();
+const mockSwitchInputDevice = jest.fn().mockResolvedValue(undefined);
+const mockSetOutputDevice = jest.fn().mockResolvedValue(undefined);
+const mockGetStatsSnapshot = jest.fn().mockResolvedValue({ timestamp: 1 });
 
 jest.mock('./peer', () => ({
     Peer: jest.fn().mockImplementation(() => ({
         signal: mockPeerSignal,
         dispose: mockPeerDispose,
         createAndSendOffer: mockCreateAndSendOffer,
+        restartIce: mockRestartIce,
+        mute: mockMute,
+        unmute: mockUnmute,
+        setMuted: mockSetMuted,
+        switchInputDevice: mockSwitchInputDevice,
+        setOutputDevice: mockSetOutputDevice,
+        getStatsSnapshot: mockGetStatsSnapshot,
+        muted: false,
         callState: 'connected',
     })),
 }));
 
-import { WebRTCCall, CallSignalRouter } from './webrtcCall';
+import { WebRTCCall, CallSignalRouter, E2ECall } from './webrtcCall';
 
 function makeCall(): WebRTCCall {
     return new WebRTCCall(jest.fn().mockResolvedValue(undefined), new Logger('test'));
@@ -63,6 +78,25 @@ describe('WebRTCCall', () => {
         call.endCall();
 
         expect(mockPeerDispose).toHaveBeenCalledTimes(1);
+    });
+
+    it('exposes restartIce and audio controls through E2ECall', async () => {
+        const wrapped = new E2ECall(makeCall());
+
+        wrapped.mute();
+        wrapped.unmute();
+        wrapped.setMuted(true);
+        await wrapped.restartIce();
+        await wrapped.switchInputDevice('mic-2');
+        await wrapped.setOutputDevice('speaker-1');
+        await expect(wrapped.getStatsSnapshot()).resolves.toEqual({ timestamp: 1 });
+
+        expect(mockMute).toHaveBeenCalled();
+        expect(mockUnmute).toHaveBeenCalled();
+        expect(mockSetMuted).toHaveBeenCalledWith(true);
+        expect(mockRestartIce).toHaveBeenCalled();
+        expect(mockSwitchInputDevice).toHaveBeenCalledWith('mic-2');
+        expect(mockSetOutputDevice).toHaveBeenCalledWith('speaker-1');
     });
 
     it('on() registers a listener only once for the same callback', () => {

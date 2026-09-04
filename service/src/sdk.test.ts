@@ -117,6 +117,7 @@ describe('createChatInstance()', () => {
         expect(typeof instance.getUsersInChannel).toBe('function');
         expect(typeof instance.encrypt).toBe('function');
         expect(typeof instance.getLink).toBe('function');
+        expect(typeof instance.restartIce).toBe('function');
     });
 
     it('no longer exposes RSA-era key APIs', () => {
