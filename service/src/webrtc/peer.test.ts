@@ -250,14 +250,18 @@ describe('Peer', () => {
         await peer.restartIce();
 
         expect(pc.restartIce).toHaveBeenCalled();
-        expect(pc.createOffer).toHaveBeenCalledWith({ iceRestart: true });
+        expect(pc.createOffer).toHaveBeenCalledWith();
         expect(sendSignal).toHaveBeenCalledWith(expect.objectContaining({ type: 'offer', sdp: 'offer-sdp' }));
         expect(cb).toHaveBeenCalledWith(expect.objectContaining({ type: 'ice-restart', reason: 'manual' }));
     });
 
     it('emits call metrics snapshots from getStats()', async () => {
-        const cb = jest.fn();
-        const subs = new Map<callEvents, Set<Function>>([['ice-journey', new Set([cb])]]);
+        const metricsCb = jest.fn();
+        const iceCb = jest.fn();
+        const subs = new Map<callEvents, Set<Function>>([
+            ['call-metrics', new Set([metricsCb])],
+            ['ice-journey', new Set([iceCb])],
+        ]);
         const { peer, pc } = await createPeer(subs);
         pc.getStats.mockResolvedValue(new Map([
             ['in', { id: 'in', type: 'inbound-rtp', kind: 'audio', bytesReceived: 1000, packetsLost: 1, packetsReceived: 9, jitter: 0.02, audioLevel: 0.3 }],
@@ -278,7 +282,8 @@ describe('Peer', () => {
             localCandidateType: 'host',
             remoteCandidateType: 'relay',
         }));
-        expect(cb).toHaveBeenCalledWith(expect.objectContaining({ type: 'selected-candidate-pair-change', selectedCandidatePairId: 'pair' }));
+        expect(metricsCb).toHaveBeenCalledWith(expect.objectContaining({ packetsLost: 1 }));
+        expect(iceCb).toHaveBeenCalledWith(expect.objectContaining({ type: 'selected-candidate-pair-change', selectedCandidatePairId: 'pair' }));
     });
 
     it('supports mute, unmute, input device switch, and output device selection', async () => {

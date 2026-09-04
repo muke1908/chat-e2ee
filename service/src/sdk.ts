@@ -103,7 +103,7 @@ class ChatE2EE implements IChatE2EE {
             }
             if(state === 'failed' || state === 'closed') {
                 this.callLogger.log(`Ending call, RTCPeerConnectionState: ${state}`);
-                if (state === 'failed' && this.isSelfHealingEnabled()) {
+                if (state === 'failed' && this.shouldSelfHealFailed()) {
                     this.updateCallLifecycle('connecting');
                     return;
                 }
@@ -616,6 +616,11 @@ class ChatE2EE implements IChatE2EE {
 
     private isSelfHealingEnabled(): boolean {
         return Boolean((this.config.webrtc || configContext().webrtc)?.selfHealing?.enabled);
+    }
+
+    private shouldSelfHealFailed(): boolean {
+        const selfHealing = (this.config.webrtc || configContext().webrtc)?.selfHealing;
+        return Boolean(selfHealing?.enabled && selfHealing.restartOnFailed !== false);
     }
 }
 

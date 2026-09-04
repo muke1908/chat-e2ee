@@ -195,7 +195,7 @@ export class Peer {
         if (typeof this.pc.restartIce === 'function') {
             this.pc.restartIce();
         }
-        const offer = await this.pc.createOffer({ iceRestart: true });
+        const offer = await this.pc.createOffer();
         await this.pc.setLocalDescription(offer);
         const metadata = this.resolveSignalMetadata();
         await this.sendSignal({
@@ -249,7 +249,9 @@ export class Peer {
     }
 
     public async getStatsSnapshot(): Promise<CallMetrics> {
-        return this.collectMetrics();
+        const metrics = await this.collectMetrics();
+        this.emitCallMetrics(metrics);
+        return metrics;
     }
 
     public dispose(): void {
@@ -369,8 +371,9 @@ export class Peer {
         const totalBytes = bytesSent + bytesReceived;
         const previous = this.previousStats;
         this.previousStats = { timestamp, bytesSent, bytesReceived };
+        const deltaBytes = previous ? (bytesSent - previous.bytesSent) + (bytesReceived - previous.bytesReceived) : 0;
         const bitrateKbps = previous && timestamp > previous.timestamp
-            ? (((totalBytes - previous.bytesSent - previous.bytesReceived) * 8) / ((timestamp - previous.timestamp) / 1000)) / 1000
+            ? (Math.max(0, deltaBytes) * 8) / ((timestamp - previous.timestamp) / 1000) / 1000
             : undefined;
         const packetTotal = packetsLost + packetsReceived;
         const packetLossRatio = packetTotal > 0 ? packetsLost / packetTotal : undefined;
