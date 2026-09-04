@@ -192,10 +192,13 @@ export class Peer {
         await this.localStreamAcquisitionPromise;
         this.clearRestartTimer();
         this.emitIceJourney({ type: 'ice-restart', timestamp: Date.now(), reason });
+        let offer: RTCSessionDescriptionInit;
         if (typeof this.pc.restartIce === 'function') {
             this.pc.restartIce();
+            offer = await this.pc.createOffer();
+        } else {
+            offer = await this.pc.createOffer({ iceRestart: true });
         }
-        const offer = await this.pc.createOffer();
         await this.pc.setLocalDescription(offer);
         const metadata = this.resolveSignalMetadata();
         await this.sendSignal({
@@ -368,7 +371,6 @@ export class Peer {
             this.emitSelectedPairChange(selectedCandidatePair, statsById);
         }
 
-        const totalBytes = bytesSent + bytesReceived;
         const previous = this.previousStats;
         this.previousStats = { timestamp, bytesSent, bytesReceived };
         const deltaBytes = previous ? (bytesSent - previous.bytesSent) + (bytesReceived - previous.bytesReceived) : 0;

@@ -121,7 +121,9 @@ class ChatE2EE implements IChatE2EE {
         });
     }
     constructor(private readonly config: Partial<configType> = {}) {
-        config && setConfig(config);
+        if (Object.keys(config).length > 0) {
+            setConfig(config);
+        }
         // Resolved once per instance (not persisted to the shared global
         // config) so multiple ChatE2EE instances can run different
         // strategies concurrently. Throws immediately for an unknown
