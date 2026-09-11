@@ -37,6 +37,8 @@ export interface IChatE2EE {
     setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void>;
     delete(): Promise<void>;
     getUsersInChannel(): Promise<TypeUsersInChannel>;
+    /** Prefer this for presence checks without requesting participant identifiers. */
+    getParticipantCount(): Promise<number>;
     dispose(): void;
     /** Encrypts `text`/`image` with the invite-derived chat key. This is the only way to send a message. */
     encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> };

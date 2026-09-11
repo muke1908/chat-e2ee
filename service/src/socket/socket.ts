@@ -65,18 +65,18 @@ export class SocketInstance {
 
     /** Join a room. Carries no key material — the shared secret never leaves the device. */
     public joinChat(payload: chatJoinPayloadType): void {
-        this.logger.log(`joinChat(), ${JSON.stringify(payload)}`);
-        this.socket.emit('chat-join', payload);
+        this.logger.log('joinChat()');
+        this.socket.emit('chat-join', { channelID: payload.channelID, userID: payload.userID });
     }
 
     /** Send an already-sealed chat envelope; resolves with the server-assigned id/timestamp. */
-    public sendChatMessage(envelope: EncryptionEnvelope): Promise<{ id: number; timestamp: number }> {
-        return this.emitWithAck<{ id: number; timestamp: number }>('chat-message', { envelope });
+    public sendChatMessage({ version, strategy, data }: EncryptionEnvelope): Promise<{ id: number; timestamp: number }> {
+        return this.emitWithAck<{ id: number; timestamp: number }>('chat-message', { envelope: { version, strategy, data } });
     }
 
     /** Send an already-sealed WebRTC signaling envelope. */
-    public async sendWebrtcSignal(envelope: EncryptionEnvelope): Promise<void> {
-        await this.emitWithAck<{ status: string }>('webrtc-signal', { envelope });
+    public async sendWebrtcSignal({ version, strategy, data }: EncryptionEnvelope): Promise<void> {
+        await this.emitWithAck<{ status: string }>('webrtc-signal', { envelope: { version, strategy, data } });
     }
 
     public dispose(): void {

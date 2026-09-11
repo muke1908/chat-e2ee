@@ -136,6 +136,26 @@ describe('SocketInstance', () => {
             createInstance().joinChat(payload);
             expect(mockSocket.emit).toHaveBeenCalledWith('chat-join', payload);
         });
+
+        it('drops runtime extras and does not log participant or room details', () => {
+            const payload = { channelID: 'chan-1', userID: 'alice', userName: 'Alice', secret: 'invite-secret' };
+            createInstance().joinChat(payload);
+            expect(mockSocket.emit).toHaveBeenCalledWith('chat-join', { channelID: 'chan-1', userID: 'alice' });
+            expect(logger.log.mock.calls).toEqual([['Initialized'], ['joinChat()']]);
+        });
+    });
+
+    it.each(['sendChatMessage', 'sendWebrtcSignal'] as const)('%s only transmits declared envelope headers and preserves custom strategy data', async (method) => {
+        mockSocket.emit.mockImplementation((_event, _payload, ack) => ack({ id: 5, timestamp: 999, status: 'ok' }));
+        const data = { customCiphertext: 'opaque', nonce: 'public-nonce' };
+        const envelope = { version: 1, strategy: 'custom', data, userName: 'Alice', callId: 'private-call-id' };
+        await createInstance()[method](envelope);
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+            method === 'sendChatMessage' ? 'chat-message' : 'webrtc-signal',
+            { envelope: { version: 1, strategy: 'custom', data } },
+            expect.any(Function),
+        );
+        expect(mockSocket.emit.mock.calls[0][1].envelope.data).toBe(data);
     });
 
     describe('sendChatMessage()', () => {

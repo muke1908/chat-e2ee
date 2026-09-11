@@ -32,6 +32,7 @@ jest.mock('socket.io-client', () => ({
 // ---------------------------------------------------------------------------
 jest.mock('./api/messages', () => ({
     getUsersInChannel: jest.fn().mockResolvedValue([]),
+    getParticipantCount: jest.fn().mockResolvedValue(0),
 }));
 
 jest.mock('./api/links', () => ({
@@ -50,6 +51,9 @@ jest.mock('./api/links', () => ({
 // Import after all mocks are in place
 // ---------------------------------------------------------------------------
 import { createChatInstance } from './sdk';
+import { getParticipantCount, getUsersInChannel } from './api/messages';
+import { Logger } from './utils/logger';
+import { WebRTCCall } from './webrtc/webrtcCall';
 import { generateInviteSecret, deriveChannelSecrets } from './crypto/inviteCrypto';
 import { getEncryptionStrategy, DEFAULT_ENCRYPTION_STRATEGY_ID, NO_ENCRYPTION_STRATEGY_ID, registerEncryptionStrategy, unregisterEncryptionStrategy } from './crypto/registry';
 import type { EncryptionEnvelope, EncryptionStrategyFactory } from './crypto/strategy';
@@ -169,6 +173,11 @@ describe('methods called before init() throw descriptive error', () => {
         await expect(instance.getUsersInChannel()).rejects.toThrow(NOT_INITIALIZED_MSG);
     });
 
+    it('getParticipantCount() throws', async () => {
+        const instance = createChatInstance();
+        await expect(instance.getParticipantCount()).rejects.toThrow(NOT_INITIALIZED_MSG);
+    });
+
     it('encrypt() throws', () => {
         const instance = createChatInstance();
         expect(() => instance.encrypt({ image: '', text: 'hi' })).toThrow(NOT_INITIALIZED_MSG);
@@ -204,9 +213,41 @@ describe('setChannel() / isEncrypted()', () => {
         expect(JSON.stringify(joinPayload)).not.toContain(SECRET);
     });
 
+    it('does not log room, user, name or invitation material when setting a channel', async () => {
+        const instance = await buildInitializedInstance();
+        const log = jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+        try {
+            await instance.setChannel(ROOM_ID, SECRET, USER_ID, 'private-display-name');
+            const output = JSON.stringify(log.mock.calls);
+            for (const value of [ROOM_ID, SECRET, USER_ID, 'private-display-name']) {
+                expect(output).not.toContain(value);
+            }
+        } finally {
+            log.mockRestore();
+        }
+    });
+
     it('rejects when roomId is missing', async () => {
         const instance = await buildInitializedInstance();
         await expect(instance.setChannel('', SECRET, USER_ID)).rejects.toThrow(/roomId.*secret|secret.*roomId/i);
+    });
+
+    describe('count-only presence checks', () => {
+        it('uses counts for call preconditions without fetching identities', async () => {
+            const instance = await buildInitializedInstance();
+            await instance.setChannel(ROOM_ID, SECRET, USER_ID);
+            (getUsersInChannel as jest.Mock).mockClear();
+            (getParticipantCount as jest.Mock).mockClear();
+            const supported = jest.spyOn(WebRTCCall, 'isSupported').mockReturnValue(true);
+            try {
+                await expect(instance.startCall()).rejects.toThrow('No user available to accept call');
+                expect(getParticipantCount).toHaveBeenCalledWith({ channelID: ROOM_ID });
+                expect(getUsersInChannel).not.toHaveBeenCalled();
+            } finally {
+                supported.mockRestore();
+                instance.dispose();
+            }
+        });
     });
 
     it('rejects when secret is missing', async () => {

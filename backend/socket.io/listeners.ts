@@ -46,7 +46,7 @@ const connectionListener = (socket: CustomSocket, io) => {
 
     const { valid } = await channelValid(channelID);
     if (!valid) {
-      console.error("Invalid channelID - ", channelID);
+      console.error("Invalid channelID");
       return;
     }
     const usersInChannel = clients.getClientsByChannel(channelID) || {};
