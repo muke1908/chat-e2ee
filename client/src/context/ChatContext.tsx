@@ -276,8 +276,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Check for existing users
   const checkExistingUsers = async (chatInstance: IChatE2EE) => {
     try {
-      const users = await chatInstance.getUsersInChannel();
-      if (users && users.length > 1) {
+      const count = await chatInstance.getParticipantCount();
+      if (count > 1) {
         playBeep();
         setIsConnected(true);
       }

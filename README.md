@@ -48,6 +48,13 @@ In this way, no one else can decrypt anything because the secret is never expose
 
 > We are using the browser [window.crypto library](https://developer.mozilla.org/en-US/docs/Web/API/crypto_property) (AES-GCM + HKDF-SHA256) for encryption.
 
+**Content encryption is not metadata anonymity.** With the secure default, the
+relay cannot decrypt chat or signaling contents, but still sees room membership,
+participant IDs, event classes, timing and ciphertext sizes. The explicitly
+disabled strategy provides no confidentiality. Use HTTPS/WSS to hide application
+payloads from passive network observers. See the [metadata inventory and
+limitations](backend/README.md#metadata-inventory-and-privacy-limits).
+
 ---
 
 ### Flow

@@ -28,6 +28,12 @@ There is no key exchange handshake and no PIN. Instead:
 3. Every chat message and WebRTC signal (offer/answer/ICE candidate/call control) is sealed into a versioned, strategy-tagged envelope (`{ version, strategy, data }`) before it ever reaches the socket. `ChatE2EE` — never the strategy itself — checks the protocol version and strategy id on receipt, and rejects (drops) anything that doesn't match the active strategy instance for that channel; there is no fallback to a different strategy or envelope version. The server only ever relays this opaque envelope between the two sockets in a room — it cannot read, modify, or replay it elsewhere. Any failure to open an envelope (wrong secret, unsupported version, unexpected strategy, tampered ciphertext) or a replayed/duplicate sequence number causes the message to be dropped outright; there is **no plaintext fallback** — not even when the configured strategy is the explicit "disabled" one (see below).
 4. Audio call media itself relies on WebRTC's mandatory DTLS-SRTP transport encryption. There is no custom per-frame encryption layered on top, and therefore no encoded-transform capability gate — calls work in any standards-compliant WebRTC browser.
 
+E2EE protects content, not all metadata. See the [before/after metadata inventory,
+remaining exposure and padding trade-offs](../backend/README.md#metadata-inventory-and-privacy-limits).
+Use HTTPS/WSS and fresh random participant IDs per room/session; never use an
+email, account ID or reusable username as `userId`. The optional `userName`
+argument is retained for compatibility but is neither transmitted nor logged.
+
 ## Encryption strategies
 
 The SDK never hard-codes a specific cryptographic primitive, and an `EncryptionStrategy` is entirely application-agnostic: it knows nothing about rooms, users, chat, signaling, WebRTC, payload shapes, sessions, or key exchange. `ChatE2EE` owns all of that — routing, JSON<->bytes serialization, and replay/protocol validation — around two independent strategy *instances* it creates and drives itself (one for chat, one for signaling), selected through a small global registry/factory. This means:
@@ -87,6 +93,11 @@ An unknown strategy id throws immediately from `createChatInstance()` — there 
 | `decrypt(envelope)` | Opens/validates an envelope, returning the original bytes. Must throw — never fall back — on any incompatibility (wrong strategy/version, failed auth tag, malformed shape). |
 | `destroy()` | Synchronously releases any key material/state held by the instance. |
 
+The SDK transmits only the declared envelope headers (`version`, `strategy`,
+`data`), dropping extra top-level runtime properties. Strategy-specific fields
+must live in `data`, which remains opaque and is forwarded without modification;
+custom strategies are responsible for its confidentiality and metadata surface.
+
 Registry helpers exported alongside `createChatInstance`: `registerEncryptionStrategy(id, factory, { override? })`, `unregisterEncryptionStrategy(id)`, `hasEncryptionStrategy(id)`, `listEncryptionStrategyIds()`, `getEncryptionStrategy(id)` (creates and returns a fresh instance; throws a descriptive error for an unknown id).
 
 ## Quick Start
@@ -109,13 +120,13 @@ await chat.init();
 // Guest 1: create a room. `secret` is generated locally and must be shared
 // out of band (e.g. via `link`/`absoluteLink`) — never send it to your own backend.
 const { hash: roomId, secret, absoluteLink } = await chat.getLink();
-const userId = 'user-1';
+const userId = crypto.randomUUID();
 await chat.setChannel(roomId, secret, userId);
 
 // share `absoluteLink` (or `roomId` + `secret` separately) with Guest 2 out of band
 
 // Guest 2: join using the same roomId + secret parsed from the invitation link
-await chat.setChannel(roomId, secret, 'user-2');
+await chat.setChannel(roomId, secret, crypto.randomUUID());
 ```
 
 ### 3. Send and receive messages
@@ -186,7 +197,14 @@ Returns `true` once `setChannel()` has resolved *and* the configured strategy ac
 Seals `text`/`image` into an envelope via the configured chat encryption strategy instance (AES-GCM AEAD by default) and delivers it over the socket. This is the only way to send a message — there is no unencrypted `sendMessage()` any more.
 
 #### `await getUsersInChannel(): Promise<TypeUsersInChannel>`
-Returns a list of users currently connected to the active channel.
+Returns the legacy list of participant IDs currently connected to the active channel.
+Prefer `getParticipantCount()` when identities are not needed.
+
+#### `await getParticipantCount(): Promise<number>`
+Requests only `{count}` for the active channel; used by the UI's presence check
+and SDK's call preconditions. The SDK also accepts legacy list responses from
+older servers, so mixed-version deployments still work (but do not gain the
+count-only privacy reduction until the server is upgraded).
 
 #### `dispose(): void`
 Closes socket connections, clears event listeners, and resets the instance state.

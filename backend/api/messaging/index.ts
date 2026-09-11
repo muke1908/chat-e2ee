@@ -10,7 +10,7 @@ const clients = getClientInstance();
 
 router.get(
   "/get-users-in-channel",
-  asyncHandler(async (req: Request, res: Response): Promise<Response<UsersInChannelResponse>> => {
+  asyncHandler(async (req: Request, res: Response): Promise<Response<UsersInChannelResponse | { count: number }>> => {
     const { channel } = req.query;
 
     const { valid } = await channelValid(channel as string);
@@ -20,6 +20,9 @@ router.get(
     }
 
     const data = clients.getClientsByChannel(channel as string);
+    if (req.query.countOnly === 'true') {
+      return res.send({ count: Object.keys(data || {}).length });
+    }
     const usersInChannel = data ? Object.keys(data).map((userId) => ({ uuid: userId })) : [];
     return res.send(usersInChannel);
   })

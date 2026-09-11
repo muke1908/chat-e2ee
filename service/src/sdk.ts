@@ -4,7 +4,7 @@ import { resolveEncryptionStrategyFactory } from './crypto/registry';
 import { deriveChannelSecrets } from './crypto/inviteCrypto';
 import { ReplayGuard } from './utils/replayGuard';
 import { deleteLink, getLink } from './api/links';
-import { getUsersInChannel } from './api/messages';
+import { getParticipantCount, getUsersInChannel } from './api/messages';
 import { configType, type IChatE2EE, type ISendMessageReturn, type LinkObjType, type TypeUsersInChannel } from './public/types';
 import { SocketInstance, type RawChatMessage, type RawSignalMessage, type SubscriptionType } from './socket/socket';
 import { Logger } from './utils/logger';
@@ -153,9 +153,9 @@ class ChatE2EE implements IChatE2EE {
      * `secret` never leaves this device — only `roomId` and `userId` are
      * sent to the server.
      */
-    public async setChannel(roomId: string, secret: string, userId: string, userName?: string): Promise<void> {
+    public async setChannel(roomId: string, secret: string, userId: string, _userName?: string): Promise<void> {
         this.checkInitialized();
-        logger.log(`setChannel(), ${JSON.stringify({ roomId, userId, userName })}`);
+        logger.log('setChannel()');
         if (!roomId || !secret) {
             throw new Error('setChannel() requires both a roomId and an invitation secret.');
         }
@@ -202,6 +202,12 @@ class ChatE2EE implements IChatE2EE {
         logger.log(`getUsersInChannel()`);
         this.checkInitialized();
         return getUsersInChannel({ channelID: this.roomId });
+    }
+
+    public async getParticipantCount(): Promise<number> {
+        logger.log('getParticipantCount()');
+        this.checkInitialized();
+        return getParticipantCount({ channelID: this.roomId });
     }
 
     public encrypt({ image, text }: { image: string, text: string }): { send: () => Promise<ISendMessageReturn> } {
@@ -416,8 +422,8 @@ class ChatE2EE implements IChatE2EE {
     }
 
     private async assertCallPreconditions(): Promise<void> {
-        const users = await this.getUsersInChannel();
-        if (!users || users.length < 2) {
+        const count = await this.getParticipantCount();
+        if (count < 2) {
             this.updateCallLifecycle('no-peer');
             throw new Error('No user available to accept call');
         }
