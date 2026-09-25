@@ -6,16 +6,24 @@ import {
     type IceCandidateSignalWithMetadata,
     type OfferSignalData,
     type SignalMetadata,
+    type CallStatsSnapshot,
     type PeerConnectionEventType,
     peerConnectionEvents,
 } from "./types";
 
-export type { WebRtcSignalPayload, callEvents, PeerConnectionEventType };
+export type { WebRtcSignalPayload, callEvents, PeerConnectionEventType, CallStatsSnapshot };
 export { peerConnectionEvents };
 
 export interface IE2ECall {
     on(event: callEvents, cb: () => void): void;
     state: RTCPeerConnectionState;
+    readonly muted: boolean;
+    mute(): void;
+    unmute(): void;
+    setMuted(mute: boolean): void;
+    switchInputDevice(deviceId: string): Promise<void>;
+    setOutputDevice(deviceId: string): Promise<void>;
+    getStatsSnapshot(): Promise<CallStatsSnapshot>;
     endCall(): Promise<void>;
 }
 
@@ -60,6 +68,34 @@ export class WebRTCCall {
 
     public get callState(): RTCPeerConnectionState {
         return this.peer!.callState;
+    }
+
+    public get muted(): boolean {
+        return this.peer!.muted;
+    }
+
+    public mute(): void {
+        this.peer!.mute();
+    }
+
+    public unmute(): void {
+        this.peer!.unmute();
+    }
+
+    public setMuted(mute: boolean): void {
+        this.peer!.setMuted(mute);
+    }
+
+    public switchInputDevice(deviceId: string): Promise<void> {
+        return this.peer!.switchInputDevice(deviceId);
+    }
+
+    public setOutputDevice(deviceId: string): Promise<void> {
+        return this.peer!.setOutputDevice(deviceId);
+    }
+
+    public getStatsSnapshot(): Promise<CallStatsSnapshot> {
+        return this.peer!.getStatsSnapshot();
     }
 
     async startCall(): Promise<void> {
@@ -227,6 +263,27 @@ export class E2ECall implements IE2ECall {
     }
     public get state(): RTCPeerConnectionState {
         return this.webRtcCall.callState;
+    }
+    public get muted(): boolean {
+        return this.webRtcCall.muted;
+    }
+    public mute(): void {
+        this.webRtcCall.mute();
+    }
+    public unmute(): void {
+        this.webRtcCall.unmute();
+    }
+    public setMuted(mute: boolean): void {
+        this.webRtcCall.setMuted(mute);
+    }
+    public switchInputDevice(deviceId: string): Promise<void> {
+        return this.webRtcCall.switchInputDevice(deviceId);
+    }
+    public setOutputDevice(deviceId: string): Promise<void> {
+        return this.webRtcCall.setOutputDevice(deviceId);
+    }
+    public getStatsSnapshot(): Promise<CallStatsSnapshot> {
+        return this.webRtcCall.getStatsSnapshot();
     }
     public async endCall(): Promise<void> {
         return this.webRtcCall.endCall();

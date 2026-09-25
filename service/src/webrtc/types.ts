@@ -48,6 +48,11 @@ export interface SignalMetadata {
     timestamp: number;
 }
 
+export interface CallStatsSnapshot {
+    localAudioLevel?: number;
+    remoteAudioLevel?: number;
+}
+
 export interface OfferSignalData extends SignalData, SignalMetadata {
     type: 'offer';
 }

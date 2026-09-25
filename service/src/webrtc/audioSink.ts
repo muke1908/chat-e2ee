@@ -12,6 +12,7 @@ export class AudioSink {
     constructor(private logger: Logger) {}
 
     public async attach(stream: MediaStream, tag: string): Promise<void> {
+        this.detach();
         this.logger.log('Adding remote audio track');
         this.audioEl = document.createElement('audio');
         this.audioEl.setAttribute('autoplay', 'true');
@@ -31,9 +32,37 @@ export class AudioSink {
         document.body.appendChild(this.audioEl);
     }
 
+    public async setOutputDevice(deviceId: string): Promise<void> {
+        if (!this.audioEl) {
+            throw new Error('No remote audio element is available for output device selection.');
+        }
+
+        // setSinkId is not available in every browser and may also require a
+        // secure context and permission for the selected output device.
+        if (typeof HTMLMediaElement === 'undefined' || !('setSinkId' in HTMLMediaElement.prototype)) {
+            throw new Error('Output device selection is not supported by this browser.');
+        }
+
+        const audioElement = this.audioEl as HTMLAudioElement & {
+            setSinkId: (sinkId: string) => Promise<void>;
+        };
+        try {
+            await audioElement.setSinkId(deviceId);
+        } catch (error) {
+            this.logger.log('Failed to set output device:', error);
+            const outputDeviceError = new Error(
+                'Unable to select the output device. Check browser permissions, device availability, and secure-context requirements.',
+            );
+            (outputDeviceError as Error & { cause?: unknown }).cause = error;
+            throw outputDeviceError;
+        }
+    }
+
     public detach(): void {
         if (this.audioEl) {
-            this.audioEl.srcObject = null;
+            const audioElement = this.audioEl;
+            audioElement.srcObject = null;
+            audioElement.remove();
             this.audioEl = undefined;
         }
     }

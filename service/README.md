@@ -204,6 +204,41 @@ Terminates the active call session.
 #### `activeCall: E2ECall | null`
 Getter that returns the current active call object.
 
+An active call also exposes local audio controls:
+
+```typescript
+call.mute();
+call.unmute();
+call.setMuted(true);
+console.log(call.muted);
+
+await call.switchInputDevice('microphone-device-id');
+await call.setOutputDevice('speaker-device-id');
+
+const metrics = await call.getStatsSnapshot();
+console.log(metrics.localAudioLevel);
+```
+
+`mute()` keeps the microphone track alive and toggles its `enabled` property;
+ending a call stops the track. Switching microphones uses
+`RTCRtpSender.replaceTrack()` and stops the previous track after replacement
+succeeds. If replacement fails, the previous track remains active and the new
+track is cleaned up.
+
+`setOutputDevice()` requires the browser's `HTMLMediaElement.setSinkId()` API.
+Some browsers do not provide it, and supported browsers may require HTTPS and
+output-device permission. The method rejects with a descriptive error when
+selection is unavailable or denied without detaching the current audio.
+
+`getStatsSnapshot()` reports an optional local RMS audio level when
+`AudioContext` is available. Browser support, autoplay policies, and device
+permissions can vary; unsupported Web Audio environments return no level
+instead of interrupting the call. It also reports an optional
+`remoteAudioLevel` when `RTCPeerConnection.getStats()` exposes an inbound audio
+level; remote metrics are browser-dependent and are not guaranteed. Call cleanup closes meter contexts,
+detaches/removes remote audio elements, clears peer handlers, and stops media
+tracks.
+
 ---
 
 ### Events

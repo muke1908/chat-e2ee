@@ -7,6 +7,7 @@ import {
     type AnswerSignalData,
     type IceCandidateSignalWithMetadata,
     type SignalMetadata,
+    type CallStatsSnapshot,
 } from "./types";
 import { AudioSink } from "./audioSink";
 
@@ -38,6 +39,9 @@ export class Peer {
 
     private audioSink: AudioSink;
     private audioStream?: MediaStream;
+    private audioContext?: AudioContext;
+    private localAudioSource?: MediaStreamAudioSourceNode;
+    private localAudioAnalyser?: AnalyserNode;
     private fallbackSignalSeq = 0;
     private fallbackCallId = generateUUID();
 
@@ -91,6 +95,87 @@ export class Peer {
         return this.state;
     }
 
+    public get muted(): boolean {
+        return !(this.audioStream?.getAudioTracks()[0]?.enabled ?? true);
+    }
+
+    public mute(): void {
+        this.setMuted(true);
+    }
+
+    public unmute(): void {
+        this.setMuted(false);
+    }
+
+    public setMuted(mute: boolean): void {
+        const audioTrack = this.audioStream?.getAudioTracks()[0];
+        if (audioTrack) {
+            audioTrack.enabled = !mute;
+        }
+    }
+
+    public setOutputDevice(deviceId: string): Promise<void> {
+        return this.audioSink.setOutputDevice(deviceId);
+    }
+
+    public async getStatsSnapshot(): Promise<CallStatsSnapshot> {
+        await this.localStreamAcquisatonPromise;
+        this.initializeLocalAudioMeter();
+
+        const snapshot: CallStatsSnapshot = {};
+        if (this.localAudioAnalyser) {
+            const samples = new Uint8Array(this.localAudioAnalyser.fftSize);
+            this.localAudioAnalyser.getByteTimeDomainData(samples);
+            let sumOfSquares = 0;
+            for (const sample of samples) {
+                const normalizedSample = (sample - 128) / 128;
+                sumOfSquares += normalizedSample * normalizedSample;
+            }
+            snapshot.localAudioLevel = Math.sqrt(sumOfSquares / samples.length);
+        }
+
+        const remoteAudioLevel = await this.getRemoteAudioLevel();
+        if (typeof remoteAudioLevel === 'number') {
+            snapshot.remoteAudioLevel = remoteAudioLevel;
+        }
+        return snapshot;
+    }
+
+    public async switchInputDevice(deviceId: string): Promise<void> {
+        await this.localStreamAcquisatonPromise;
+
+        const oldAudioTrack = this.audioStream?.getAudioTracks()[0];
+        if (!oldAudioTrack) {
+            throw new Error('No local audio track is available to replace.');
+        }
+
+        const newStream = await this.getAudioStream(deviceId);
+        const newAudioTrack = newStream.getAudioTracks()[0];
+        if (!newAudioTrack) {
+            newStream.getTracks().forEach(track => track.stop());
+            throw new Error('The selected input device did not provide an audio track.');
+        }
+
+        const audioSender = this.pc.getSenders().find(sender => sender.track?.kind === 'audio');
+        if (!audioSender) {
+            newStream.getTracks().forEach(track => track.stop());
+            throw new Error('No local audio sender is available to replace.');
+        }
+
+        newAudioTrack.enabled = oldAudioTrack.enabled;
+        try {
+            await audioSender.replaceTrack(newAudioTrack);
+        } catch (error) {
+            newStream.getTracks().forEach(track => track.stop());
+            this.logger.log('Failed to switch input device:', error);
+            throw error;
+        }
+
+        oldAudioTrack.stop();
+        this.audioStream = newStream;
+        this.closeLocalAudioMeter();
+    }
+
     public async createAndSendOffer() {
         await this.localStreamAcquisatonPromise;
         this.logger.log('createAndSendOffer');
@@ -131,12 +216,19 @@ export class Peer {
     }
 
     public dispose(): void {
+        if (!this.pc) {
+            return;
+        }
         if(this.audioStream) {
             this.audioStream.getTracks().forEach(track => {
                 track.stop() ;
             });
             this.audioStream = undefined;
         }
+        this.closeLocalAudioMeter();
+        this.pc.onconnectionstatechange = null;
+        this.pc.onicecandidate = null;
+        this.pc.ontrack = null;
         this.audioSink.detach();
         this.logger.log('Dispose');
         this.pc?.close();
@@ -149,9 +241,85 @@ export class Peer {
         this.audioStream.getTracks().forEach(track => this.pc.addTrack(track, this.audioStream!));
     }
 
-    private async getAudioStream(): Promise<MediaStream> {
+    private initializeLocalAudioMeter(): void {
+        if (this.localAudioAnalyser || !this.audioStream) {
+            return;
+        }
+
+        // AudioContext is unavailable in some browsers and may be blocked by
+        // autoplay or permission policies, so metering must never break calls.
+        const audioContextConstructor = (globalThis as typeof globalThis & {
+            webkitAudioContext?: typeof AudioContext;
+        }).AudioContext ?? (globalThis as typeof globalThis & {
+            webkitAudioContext?: typeof AudioContext;
+        }).webkitAudioContext;
+        if (!audioContextConstructor) {
+            return;
+        }
+
+        try {
+            this.audioContext = new audioContextConstructor();
+            this.localAudioSource = this.audioContext.createMediaStreamSource(this.audioStream);
+            this.localAudioAnalyser = this.audioContext.createAnalyser();
+            this.localAudioAnalyser.fftSize = 256;
+            this.localAudioSource.connect(this.localAudioAnalyser);
+        } catch (error) {
+            this.logger.log('Local audio metering is unavailable:', error);
+            this.closeLocalAudioMeter();
+        }
+    }
+
+    private closeLocalAudioMeter(): void {
+        this.localAudioSource?.disconnect();
+        this.localAudioSource = undefined;
+        this.localAudioAnalyser = undefined;
+
+        const audioContext = this.audioContext;
+        this.audioContext = undefined;
+        if (audioContext) {
+            Promise.resolve(audioContext.close()).catch(error => {
+                this.logger.log('Failed to close local audio meter:', error);
+            });
+        }
+    }
+
+    private async getRemoteAudioLevel(): Promise<number | undefined> {
+        if (typeof this.pc?.getStats !== 'function') {
+            return undefined;
+        }
+
+        try {
+            const stats = await this.pc.getStats();
+            let remoteAudioLevel: number | undefined;
+            stats.forEach(report => {
+                if (report.type !== 'inbound-rtp') {
+                    return;
+                }
+                const inboundAudioReport = report as RTCInboundRtpStreamStats & {
+                    audioLevel?: number;
+                    kind?: string;
+                    mediaType?: string;
+                };
+                if (
+                    (inboundAudioReport.kind === 'audio' || inboundAudioReport.mediaType === 'audio') &&
+                    typeof inboundAudioReport.audioLevel === 'number'
+                ) {
+                    remoteAudioLevel = inboundAudioReport.audioLevel;
+                }
+            });
+            return remoteAudioLevel;
+        } catch (error) {
+            this.logger.log('Remote audio metering is unavailable:', error);
+            return undefined;
+        }
+    }
+
+    private async getAudioStream(deviceId?: string): Promise<MediaStream> {
         this.logger.log('getAudioStream');
-        return navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        return navigator.mediaDevices.getUserMedia({
+            audio: deviceId ? { deviceId: { exact: deviceId } } : true,
+            video: false,
+        });
     }
 
     private resolveSignalMetadata(): SignalMetadata {
